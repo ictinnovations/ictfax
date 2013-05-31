@@ -1,0 +1,16 @@
+;$Id: job_scheduler.info,v 1.3.2.1 2011/01/10 22:12:27 alexb Exp $
+name = Job Scheduler
+description = Scheduler API
+files[] = job_scheduler.module
+files[] = job_scheduler.install
+files[] = JobScheduler.inc
+files[] = JobSchedulerCronTab.inc
+core = 7.x
+php = 5.2
+
+; Information added by drupal.org packaging script on 2011-01-10
+version = "7.x-2.0-alpha2"
+core = "7.x"
+project = "job_scheduler"
+datestamp = "1294697788"
+

@@ -1,0 +1,55 @@
+<?php
+
+/**
+ * @file
+ * countries_example.module
+ */
+
+/**
+ * Implements hook_menu().
+ */
+function countries_example_menu() {
+  $items = array();
+
+  $items['countries_example'] = array(
+    'title' => 'Countries example page',
+    'description' => 'Demonstrate countries API',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('countries_example'),
+    'access arguments' => array('administer site configuration'),
+  );
+
+  return $items;
+}
+
+function countries_example($form) {
+  $default_country = variable_get('countries_example_default_country_1', '');
+  $form['countries_example_default_country_1'] = array(
+    '#type' => 'country',
+    '#title' => 'Select a country',
+    '#default_value' => isset($edit['iso2']) ? $edit['iso2'] : $default_country,
+  );
+
+  $default_country = variable_get('countries_example_default_country_2', '');
+  $form['countries_example_default_country_2'] = array(
+    '#type' => 'country',
+    '#title' => 'Select a country',
+    '#size' => 5,
+    '#default_value' => isset($edit['iso2']) ? $edit['iso2'] : $default_country,
+  );
+
+  $default_country = variable_get('countries_example_default_country_3', '');
+  $form['countries_example_default_country_3'] = array(
+    '#type' => 'country',
+    '#title' => 'Select a country in Europe',
+    '#size' => 5,
+    '#default_value' => isset($edit['iso2']) ? $edit['iso2'] : $default_country,
+    '#filters' => array(
+      'continents' => array('EU'),
+    ),
+  );
+
+  $form = system_settings_form($form);
+  $form['actions']['submit']['#value'] = t('Save');
+  return $form;
+}

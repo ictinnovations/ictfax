@@ -1,0 +1,51 @@
+<?php
+
+/**
+ * @file
+ * The installation instructions for the SMTP Authentication Support.
+ */
+
+/**
+ * Implementation of hook_install().
+ */
+ function smtp_install() {
+   variable_set('smtp_on', 0);
+ }
+/**
+ * @file
+ * The uninstallation instructions for the SMTP Authentication Support.
+ */
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function smtp_uninstall() {
+  variable_del('smtp_from');
+  variable_del('smtp_fromname');
+  variable_del('smtp_host');
+  variable_del('smtp_hostbackup');
+  variable_del('smtp_on');
+  variable_del('smtp_password');
+  variable_del('smtp_port');
+  variable_del('smtp_protocol');
+  variable_del('smtp_test_address');
+  variable_del('smtp_username');
+
+  if (variable_get('smtp_library', '') == drupal_get_path('module', 'smtp') . '/smtp.module') {
+    variable_del('smtp_library');
+  }
+}  //  End of contact_attach_uninstall().
+
+function smtp_enable() {
+  variable_set('mail_system', array('default-system' => 'SmtpMailSystem'));
+}
+
+function smtp_disable() {
+  variable_set('mail_system', array('default-system' => 'DefaultMailSystem'));
+}
+
+function smtp_update_7000() {
+  if (variable_get('smtp_on', 0) != 0) {
+    variable_set('mail_system', array('default-system' => 'SmtpMailSystem'));
+  }
+}

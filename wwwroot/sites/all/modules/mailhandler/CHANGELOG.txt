@@ -1,0 +1,88 @@
+Mailhandler 7.x-2.x, 2011-12-22
+-------------------------------
+Simplified authentication options on source nodes, added default commands for anonymous users, added more tests.
+Moved Tokenauth authentication into separate module.
+#1376784 by Dane Powell: Added default settings for mailboxes.
+Fixed broken imports.
+
+Mailhandler 7.x-2.3, 2011-12-15
+-------------------------------
+#1139262 by Dane Powell: Fixed commands not processed for some HTML emails.
+#1372226 by TrevorBradley: Fixed error related to call-time pass-by-reference.
+#1369720 by Dane Powell: Added messages and links enhancing usability.
+#1370096 by Dane Powell: Removed 'MIME preference' from Mailbox config, changed 'Body' mapping source.
+#1368866 by Dane Powell: Fixed disabled mailboxes showing up on import page pulldown.
+#1370228 by David_Rothstein: Fixed warning in _mailhandler_mailbox_test() when running tests.
+#1369672 by Dane Powell: Fixed error when using 'All' fetcher filter.
+#1368580 by Dane Powell: Fixed messages always deleted with POP3.
+#1024258 by Dane Powell: Added test cases.
+#1368648 by Dane Powell: Improved retrieval from local folders.
+#1365306 by Dane Powell: Added "test" operation for mailboxes.
+#1364152 by Dane Powell: Added warnings if no retrieval plugins are available.
+#1364172 by Dane Powell: Fixed warning 'Missing Feeds Plugin' on enable.
+
+Mailhandler 7.x-2.2, 2011-12-10
+-------------------------------
+#1364986 by Dane Powell: Fixed errors when importing mailboxes exported by an older version of Mailhandler.
+#1366580 by Dane Powell: Fixed error on import if Trigger is not enabled.
+#1364158 by Dane Powell: Improved performance of AJAX mailbox connection testing.
+#1364184 by Dane Powell: Fixed AJAX error when adding a mailbox.
+#1358782 by Dane Powell: Fixed FeedsConfigurable.inc errors on import.
+#1363372 by pereljon: Fixed authenticated messages not being purged.
+Cleaned up CHANGELOG.txt.
+Improved usability of mailbox creation form.
+
+Mailhandler 7.x-2.1, 2011-12-06
+-------------------------------
+#1361414 by Dane Powell: Added AJAX testing of mailboxes during creation.
+Fixed incorrectly labeled mailbox types.
+
+Mailhandler 7.x-2.0, 2011-12-04
+-------------------------------
+#1358722 by Dane Powell: Ran usability review.
+#1359842 by Dane Powell: Ran coder review and branch tests.
+#1191746 by Dane Powell: Added option to not delete/mark as read messages that fail authentication.
+#1334472 by dafeder: Added hook and trigger for failed authentication.
+#1024258 by Dane Powell: Added test cases.
+#1347842 by Dane Powell: Changed vague instructions regarding paths in INSTALL.txt.
+#275926 by Dane Powell: Added message retrieval library plugins (in order to avoid PHP IMAP dependency).
+Removed unused function.
+#1356536 by Dane Powell: Changed names of filter, authentication, and commands plugins.
+Removed mailhandler_alphanumeric function, use ctools_cleanstring instead.
+More code cleanup.
+Removed unused function.
+#1312694 by kloewer: Fixed cleaning of ISO-8859-1 encoding in subjects (again).
+Minor code refactor.
+Minor code style cleanup.
+
+Mailhandler 7.x-2.0-rc1, 2011-10-19
+-----------------------------------
+Fixed warning on import introduced by #1281530.
+Coder (code formatting) cleanup before next release.
+#1314788 by Dane Powell: Added ability of commands plugins to store config options.
+#1281530 by muka: Added preserving id of message parts during retrieval.
+#1312694 by Dane Powell, laurent.lemercier, kloewer: Added cleaning of ISO-8859-1 encoding in messages.
+#1307470 by andremolnar: Removed unused MIME parts mapping source.
+#1283198 by Dane Powell: Fixed broken mailbox exports.
+#1260106 by jeffvanh, Dane Powell: Added option to ignore failed authentication.
+#1191722 by Dane Powell: Added cc and bcc addresses as mapping sources.
+#1265818 by narayanis, Dane Powell: Added weights to parser plugins.
+Fixed error requiring cache clear on enable.
+
+Mailhandler 7.x-2.0-beta2, 2011-08-29
+-------------------------------------
+#1180096 by googletorp, Dane Powell: Fixed file attachments not working.
+#1258130, #1146426 by Dane Powell: Fixed mailbox machine names and labels by moving human-readable names into separate field.
+#1258788 by Dane Powell: Fixed errors related to empty POP mailboxes (again).
+#1173372 by googletorp, Dane Powell: Improved loading of ctools classes.
+#1258788 by Dane Powell: Fixed errors related to empty POP mailboxes.
+#1159580 by Dane Powell: Improved mailbox connection test to be more informative.
+#1208028 by Dane Powell: Fixed failed authentications not being reported
+#494002 by Dane Powell: Fixed signature separator filter to be more conservative
+
+Mailhandler 7.x-2.0-beta1, 2011-05-18
+-------------------------------------
+#1146426 by Dane Powell: Removed validation of mailbox names as email addresses
+#1150362 by Dane Powell: Fixed taxonomy handling
+#1158384 by Dane Powell: Cleaned up code (Coder review and documentation)
+Added CHANGELOG.txt

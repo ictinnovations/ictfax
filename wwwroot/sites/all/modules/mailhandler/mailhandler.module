@@ -1,0 +1,246 @@
+<?php
+/**
+ * @file
+ * Retrieves email for posting as nodes and comments.
+ */
+
+/**
+ * Implements hook_init().
+ */
+function mailhandler_init() {
+  if (strstr(request_uri(), 'system/ajax') && $_POST['form_id'] == 'ctools_export_ui_edit_item_form') {
+    ctools_include('export');
+  }
+}
+
+/**
+ * Implements hook_permission().
+ */
+function mailhandler_permission() {
+  return array(
+    'administer mailhandler' => array(
+      'title' => t('Administer Mailhandler mailboxes'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_help().
+ */
+function mailhandler_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#mailhandler':
+      $help = file_get_contents( dirname(__FILE__) . "/INSTALL.txt");
+      return _filter_autop($help);
+    case 'admin/structure/mailhandler/add':
+      return t('Please see the <a href="@handbook-page">handbook page on configuring mailboxes</a> for additional help.', array('@handbook-page' => url('http://drupal.org/node/207366')));
+    case 'admin/structure/feeds/edit/%':
+      if ($arg[6] == 'MailhandlerParser') {
+        return t('Please see the <a href="@handbook-page">handbook page on configuring commands</a> for additional help.', array('@handbook-page' => url('http://drupal.org/node/1158574')));
+      }
+      break;
+  }
+}
+
+/**
+ * Implements hook_ctools_plugin_type().
+ */
+function mailhandler_ctools_plugin_type() {
+  return array(
+    'authenticate' => array(),
+    'commands' => array(),
+    'filters' => array(),
+    'retrieve' => array(),
+  );
+}
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function mailhandler_ctools_plugin_directory($owner, $plugin_type) {
+  return 'plugins/' . $owner . '/' . $plugin_type;
+}
+
+/**
+ * Implements hook_filter_info().
+ */
+function mailhandler_filter_info() {
+  $filters['mailhandler'] = array(
+    'title' => t('Mailhandler signature remover'),
+    'description' => t('Strips signatures from emails.'),
+    'process callback' => '_mailhandler_filter_process',
+    'settings callback' => '_mailhandler_filter_settings',
+    'default settings' => array('sig_separator' => '-- '),
+  );
+  return $filters;
+}
+
+/**
+ * Implements hook_trigger_info().
+ */
+function mailhandler_trigger_info() {
+  return array(
+    'mailhandler' => array(
+      'mailhandler_auth_failed' => array(
+        'label' => t('When authentication fails on Mailhandler mail parsing'),
+      ),
+    ),
+  );
+}
+
+/**
+ * Implements hook_mailhandler_auth_failed().
+ */
+function mailhandler_mailhandler_auth_failed($message) {
+  if (!module_exists('trigger')) {
+    return;
+  }
+  $aids = trigger_get_assigned_actions('mailhandler_auth_failed');
+  $context = array(
+    'group' => 'mailhandler',
+    'hook' => 'mailhandler_auth_failed',
+    'message' => $message,
+  );
+  actions_do(array_keys($aids), $message, $context);
+}
+
+/**
+ * Wrapper to load any class type.
+ */
+function mailhandler_plugin_load_class($module, $plugin, $type, $id, $args = NULL) {
+  ctools_include('plugins');
+  if ($class = ctools_plugin_load_class($module, $type, $plugin, 'handler')) {
+    return new $class($args);
+  }
+}
+
+/**
+ * Wrapper to load plugins.
+ *
+ * @param $type
+ *   String - type of mailhandler plugins to retrieve.
+ */
+function mailhandler_get_plugins($module, $type) {
+  ctools_include('plugins');
+  $plugins = ctools_get_plugins($module, $type);
+  $result = array();
+  $weights = array();
+  foreach ($plugins as $key => $info) {
+    if (!empty($info['hidden'])) {
+      continue;
+    }
+    if (!isset($info['weight'])) {
+      $info['weight'] = 10;
+    }
+    $weights[] = $info['weight'];
+    $result[$key] = $info;
+  }
+  array_multisort($weights, $result);
+  return $result;
+}
+
+/**
+ * Load a mailbox.
+ *
+ * @param $mail
+ *   This mailbox's name value.
+ * @return
+ *   A mailbox object.
+ */
+function mailhandler_mailbox_load($mail) {
+  ctools_include('export');
+  return ctools_export_crud_load('mailhandler_mailbox', $mail);
+}
+
+/**
+ * Load all mailboxes.
+ *
+ * @param $show_disabled
+ *   If TRUE, will return disabled mailboxes.
+ * @return
+ *   An array of mailbox objects.
+ */
+function mailhandler_mailbox_load_all($show_disabled = TRUE) {
+  ctools_include('export');
+  $mailboxes = ctools_export_crud_load_all('mailhandler_mailbox');
+  foreach ($mailboxes as $mail => $mailbox) {
+    if (isset($mailbox->disabled) && $mailbox->disabled && !$show_disabled) {
+      unset($mailboxes[$mail]);
+    }
+  }
+  return $mailboxes;
+}
+
+/**
+ * Filter callback.
+ */
+function _mailhandler_filter_process($text, $filter, $format, $langcode, $cache, $cache_id) {
+  $strip_body_regex = $filter->settings['sig_separator'] . "\n";
+  $sig_index = strpos($text, $strip_body_regex);
+  if ($sig_index !== FALSE) {
+    $text = drupal_substr($text, 0, $sig_index);
+  }
+  return $text;
+}
+
+/**
+ * Filter callback.
+ */
+function _mailhandler_filter_settings($form, &$form_state, $filter, $format, $defaults, $filters) {
+  $filter->settings += $defaults;
+  $elements = array();
+  $elements['sig_separator'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Signature separator'),
+    '#default_value' => $filter->settings['sig_separator'],
+    '#description' => t('After the first line matching this string, any further text will be hidden. A typical value is <strong>"-- "</strong> that is two dashes followed by a blank in an otherwise empty line. Leave blank to include signature text in nodes.'),
+  );
+  return $elements;
+}
+
+/**
+ * Determines 'from' address.
+ *
+ * Determines 'from' address using either the mailbox setting or via the header.
+ *
+ * @param $header
+ *   Object message header information.
+ * @param $mailbox
+ *   Array mailbox settings.
+ * @return
+ *   Array of the 'from' address and 'from' name.
+ */
+function _mailhandler_get_fromaddress($header, $mailbox) {
+  $fromheader = drupal_strtolower($mailbox->settings['fromheader']);
+  $from = $header->$fromheader;
+  return array($from[0]->mailbox . '@' . $from[0]->host, (isset($from[0]->personal)) ? $from[0]->personal : '');
+}
+
+/**
+ * Builds an options array for a select field from a source array.
+ */
+function _mailhandler_build_options($source, $key_name = 'name') {
+  $options = array();
+  foreach ($source as $key => $value) {
+    $options[$key] = is_object($value) ? $value->$key_name : $value[$key_name];
+  }
+  return $options;
+}
+
+function _mailhandler_mailbox_test($form, &$form_state) {
+  $mailbox = (object)$form_state['values'];
+  return _mailhandler_mailbox_test_output($mailbox);
+}
+
+function _mailhandler_mailbox_test_output($mailbox) {
+  $output = '<div id="mailhandler_test_results" class="form-wrapper">';
+  // Call the test function.
+  if ($class = mailhandler_plugin_load_class('mailhandler', $mailbox->settings['retrieve'], 'retrieve', 'handler')) {
+    $ret = $class->test($mailbox);
+  }
+  foreach ($ret as $message) {
+    $output .= '<div class="messages ' . $message['severity'] . '">' . $message['message'] . '</div>';
+  }
+  $output .= "</div>";
+  return $output;
+}

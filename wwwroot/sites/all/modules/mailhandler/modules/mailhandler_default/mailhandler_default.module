@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Example Mailhandler importer.
+ */
+
+include_once('mailhandler_default.features.inc');

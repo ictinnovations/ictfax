@@ -1,0 +1,17 @@
+name = SMTP Authentication Support
+description = "Allow for site emails to be sent through an SMTP server of your choice."
+core = 7.x
+package = Mail
+configure = admin/config/system/smtp
+files[] = smtp.module
+files[] = smtp.admin.inc
+files[] = smtp.mail.inc
+files[] = smtp.phpmailer.inc
+files[] = smtp.transport.inc
+
+; Information added by drupal.org packaging script on 2011-09-08
+version = "7.x-1.0-beta1"
+core = "7.x"
+project = "smtp"
+datestamp = "1315505820"
+

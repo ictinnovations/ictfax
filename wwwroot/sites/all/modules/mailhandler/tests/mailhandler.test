@@ -1,0 +1,119 @@
+<?php
+/**
+ * @file
+ * Tests for Mailhandler modules.
+ */
+
+class MailhandlerTestCase extends DrupalWebTestCase {
+  protected $mailhandler_user;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Mailbox creation and import',
+      'description' => 'Create mailboxes and feeds importers and make sure they work.',
+      'group' => 'Mailhandler',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp('taxonomy', 'mailhandler', 'mailhandler_php_imap', 'mailhandler_default');
+    $permissions = array('administer nodes', 'administer mailhandler', 'administer feeds', 'administer taxonomy');
+    $this->mailhandler_user = $this->drupalCreateUser($permissions);
+    // Create and log in our privileged user.
+    $this->mailhandler_user->is_new = FALSE;
+    user_save($this->mailhandler_user, array('mail' => 'from@example.com'));
+    $this->drupalLogin($this->mailhandler_user);
+  }
+
+  public function testMailhandlerImport() {
+    // Create mailboxes.
+    $edit = array();
+    $edit['admin_title'] = 'empty@example.com';
+    $edit['mail'] = 'empty_example_com';
+    $edit['settings[type]'] = 'local';
+    $edit['settings[folder]'] = drupal_get_path('module', 'mailhandler') . '/tests/empty_mbox';
+    $this->drupalPost('admin/structure/mailhandler/add', $edit, t('Save'));
+    $this->assertText(t('@title has been created.', array('@title' => 'empty_example_com')));
+
+    $edit = array();
+    $edit['admin_title'] = 'test1@example.com';
+    $edit['mail'] = 'test1_example_com';
+    $edit['settings[type]'] = 'local';
+    $edit['settings[folder]'] = drupal_get_path('module', 'mailhandler') . '/tests/test1_mbox';
+    $this->drupalPost('admin/structure/mailhandler/add', $edit, t('Save'));
+    $this->assertText(t('@title has been created.', array('@title' => 'test1_example_com')));
+
+    $edit = array();
+    $edit['admin_title'] = 'test2@example.com';
+    $edit['mail'] = 'test2_example_com';
+    $edit['settings[type]'] = 'local';
+    $edit['settings[folder]'] = drupal_get_path('module', 'mailhandler') . '/tests/test2_mbox';
+    $this->drupalPost('admin/structure/mailhandler/add', $edit, t('Save'));
+    $this->assertText(t('@title has been created.', array('@title' => 'test2_example_com')));
+
+    // Test import of an empty mailbox.
+    $edit = array();
+    $edit['feeds[MailhandlerFetcher][mailbox]'] = 'empty_example_com';
+    $edit['title'] = 'empty@example.com';
+    $this->drupalPost('node/add/mailhandler-source', $edit, t('Save'));
+    $this->assertText(t('There are no new nodes.'));
+
+    // Override Mailhandler Default importer, map taxonomy.
+    $this->drupalGet('admin/structure/feeds/edit/mailhandler_nodes/settings/MailhandlerParser');
+    $edit = array();
+    $edit['available_commands'] = 'status' . "\n" . 'taxonomy';
+    $this->drupalPost(NULL, $edit, t('Save'));
+    $this->drupalGet('admin/structure/feeds/edit/mailhandler_nodes/mapping');
+    $edit = array();
+    $edit['source'] = 'taxonomy';
+    $edit['target'] = 'field_tags';
+    $this->drupalPost(NULL, $edit, t('Add'));
+
+    // Test import of message - auth user, auth required.
+    $edit = array();
+    $edit['feeds[MailhandlerFetcher][mailbox]'] = 'test1_example_com';
+    $edit['feeds[MailhandlerParser][auth_required]'] = TRUE;
+    $edit['title'] = 'test1@example.com';
+    $this->drupalPost('node/add/mailhandler-source', $edit, t('Save'));
+    $this->assertText(t('Created 1 node.'));
+    $node = node_load(3);
+    $tags = field_get_items('node', $node, 'field_tags', LANGUAGE_NONE);
+    $this->assertTrue($node->status);
+    $this->assertEqual($tags[0]['tid'], 1);
+    $this->assertEqual($tags[1]['tid'], 2);
+
+    // Test import of message - auth user, auth not required.
+    $edit = array();
+    $edit['feeds[MailhandlerFetcher][mailbox]'] = 'test1_example_com';
+    $edit['feeds[MailhandlerParser][auth_required]'] = FALSE;
+    $edit['title'] = 'test1@example.com';
+    $this->drupalPost('node/add/mailhandler-source', $edit, t('Save'));
+    $this->assertText(t('Created 1 node.'));
+    $node = node_load(5);
+    $tags = field_get_items('node', $node, 'field_tags', LANGUAGE_NONE);
+    $this->assertTrue($node->status);
+    $this->assertEqual($tags[0]['tid'], 1);
+    $this->assertEqual($tags[1]['tid'], 2);
+
+    // Test import of message - anon user, auth required.
+    $edit = array();
+    $edit['feeds[MailhandlerFetcher][mailbox]'] = 'test2_example_com';
+    $edit['feeds[MailhandlerParser][auth_required]'] = TRUE;
+    $edit['title'] = 'test2@example.com';
+    $this->drupalPost('node/add/mailhandler-source', $edit, t('Save'));
+    $this->assertText(t('User could not be authenticated. Please check your Mailhandler authentication plugin settings.'));
+
+    // Test import of message - anon user, auth not required.
+    $edit = array();
+    $edit['feeds[MailhandlerFetcher][mailbox]'] = 'test2_example_com';
+    $edit['feeds[MailhandlerParser][auth_required]'] = FALSE;
+    $edit['title'] = 'test2@example.com';
+    $this->drupalPost('node/add/mailhandler-source', $edit, t('Save'));
+    $this->assertText(t('Created 1 node.'));
+    $node = node_load(8);
+    $tags = field_get_items('node', $node, 'field_tags', LANGUAGE_NONE);
+    $this->assertFalse($node->status);
+    $this->assertEqual($tags[0]['tid'], 1);
+    $this->assertEqual($tags[1]['tid'], 2);
+  }
+}

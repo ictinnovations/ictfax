@@ -1,0 +1,98 @@
+<?php
+
+/**
+ * @file
+ * Tests for plugins/FeedsUserProcessor.inc
+ */
+
+/**
+ * Test aggregating a feed as data records.
+ */
+class FeedsCSVtoUsersTest extends FeedsWebTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'CSV import to users',
+      'description' => 'Tests a standalone import configuration that uses file fetcher and CSV parser to import users from a CSV file.',
+      'group' => 'Feeds',
+    );
+  }
+
+  /**
+   * Test node creation, refreshing/deleting feeds and feed items.
+   */
+  public function test() {
+    // Create an importer.
+    $this->createImporterConfiguration('User import', 'user_import');
+
+    // Set and configure plugins.
+    $this->setPlugin('user_import', 'FeedsFileFetcher');
+    $this->setPlugin('user_import', 'FeedsCSVParser');
+    $this->setPlugin('user_import', 'FeedsUserProcessor');
+
+    // Go to mapping page and create a couple of mappings.
+    $mappings = array(
+      '0' => array(
+        'source' => 'name',
+        'target' => 'name',
+        'unique' => 0,
+      ),
+      '1' => array(
+        'source' => 'mail',
+        'target' => 'mail',
+        'unique' => 1,
+      ),
+      '2' => array(
+        'source' => 'since',
+        'target' => 'created',
+        'unique' => FALSE,
+      ),
+      '3' => array(
+        'source' => 'password',
+        'target' => 'pass',
+        'unique' => 0,
+      ),
+    );
+    $this->addMappings('user_import', $mappings);
+
+    // Use standalone form.
+    $edit = array(
+      'content_type' => '',
+    );
+    $this->drupalPost('admin/structure/feeds/edit/user_import/settings', $edit, 'Save');
+
+    // Create roles and assign one of them to the users to be imported.
+    $manager_rid = $this->drupalCreateRole(array('access content'), 'manager');
+    $admin_rid = $this->drupalCreateRole(array('access content'), 'administrator');
+    $edit = array(
+      "roles[$manager_rid]" => TRUE,
+      "roles[$admin_rid]" => FALSE,
+    );
+    $this->setSettings('user_import', 'FeedsUserProcessor', $edit);
+
+    // Import CSV file.
+    $this->importFile('user_import', $this->absolutePath() . '/tests/feeds/users.csv');
+
+    // Assert result.
+    $this->assertText('Created 4 users');
+    // 1 user has an invalid email address, all users should be assigned
+    // the manager role.
+    $this->assertText('Failed importing 1 user');
+    $this->drupalGet('admin/people');
+    $this->assertText('Morticia');
+    $this->assertText('Fester');
+    $this->assertText('Gomez');
+    $this->assertText('Pugsley');
+    $count = db_query("SELECT count(*) FROM {users_roles} WHERE rid = :rid", array(':rid' => $manager_rid))->fetchField();
+    $this->assertEqual($count, 4, t('All imported users were assigned the manager role.'));
+    $count = db_query("SELECT count(*) FROM {users_roles} WHERE rid = :rid", array(':rid' => $admin_rid))->fetchField();
+    $this->assertEqual($count, 0, t('No imported user was assigned the administrator role.'));
+
+    // @todo Test status setting, update existing and role settings.
+
+    // Attempt to log in as one of the imported users.
+    $account = user_load_by_name('Morticia');
+    $this->assertTrue($account, 'Imported user account loaded.');
+    $account->pass_raw = 'mort';
+    $this->drupalLogin($account);
+  }
+}

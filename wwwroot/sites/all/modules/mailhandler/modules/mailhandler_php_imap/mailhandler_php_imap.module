@@ -1,0 +1,14 @@
+<?php
+/**
+ * @file
+ * Retrieves email using the PHP IMAP library.
+ *
+ * Can retrieve messages from IMAP, POP3, or local folder mailboxes.
+ */
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function mailhandler_php_imap_ctools_plugin_directory($owner, $plugin_type) {
+  return 'plugins/' . $owner . '/' . $plugin_type;
+}

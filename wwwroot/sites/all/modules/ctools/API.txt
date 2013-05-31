@@ -1,0 +1,26 @@
+Current API Version: 2.0.1
+
+Please note that the API version is an internal number and does not match release numbers. It is entirely possible that releases will not increase the API version number, and increasing this number too often would burden contrib module maintainers who need to keep up with API changes.
+
+This file contains a log of changes to the API.
+
+API Version 2.0.1
+  Introduce ctools_export_crud_enable(), ctools_export_crud_disable() and
+    ctools_export_crud_set_status() and requisite changes.
+  Introduce 'object factory' to export schema, allowing modules to control
+    how the exportable objects are instantiated.
+  Introduce 'hook_ctools_math_expression_functions_alter'.
+
+API Version 2.0 
+  Remove the deprecated callback-based behavior of the 'defaults' property on
+    plugin types; array addition is now the only option. If you need more
+    complex logic, do it with the 'process' callback.
+  Introduce a global plugin type registration hook and remove the per-plugin
+    type magic callbacks.
+  Introduce $owner . '_' . $api . '_hook_name' allowing modules to use their own
+    API hook in place of 'hook_ctools_plugin_api'.
+  Introduce ctools_plugin_api_get_hook() to get the hook name above.
+  Introduce 'cache defaults' and 'default cache bin' keys to export.inc
+
+Versions prior to 2.0 have been removed from this document. See the D6 version
+for that information.

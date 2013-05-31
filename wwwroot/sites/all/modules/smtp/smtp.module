@@ -1,0 +1,63 @@
+<?php
+
+/**
+ * @file
+ * Enables Drupal to send e-mail directly to an SMTP server.
+ *
+ * This module uses a customized extract of the PHPMailer
+ * library (originally by Brent R. Matzelle, now maintained
+ *  by Codeworx Tech.) relicensed from LGPL to GPL, included
+ * as a part of the module.
+ *
+ * Overriding mail handling in Drupal to make SMTP the default
+ * transport layer, requires to change the mail_system variable's
+ * default value array('default-system' => 'DefaultMailSystem').
+ * This module uses array('default-system' => 'SmtpMailSystem').
+ */
+
+/**
+ * Implementation of hook_help().
+ */
+function smtp_help($path, $arg) {
+  switch ($path) {
+    case 'admin/help#smtp':
+      return t('Allow for site emails to be sent through an SMTP server of your choice.');
+  }
+}  //  End of smtp_help().
+
+/**
+ * Implementation of hook_menu().
+ */
+function smtp_menu() {
+  $items['admin/config/system/smtp'] = array(
+    'title'            => 'SMTP Authentication Support',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('smtp_admin_settings'),
+    'access arguments' => array('administer smtp module'),
+    'description'      => 'Allow for site emails to be sent through an SMTP server of your choice.',
+    'file'             => 'smtp.admin.inc',
+  );
+  return $items;
+}  //  End of smtp_menu().
+
+/**
+ * Implementation of hook_permission().
+ */
+function smtp_permission() {
+  return array(
+    'administer smtp module' => array(
+      'title' => t('Administer SMTP Authentication Support module'),
+      'description' => t('Perform administration tasks for SMTP Authentication Support module.'))
+  );
+}  //  End of smtp_permission().
+
+
+/**
+ * Implementation of hook_mail().
+ */
+function smtp_mail($key, &$message, $params) {
+  if ($key == 'smtp-test') {
+    $message['subject'] = $params['subject'];
+    $message['body']    = $params['body'];
+  }
+}  //  End of smtp_mail().

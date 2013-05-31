@@ -1,0 +1,12 @@
+<?php
+/**
+ * @file
+ * Integrates Tokenauth and Mailhandler.
+ */
+
+/**
+ * Implements hook_ctools_plugin_directory().
+ */
+function mailhandler_tokenauth_ctools_plugin_directory($owner, $plugin_type) {
+  return 'plugins/' . $owner . '/' . $plugin_type;
+}

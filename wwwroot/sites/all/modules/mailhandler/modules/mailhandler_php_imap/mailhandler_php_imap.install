@@ -1,0 +1,24 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the Mailhandler module.
+ */
+
+/**
+ * Implements hook_requirements().
+ *
+ * Check that the IMAP extension exists for PHP.
+ */
+function mailhandler_php_imap_requirements($phase) {
+  // Ensure translations don't break at install time
+  $t = get_t();
+  $has_imap = function_exists('imap_open');
+
+  $requirements['mailhandler_php_imap'] = array(
+    'title' => $t('IMAP'),
+    'description' => $t("Mailhandler PHP IMAP requires that PHP's !ext is enabled in order to function properly.", array('!ext' => l('IMAP extension', 'http://www.php.net/imap'))),
+    'value' => $has_imap ? $t('Enabled') : $t('Not found'),
+    'severity' => $has_imap ? REQUIREMENT_OK : REQUIREMENT_ERROR,
+  );
+  return $requirements;
+}

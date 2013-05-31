@@ -1,0 +1,15 @@
+name = Mailhandler Tokenauth support
+description = Allows Mailhandler to work with the Tokenauth module.
+core = 7.x
+dependencies[] = "mailhandler"
+dependencies[] = "tokenauth"
+package = "Mailhandler extras"
+
+files[] = plugins/mailhandler/authenticate/MailhandlerAuthenticateTokenauth.class.php
+
+; Information added by drupal.org packaging script on 2012-01-04
+version = "7.x-2.4"
+core = "7.x"
+project = "mailhandler"
+datestamp = "1325704246"
+

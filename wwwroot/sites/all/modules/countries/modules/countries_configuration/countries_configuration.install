@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * @file
+ * Install file for Countries Configuration module.
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function countries_configuration_schema() {
+
+  $schema['countries_data'] = array(
+    'description' => 'Maintains additonal country information on behalf of other modules.',
+    'fields' => array(
+      'iso2' => array(
+        'description' => 'ISO2 country code.',
+        'type' => 'char',
+        'length' => 2,
+        'not null' => TRUE,
+      ),
+      'module' => array(
+        'description' => 'The name of the module that generated this record.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => 'system',
+      ),
+      'name' => array(
+        'description' => 'The key of the record that we are storing.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => 'system',
+      ),
+      'data' => array(
+        'type' => 'blob',
+        'not null' => FALSE,
+        'size' => 'big',
+        'serialize' => TRUE,
+        'description' => 'A serialized array of configuration data.',
+      ),
+    ),
+    'primary key' => array('iso2'),
+  );
+
+  return $schema;
+}

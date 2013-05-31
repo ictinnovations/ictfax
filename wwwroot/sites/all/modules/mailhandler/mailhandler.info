@@ -1,0 +1,24 @@
+name = Mailhandler
+description = Accepts submissions via e-mail. Requires at least one retrieval plugin (the Mailhandler PHP IMAP module is recommended).
+core = 7.x
+dependencies[] = "ctools"
+dependencies[] = "feeds"
+package = "Mailhandler"
+configure = admin/structure/mailhandler
+
+files[] = mailhandler.install
+files[] = mailhandler.module
+files[] = tests/mailhandler.test
+files[] = plugins/mailhandler/authenticate/MailhandlerAuthenticate.class.php
+files[] = plugins/mailhandler/commands/MailhandlerCommands.class.php
+files[] = plugins/mailhandler/filters/MailhandlerFilters.class.php
+files[] = plugins/mailhandler/retrieve/MailhandlerRetrieve.class.php
+files[] = plugins/feeds/plugins/MailhandlerFetcher.inc
+files[] = plugins/feeds/plugins/MailhandlerParser.inc
+
+; Information added by drupal.org packaging script on 2012-01-04
+version = "7.x-2.4"
+core = "7.x"
+project = "mailhandler"
+datestamp = "1325704246"
+

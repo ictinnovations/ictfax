@@ -1,0 +1,212 @@
+<?php
+
+/**
+ * @file
+ * Test case for taxonomy mapper mappers/taxonomy.inc.
+ */
+
+/**
+ * Class for testing Feeds <em>content</em> mapper.
+ */
+class FeedsMapperTaxonomyTestCase extends FeedsMapperTestCase {
+  public static function getInfo() {
+    return array(
+      'name' => 'Mapper: Taxonomy',
+      'description' => 'Test Feeds Mapper support for Taxonomy.',
+      'group' => 'Feeds',
+    );
+  }
+
+  function setUp() {
+    parent::setUp();
+
+    // Add a new taxonomy vocabulary, add to article content type.
+    $edit = array(
+      'name' => 'Tags',
+      'tags' => TRUE,
+      'nodes[article]' => TRUE,
+      'nodes[page]' => TRUE,
+    );
+    $this->drupalPost('admin/content/taxonomy/add/vocabulary', $edit, 'Save');
+    // Create an importer configuration with basic mapping.
+    $this->createImporterConfiguration('Syndication', 'syndication');
+    $this->addMappings('syndication',
+      array(
+        array(
+          'source' => 'title',
+          'target' => 'title',
+          'unique' => FALSE,
+        ),
+        array(
+          'source' => 'description',
+          'target' => 'body',
+          'unique' => FALSE,
+        ),
+        array(
+          'source' => 'timestamp',
+          'target' => 'created',
+          'unique' => FALSE,
+        ),
+        array(
+          'source' => 'url',
+          'target' => 'url',
+          'unique' => TRUE,
+        ),
+        array(
+          'source' => 'guid',
+          'target' => 'guid',
+          'unique' => TRUE,
+        ),
+      )
+    );
+  }
+
+  /**
+   * Test inheriting taxonomy from the feed node.
+   */
+  function testInheritTaxonomy() {
+    // Map feed node's taxonomy to feed item node's taxonomy.
+    $this->addMappings('syndication',
+      array(
+        array(
+          'source' => 'parent:taxonomy:1',
+          'target' => 'taxonomy:1',
+        ),
+      )
+    );
+    // Turn off import on create, create feed node, tag, import.
+    $edit = array(
+      'import_on_create' => FALSE,
+    );
+    $this->drupalPost('admin/structure/feeds/edit/syndication/settings', $edit, 'Save');
+    $this->assertText('Do not import on submission');
+    $nid = $this->createFeedNode();
+    $terms = array('testterm1', 'testterm2', 'testterm3');
+    $edit = array(
+      'taxonomy[tags][1]' => implode(',', $terms),
+    );
+    $this->drupalPost("node/$nid/edit", $edit, t('Save'));
+    $this->drupalPost("node/$nid/import", array(), 'Import');
+    $count = db_query("SELECT COUNT(*) FROM {term_node}")->fetchField();
+    $this->assertEqual(33, $count, 'Found correct number of tags for all feed nodes and feed items.');
+    foreach ($terms as $term) {
+      $this->assertTaxonomyTerm($term);
+    }
+  }
+
+  /**
+   * Test aggregating RSS categories to taxonomy.
+   */
+  function testRSSCategoriesToTaxonomy() {
+    // Add mapping to tags vocabulary.
+    $this->addMappings('syndication',
+      array(
+        array(
+          'source' => 'tags',
+          'target' => 'taxonomy:1',
+        ),
+      )
+    );
+
+    // Aggregate feed node with "Tag" vocabulary.
+    $nid = $this->createFeedNode();
+    // Assert 10 items aggregated after creation of the node.
+    $this->assertText('Created 10 nodes');
+    // There should be 30 terms and 44 term-node relations.
+    $this->assertEqual(30, db_query("SELECT count(*) FROM {term_data}")->fetchField(), "Found correct number of terms.");
+    $this->assertEqual(44, db_query("SELECT count(*) FROM {term_node}")->fetchField(), "Found correct number of term-node relations.");
+
+    // Take a look at the actual terms on frontpage.
+    $this->drupalGet('node');
+    $terms = array(
+      'authentication',
+      'custom mapping',
+      'data visualization',
+      'Drupal',
+      'Drupal planet',
+      'faceted search',
+      'GeoDC',
+      'graphs',
+      'interface',
+      'intranet',
+      'localization',
+      'localization client',
+      'localization server',
+      'map-basec browser',
+      'mapbox',
+      'microfinance',
+      'MIX Market',
+      'open atrium',
+      'open data',
+      'open source',
+      'Peru',
+      'salesforce',
+      'siteminder',
+      'siteminder module',
+      'software freedom day',
+      'translation',
+      'translation server',
+      'usability',
+      'Washington DC',
+      'World Bank',
+    );
+    foreach ($terms as $term) {
+      $this->assertTaxonomyTerm($term);
+    }
+
+    // Delete all items, all associations are gone.
+    $this->drupalPost("node/$nid/delete-items", array(), 'Delete');
+    $this->assertText('Deleted 10 nodes');
+    $this->assertEqual(30, db_query("SELECT count(*) FROM {term_data}")->fetchField(), "Found correct number of terms.");
+    $this->assertEqual(0, db_query("SELECT count(*) FROM {term_node}")->fetchField(), "Found correct number of term-node relations.");
+
+    // Remove "Tag" setting, import again.
+    $edit = array(
+      'tags' => FALSE,
+    );
+    $this->drupalPost('admin/content/taxonomy/edit/vocabulary/1', $edit, 'Save');
+    $this->drupalPost("node/$nid/import", array(), 'Import');
+    $this->assertText('Created 10 nodes');
+
+    // We should only get one term-node association per node.
+    $this->assertEqual(30, db_query("SELECT count(*) FROM {term_data}")->fetchField(), "Found correct number of terms.");
+    $this->assertEqual(10, db_query("SELECT count(*) FROM {term_node}")->fetchField(), "Found correct number of term-node relations.");
+
+    // Delete all items.
+    $this->drupalPost("node/$nid/delete-items", array(), 'Delete');
+
+    // Set vocabulary to multiple terms, import again.
+    $edit = array(
+      'multiple' => TRUE,
+    );
+    $this->drupalPost('admin/content/taxonomy/edit/vocabulary/1', $edit, 'Save');
+    $this->drupalPost("node/$nid/import", array(), 'Import');
+    $this->assertText('Created 10 nodes');
+
+    // We should get all term-node associations again.
+    $this->assertEqual(30, db_query("SELECT count(*) FROM {term_data}")->fetchField(), "Found correct number of terms.");
+    $this->assertEqual(44, db_query("SELECT count(*) FROM {term_node}")->fetchField(), "Found correct number of term-node relations.");
+
+    // Delete all items.
+    $this->drupalPost("node/$nid/delete-items", array(), 'Delete');
+
+    // Remove a term, import again.
+    $this->drupalPost('admin/content/taxonomy/edit/term/1', array(), 'Delete');
+    $this->drupalPost(NULL, array(), 'Delete');
+    $this->assertText('Deleted term');
+    $this->drupalPost("node/$nid/import", array(), 'Import');
+    $this->assertText('Created 10 nodes');
+
+    // This term should now be missing from term-node associations.
+    $this->assertEqual(29, db_query("SELECT count(*) FROM {term_data}")->fetchField(), "Found correct number of terms.");
+    $this->assertEqual(39, db_query("SELECT count(*) FROM {term_node}")->fetchField(), "Found correct number of term-node relations.");
+  }
+
+  /**
+   * Helper, finds node style taxonomy term markup in DOM.
+   */
+  public function assertTaxonomyTerm($term) {
+    $term = check_plain($term);
+    $this->assertPattern('/<a href="(.*?)\/taxonomy\/term\/([0-9]*?)"(.*)>' . $term . '<\/a>/', 'Found ' . $term);
+  }
+}

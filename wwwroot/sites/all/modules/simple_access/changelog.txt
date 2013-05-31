@@ -1,0 +1,9 @@
+************************
+Simple Access Change Log
+************************
+
+2005.11.27
+Added permission for 'assign access to nodes'
+
+2005.11.26
+Conversion to new form api

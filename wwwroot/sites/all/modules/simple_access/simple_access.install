@@ -1,0 +1,261 @@
+<?php
+
+/**
+ * @file
+ * Installation for Simple Access
+ */
+
+/**
+ * Implements hook_install().
+ */
+function simple_access_install() {
+  db_update('system')
+    ->fields(array('weight' => 9))
+    ->condition('name', 'simple_access')
+    ->execute();
+
+  drupal_set_message(st('simple access has created the required tables.'));
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function simple_access_uninstall() {
+  variable_del('sa_display');
+  variable_del('sa_showgroups');
+  drupal_set_message(t('simple access has been uninstalled'));
+}
+
+/**
+ * Implements hook_enable().
+ */
+function simple_access_enable() {
+  drupal_set_message(t('To fully activate simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/reports/status/rebuild'))));
+}
+
+/**
+ * Implements hook_disable().
+ */
+function simple_access_disable() {
+  drupal_set_message(t('To fully disable simple_access you also need to !rebuild_permissions.', array('!rebuild_permissions' => l(t('rebuild permissions'), 'admin/reports/status/rebuild'))));
+}
+
+function simple_access_schema() {
+  $schema = array();
+
+  $schema['simple_access_node'] = array(
+    'description' => 'Define all permissions for each node',
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+        'default' => 0,
+      ),
+      'gid' => array(
+        'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+        'default' => 0,
+      ),
+      'sa_view' => array(
+        'type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE,
+        'not null' => TRUE, 'default' => 0,
+      ),
+      'sa_update' => array(
+        'type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE,
+        'not null' => TRUE, 'default' => 0,
+      ),
+      'sa_delete' => array(
+        'type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE,
+        'not null' => TRUE, 'default' => 0,
+      ),
+    ),
+    'primary key' =>  array('nid', 'gid'),
+  );
+  $schema['simple_access_owner'] = array(
+    'fields' => array(
+       'nid' => array('type' => 'int', 'unsigned' => TRUE,
+         'not null' => TRUE, 'default' => 0, 'disp-width' => '10'),
+       'sa_view' => array('type' => 'int', 'unsigned' => TRUE,
+         'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
+         'disp-width' => '3'),
+       'sa_update' => array('type' => 'int', 'unsigned' => TRUE,
+         'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
+         'disp-width' => '3'),
+       'sa_delete' => array('type' => 'int', 'unsigned' => TRUE,
+         'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
+         'disp-width' => '3')),
+    'primary key' => array('nid'),
+  );
+  $schema['simple_access_groups'] = array(
+    'fields' => array(
+      'gid' => array(
+        'type' => 'serial', 'not null' => TRUE, 'disp-width' => '11'
+      ),
+      'name' => array(
+        'type' => 'varchar', 'length' => 50, 'not null' => TRUE,
+      ),
+      'weight' => array(
+        'type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
+      ),
+    ),
+    'primary key' => array('gid'),
+  );
+  $schema['simple_access_roles'] = array(
+    'fields' => array(
+      'gid' => array(
+        'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+        'default' => 0,
+      ),
+      'rid' => array(
+        'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('gid', 'rid'),
+  );
+  $schema['simple_access_profiles'] = array(
+    'fields' => array(
+      'pid' => array(
+        'type' => 'serial', 'not null' => TRUE, 'disp-width' => '11'
+      ),
+      'name' => array(
+        'type' => 'varchar', 'length' => 50, 'not null' => TRUE,
+      ),
+      'weight' => array(
+        'type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
+      ),
+    ),
+    'primary key' => array('pid'),
+  );
+  $schema['simple_access_profiles_access'] = array(
+    'fields' => array(
+      'pid' => array(
+        'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+        'default' => 0,
+      ),
+      'gid' => array(
+        'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+        'default' => 0,
+      ),
+      'sa_view' => array(
+        'type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE,
+        'not null' => TRUE, 'default' => 0,
+      ),
+      'sa_update' => array(
+        'type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE,
+        'not null' => TRUE, 'default' => 0,
+      ),
+      'sa_delete' => array(
+        'type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE,
+        'not null' => TRUE, 'default' => 0,
+      ),
+    ),
+    'primary key' =>  array('pid', 'gid'),
+  );
+  $schema['simple_access_profiles_node'] = array(
+    'fields' => array(
+      'nid' => array(
+        'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+        'default' => 0,
+      ),
+      'pid' => array(
+        'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary keys' => array('nid', 'pid'),
+  );
+
+  return $schema;
+}
+/**
+ * Updates
+ */
+
+function simple_access_update_5() {
+  $table = drupal_get_schema('simple_access_owner');
+  db_create_table($ret, 'simple_access_owner', $table);
+
+  $ret[] = update_sql('INSERT INTO {simple_access_owner} SELECT DISTINCT(nid), 1, 1, 1 FROM {simple_access_node}');
+  return $ret;
+}
+
+function simple_access_update_7() {
+  $ret = array();
+  db_change_field($ret, 'simple_access_groups', 'weight', 'weight', array('type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0));
+
+  return $ret;
+}
+
+/**
+ * Recreate the profile tables
+ */
+function simple_access_update_6200() {
+  $ret = array();
+
+  if (!db_table_exists('simple_access_profiles')) {
+    db_create_table($ret, 'simple_access_profiles', array(
+      'fields' => array(
+        'pid' => array(
+          'type' => 'serial', 'not null' => TRUE, 'disp-width' => '11'
+        ),
+        'name' => array(
+          'type' => 'varchar', 'length' => 50, 'not null' => TRUE,
+        ),
+        'weight' => array(
+          'type' => 'int', 'size' => 'tiny', 'not null' => TRUE, 'default' => 0,
+        ),
+      ),
+      'primary key' => array('pid'),
+    ));
+    db_create_table($ret, 'simple_access_profiles_access', array(
+      'fields' => array(
+        'pid' => array(
+          'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+          'default' => 0,
+        ),
+        'gid' => array(
+          'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+          'default' => 0,
+        ),
+        'sa_view' => array(
+          'type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE,
+          'not null' => TRUE, 'default' => 0,
+        ),
+        'sa_update' => array(
+          'type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE,
+          'not null' => TRUE, 'default' => 0,
+        ),
+        'sa_delete' => array(
+          'type' => 'int', 'size' => 'tiny', 'unsigned' => TRUE,
+          'not null' => TRUE, 'default' => 0,
+        ),
+      ),
+      'primary key' =>  array('pid', 'gid'),
+    ));
+    db_create_table($ret, 'simple_access_profiles_node', array(
+      'fields' => array(
+        'nid' => array(
+          'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+          'default' => 0,
+        ),
+        'pid' => array(
+          'type' => 'int', 'unsigned' => TRUE, 'not null' => TRUE,
+          'default' => 0,
+        ),
+      ),
+      'primary keys' => array('nid', 'pid'),
+    ));
+  }
+
+  return $ret;
+}
+
+/**
+ * Change weight of simple access to after other modules like og
+ */
+function simple_access_update_6201() {
+  $ret = array();
+
+  $ret[] = update_sql("UPDATE {system} SET weight = 9 WHERE name = 'simple_access'");
+
+  return $ret;
+}

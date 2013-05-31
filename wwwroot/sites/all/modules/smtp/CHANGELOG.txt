@@ -1,0 +1,60 @@
+
+
+2009-11-12 Franz G Vanderlinde franz@chuva-inc.com
+  * bug report #132903 by johngriffin: definitive integration between Mimemail and SMTP
+  * feature request #132903 by mishhh,franz: Mimemail integration
+  * bug report #465750 from bbirtle,franz: Better parsing and handling of charsets
+  * bug report #207925 by Wim Leers,franz: Adds reply-to in case there are none.
+  * file sv.po was initially added on branch DRUPAL-6--1.
+  * file fr.po was initially added on branch DRUPAL-6--1.
+
+2008-09-23 Jason Flatt drupal@oadaeh.net
+  * smtp.module: Added the final touch: a workaround for a multipart/mixed
+    logic error in PHPMailer.
+  * po/smtp.pot: Moved to translations/.
+  * class.phpmailer.php.2.0.2.patch, class.phpmailer.php.2.2.1.patch: Added
+    to apply a work around to a logic error in PHPMailer, which is reported
+    here:
+    http://sourceforge.net/tracker/index.php?func=detail&aid=2125119&group_id=26031&atid=385707
+
+2008-09-18 Jason Flatt drupal@oadaeh.net
+  * smtp.module: After many hours of research, code refactoring and testing,
+    this module is hopefully MIME 1.0 compliant.
+
+2008-08-26 Jason Flatt drupal@oadaeh.net
+  * smtp.module: Changed admin/reports/watchdog to admin/reports/dblog, per
+    greggles in IRC.
+
+2008-07-17 Jason Flatt drupal@oadaeh.net
+  * po: Changed to translations (http://drupal.org/node/262455).
+    translations/de.po: Added (http://drupal.org/node/262455).
+    Added e-mail address validation check for the settings page.
+    Added additional from e-mail address validation checking during the
+    processing of the e-mail message (http://drupal.org/node/281599).
+
+2008-07-12 Jason Flatt drupal@oadaeh.net
+  * smtp.module: Uncommented two functions that set the from name and e-mail
+    address, per jcwatson11 in http://drupal.org/node/281599.
+    Changed the way two wathcdog message were formatted.
+    po/smtp.pot: Added.
+
+2008-07-11 Jason Flatt drupal@oadaeh.net
+  * smtp.module: Changed the encryption protocol variable name from
+    $mail->Protocol to $mail->SMTPSecure, per root_of_roots in
+    http://drupal.org/node/280081.
+    Added an administrative option for enabling debugging, per dennys in
+    http://drupal.org/node/199843.
+    Made the "On" and "Off" radio options translatable, per
+    rastatt@drupal.org in http://drupal.org/node/262455#comment-917055.
+
+2008-07-06 Jason Flatt drupal@oadaeh.net
+  * smtp.module: Continued upgrade process to Drupal 6.x compatibility.
+    Tweaked the inline comments and documentation.
+    Removed _smtp_initialize_language().
+
+2008-07-04 Jason Flatt drupal@oadaeh.net
+  * smtp.module: Continued upgrade process to Drupal 6.x compatibility.
+    Added $mail->ContentType = 'multipart/mixed';
+
+2008-07-03 Jason Flatt drupal@oadaeh.net
+  * smtp.module: Began the upgrade process to Drupal 6.x compatibility.

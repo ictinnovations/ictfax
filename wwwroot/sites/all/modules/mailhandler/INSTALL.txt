@@ -1,0 +1,129 @@
+CONTENTS OF THIS FILE
+---------------------
+
+ * Requirements
+ * Quick setup
+ * Overview
+ * Fetcher configuration
+ * Parser configuration
+ * Processor configuration
+ * More information
+
+REQUIREMENTS
+------------
+
+You will need to have access to a dedicated mailbox (IMAP or POP3) to receive
+posts via email. You must also have the PHP IMAP library installed- see the
+documentation referenced at the bottom of this file for more information.
+
+Dependencies:
+- ctools
+- feeds
+
+QUICK SETUP
+-----------
+
+The easiest way to get started is to enable the quick-start module:
+- Go to $base_url/admin/modules
+- Enable the "Mailhandler quick-start" module.
+
+The quick-start module provides a test mailbox and message, a default importer,
+and a source content type. Try to import this test message now:
+- Go to $base_url/node/add/mailhandler-source
+- Give the node a title (such as 'Test source').
+- For "Feed"->"Mailbox", select the mailbox to import from.
+- You should see the message 'created 1 story node'.
+- If you go to $base_url/admin/content/node, you should see the 'Test source'
+  node you just created, as well as an unpublished test message.
+
+Now that you've verified that the basic features are working, it's time to
+customize them to suit your own needs:
+- Send a test email to an IMAP or POP3 mailbox.
+- Go to $base_url/admin/structure/mailhandler/add
+- Fill in the details for your IMAP/POP3 mailbox. Mailhandler will report how
+  many messages are in the mailbox if it is able to connect. Click "Save".
+- Follow the steps for 'Import a test message' (above) to import messages from
+  the mailbox.
+
+Note that new emails will be imported on cron runs. If you'd prefer that new
+messages NOT be imported automatically, you will need to edit the default
+importer ($base_url/admin/structure/feeds/edit/mailhandler_nodes/settings) and for
+'Attach to content type' select 'Use standalone form'. Messages can then be
+manually imported at $base_url/import/mailhandler_nodes.
+
+OVERVIEW
+--------
+
+Mailhandler fetches content from IMAP or POP mailboxes, which are represented by
+the mailhandler_mailbox_ui class. Feeds Importers configured to use the
+Mailhandler Fetcher can use these mailboxes as Feeds Sources, in the same way
+that Importers using the HTTP Fetcher would use URLs as sources.
+
+Thus, at the bare minimum you must configure at least one mailbox and at least
+one Feeds Importer, as described in the section above.
+
+A Feeds Importer is made up of a Fetcher, Parser, and Processor. Mailhandler
+provides only a Fetcher and Parser, and requires the use of an existing
+processor (typically, the Node Processor or Comment Processor). Additionally,
+Mailhandler defines two types of plugins that extend the Mailhandler Parser:
+'authentication plugins' match the sender of the email to a Drupal user account,
+while 'commmand plugins' extract various parts of a message (such as files and
+IMAP headers) and allow users to 'command' attributes of created content using
+key: value pairs.
+
+You can either manually run an importer, or you can attach an importer to a
+content type. Then you'll need to create a new node of the corresponding type,
+choosing from the node form which mailbox to tie to that node, save the node,
+and then you'll be able to import from the node view of that node, or import on
+cron.
+
+Finally, Mailhandler provides some input filters that can strip common garbage
+from imported messages (such as signatures).
+  
+FETCHER CONFIGURATION
+---------------------
+
+Using the 'filter' setting, choose which types of messages to retrieve (nodes,
+comments, or all). Note: if this importer fetches a type of message that the
+processor (below) does not support, that message will be marked as read or
+deleted! Thus, it's important to set this filter appropriately.
+
+PARSER CONFIGURATION
+--------------------
+
+Choose plugins to handle commands and authentication, as well as set available
+and default commands. The commands plugins generate mapping sources that will
+appear in the processor mapping form in the next step.
+
+For instance, setting the available commands to "status" and default commands to
+"status: 1" will publish all posts (if the processor, below, is configured
+appropriately), and allow users to override this by placing the command
+"status: 0" at the top of the body of emails.
+
+PROCESSOR CONFIGURATION
+-----------------------
+
+You will most likely want to use the Node Processor or Comment Processor.
+
+For Nodes Processor settings, choose (among other things) whether authorization
+should be performed- in other words, whether the post author has permissions to
+actually post content (by default Feeds doesn't check this).
+
+For Nodes Processor mappings, you'll need to map "sources", provided by the
+Mailhandler Parser and its command plugins, to node "targets". Note that if you
+don't map things correctly here, certain features that you configured earlier
+(such as authorization and commands processing) will not work.
+
+To prevent re-importation of duplicate messages, you will want to map the
+"Message ID" source to a field and mark it as unique. For more information, see
+http://drupal.org/node/1329218
+
+If you would like to import comments by email, you can download Mailcomment and
+Feeds Comment Processor and select the Feeds Comment Processor instead.
+
+MORE INFORMATION
+----------------
+
+More documentation is located at http://drupal.org/handbook/modules/mailhandler
+which discusses topics such as how to configure mailboxes for specific email
+providers.

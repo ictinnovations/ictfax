@@ -1,0 +1,13 @@
+name = System test
+description = Support module for system testing.
+package = Testing
+version = VERSION
+core = 7.x
+files[] = system_test.module
+hidden = TRUE
+
+; Information added by drupal.org packaging script on 2011-12-05
+version = "7.10"
+project = "drupal"
+datestamp = "1323125439"
+

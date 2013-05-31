@@ -1,0 +1,34 @@
+<?php
+/**
+ * @file
+ * Provides primary Drupal hook implementations.
+ *
+ * @author Jim Berry ("solotandem", http://drupal.org/user/240748)
+ */
+
+/**
+ * Implements hook_libraries_info().
+ */
+function gplib_libraries_info() {
+  $libraries['grammar_parser'] = array(
+    'title' => 'Grammar Parser Library',
+    'vendor url' => 'http://drupal.org/project/grammar_parser',
+    'download url' => 'http://drupal.org/project/grammar_parser',
+    'version arguments' => array(
+      'file'    => 'CHANGELOG.txt',
+      'pattern' => '/pgp \(grammar parser\) (\d+\.x-\d+\.x)/',
+    ),
+    'files' => array(
+      'php' => array(
+        'engine/parser.inc',
+        'engine/editor.inc',
+        'engine/list.inc',
+        'engine/object.inc',
+        'engine/reader.inc',
+        'engine/writer.inc',
+      ),
+    ),
+  );
+
+  return $libraries;
+}

@@ -1,0 +1,105 @@
+<?php
+
+/**
+ * @file
+ * Provides the base framework for integration for storing country specific
+ * data on behalf of other modules.
+ *
+ * This includes providing the base framework of the administrative form and
+ * page callback, as well as listeners to update the table with changes to the
+ * country data and uninstallation.
+ */
+
+/**
+ * Implement hook_menu().
+ */
+function countries_configuration_menu() {
+  $items = array();
+
+  $config_options = countries_configuration_options();
+  foreach ($config_options as $name => $info) {
+    $items['admin/config/regional/countries/%country/' . $name] = array(
+      'title' => $info['title'],
+      'type' => MENU_LOCAL_TASK,
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('countries_configuration_options_form', 4, $name),
+      'access arguments' => array('administer site configuration'),
+      'file' => 'countries_configuration.admin.inc',
+    );
+  }
+
+  return $items;
+}
+
+/**
+ * Loads information about modules that rely on the countries module
+ * to store country specific data.
+ */
+function countries_configuration_options() {
+  $configuration_options = array();
+  foreach (module_implements('countries_configuration_options') as $module) {
+    $func = $module . '_countries_configuration_options';
+    foreach ($func() as $name => $info) {
+      $configuration_options[$name] = $info;
+      $configuration_options[$name]['module'] = $module;
+    }
+  }
+  return $configuration_options;
+}
+
+/**
+ * Helper function to load country address configuration options.
+ */
+function countries_load_configuration_options($country, $name, $load_defaults = 1) {
+  $config = array();
+  if ($data = db_query("SELECT a.data FROM {countries_data} a WHERE iso2 = :iso2 AND name = :name", array(':iso2' => $country->iso2, ':name' => $name))->fetchField()) {
+    $config = unserialize($data);
+  }
+
+  // Load any defaults.
+  if ($load_defaults) {
+    $config_options = countries_configuration_options();
+    if (isset($config_options[$name]['default values'])) {
+      $config += $config_options[$name]['default values'];
+    }
+  }
+  return $config;
+}
+
+/**
+ * Implements hook_modules_uninstalled().
+ *
+ * This keeps the {countries_data} clean of old module data.
+ */
+function countries_configuration_modules_uninstalled($modules) {
+  foreach ($modules as $module) {
+    db_delete('countries_data')
+      ->condition('module', $module)
+      ->execute();
+  }
+}
+
+/**
+ * Implements hook_country_update().
+ *
+ * This tracks iso2 changes for maintaining the {countries_data} table.
+ */
+function countries_configuration_country_update($country) {
+  if ($country->original_iso2 != $country->iso2) {
+    db_update('countries_data')
+      ->fields(array('iso2' => $country->iso2))
+      ->condition('iso2', $country->original_iso2)
+      ->execute();
+  }
+}
+
+/**
+ * Implements hook_country_delete().
+ *
+ * This keeps the {countries_data} clean of old country data.
+ */
+function countries_configuration_country_delete($country) {
+  db_delete('countries_data')
+    ->condition('iso2', $country->iso2)
+    ->execute();
+}

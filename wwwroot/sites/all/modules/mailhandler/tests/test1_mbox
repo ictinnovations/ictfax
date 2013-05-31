@@ -1,0 +1,37 @@
+From  from@example.com Wed Nov 16 09:12:29 2011
+Return-Path: <sender@example.com>
+X-Original-To: test@example.com
+Delivered-To: test@example.com
+MIME-Version: 1.0
+Sender: sender@example.com
+Received: by 10.231.161.73 with HTTP; Wed, 16 Nov 2011 07:12:29 -0800 (PST)
+From: Dane Powell <from@example.com>
+Date: Wed, 16 Nov 2011 09:12:29 -0600
+Subject: This is a test message
+To: mailflow <test@example.com>
+Content-Type: multipart/alternative; boundary=14dae9340e1786f4d904b1db8933
+
+--14dae9340e1786f4d904b1db8933
+Content-Type: text/plain; charset=ISO-8859-1
+
+taxonomy: [term1,term2]
+
+Hello world!
+
+--
+This is my signature
+
+--14dae9340e1786f4d904b1db8933
+Content-Type: text/html; charset=ISO-8859-1
+Content-Transfer-Encoding: quoted-printable
+
+<span class=3D"Apple-style-span" style=3D"color: rgb(34, 34, 34); font-fami=
+ly: arial, sans-serif; font-size: 13px; background-color: rgba(255, 255, 25=
+5, 0.917969); ">taxonomy: [term1,term2]</span><br style=3D"color: rgb(34, 34, 34); font-f=
+amily: arial, sans-serif; font-size: 13px; background-color: rgba(255, 255,=
+ 255, 0.917969); "><br><br clear=3D"all"><div>Hello world!</div><div><br></div>-- <br>=
+This is my signature<br>
+
+
+
+--14dae9340e1786f4d904b1db8933--

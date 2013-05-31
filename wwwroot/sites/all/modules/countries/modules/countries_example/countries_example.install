@@ -1,0 +1,16 @@
+<?php
+
+/**
+ * @file
+ * countries_example.install
+ */
+
+/**
+ * Implements hook_uninstall().
+ */
+function countries_example_uninstall() {
+  for ($i = 1; $i <= 3; $i++) {
+    variable_del('countries_example_default_country_' . $i);
+  }
+}
+

@@ -1,0 +1,43 @@
+********************************************************************
+                     D R U P A L    M O D U L E
+********************************************************************
+Name: simple_access module
+Author: Gordon Heydon
+Dependancies:
+  This module requires node module.
+
+INSTALLATION
+********************************************************************
+1. Place the entire simple_access directory into your Drupal modules/
+   directory.
+
+2. Enable this module by navigating to:
+
+     administer > modules
+
+3. After enabling this module in the previous step, navigate to
+
+     administer > content management > post settings
+
+   and click the 'Rebuild permissions' button. The module is now installed.
+
+
+CREATING AN ACCESS GROUP
+********************************************************************
+Access groups are made up of user roles. Creating an access group
+allows you to define the content accessible to those uesrs. By
+default, simple_access makes all content public.
+
+1. Once installed, navigate to
+
+     administer > access control > simple access > add group
+
+   and fill in the form fields as required.
+
+CREATING A PROFILE
+********************************************************************
+Profiles are a method of defining the complete security configuration
+for a node. So within a single profile the system administrator can
+define exactly how a node will provide security. This means that users
+with less knowledge can secure nodes without fear of exposing nodes to
+users which should not have access.
