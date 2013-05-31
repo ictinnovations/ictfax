@@ -1,0 +1,386 @@
+<?php
+/******************************************************************
+* Copyright © 2012 ICT Innovations.                               *
+* Developed By: Falak Nawaz                                       *
+*             : Nasir Iqbal                                       *
+*             : Tahir Almas                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Mail : info@ictinnovations.com                                  *
+******************************************************************/
+
+// $Id: user_account.module,v 1.0 2012/02/29 10:42:58 ictinnovations Exp $
+
+/**
+ * @file
+ * Provides support to buy user_account through web portal.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function ictpbx_user_account_menu() {
+  $items = array();
+
+  $items['ictpbx/user_account'] = array(
+    'title'            => 'Accounts Management',
+    'description'      => 'Manage users and their accounts',
+    'page callback'    => 'ictpbx_user_account_list',
+    'page arguments'   => array(false), // hide admin links
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx user'),
+    'type'             => MENU_NORMAL_ITEM,
+    'weight'           => 40,
+  );
+
+  $items['ictpbx/user_account/list'] = array(
+    'title'            => 'List',
+    'description'      => 'Manage your user Numbers',
+    'page callback'    => 'ictpbx_user_account_list',
+    'page arguments'   => array('false'), // hide admin links
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx user'),
+    'type'             => MENU_DEFAULT_LOCAL_TASK,
+    'weight'           => 14,
+  );
+
+  $items['ictpbx/user_account/%ictpbx_user_account/edit'] = array(
+    'title'            => t('User Status'),
+    'description'      => 'Edit user status',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_user_account_form', 2),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx user'),
+    'type'             => MENU_CALLBACK,
+  );
+  
+  $items['ictpbx/user_account/%ictpbx_user_account/topup'] = array(
+    'title'            => t('Account Topup'),
+    'description'      => 'Account Topup',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_user_account_topup', 2),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx user'),
+    'type'             => MENU_CALLBACK,
+  );
+  
+  $items['ictpbx/user_account/%ictpbx_user_account/delete'] = array(
+    'title'            => t('Remove user'),
+    'description'      => 'Remove user',
+    'page callback'    => 'ictpbx_user_account_delete',
+    'page arguments'   => array(2),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx user'),
+    'type'             => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_permission().
+ *
+ * Defines access permissions that may be assigned to roles and used to restrict
+ * access on userx module.
+ */
+function ictpbx_user_account_permission() {
+  return array(
+    'ictpbx user user' => array('title'=> 'ictpbx user user'),
+    'ictpbx user admin' => array('title'=> 'ictpbx user admin'),
+    'ictpbx user system admin' => array('title'=> 'ictpbx user system admin'),
+  );
+}
+
+
+/**
+ * Page function for user List
+ *
+ * It will show a list of available users in form of list
+ *
+ * @return
+ * page html
+*/
+function ictpbx_user_account_list($admin_links = false) {
+  $header = array();
+  if(module_exists('ictpbx_billing')) {
+    $header = array(
+      array('data' => t('Username'),   'field' => 'name',  'sort' => 'asc'),
+      array('data' => t('Email'),      'field' => 'mail'),
+      array('data' => t('Status'),     'field' => 'active'),
+      array('data' => t('Outgoing Credit'),     'field' => 'credit'),
+      array('data' => t('Incoming Unit'), 'field' => 'free_bundle'),
+      array('data' => t('Operations')),
+    );
+  } else {
+    $header = array(
+      array('data' => t('Username'),   'field' => 'name',  'sort' => 'asc'),
+      array('data' => t('Email'),      'field' => 'mail'),
+      array('data' => t('Status'),     'field' => 'active'),
+      array('data' => t('Operations')),
+    );  
+  }
+  
+
+  $query = db_select('ictpbx_user', 'user')->extend('PagerDefault');
+  $query->fields('user', array('ictpbx_user_id','name', 'mail', 'active', 'credit', 'free_bundle'));
+  
+  $result = $query->limit(50)         
+            ->extend('TableSort')
+            ->orderByHeader($header)
+            ->execute();
+  
+  foreach ($result as $user) {
+    $row_id = $user->ictpbx_user_id;
+    $rows[$row_id][] = $user->name;
+    $rows[$row_id][] = $user->mail;
+    $rows[$row_id][] = ($user->active ? 'active' : 'disabled');
+    if(module_exists('ictpbx_billing')) {
+      $rows[$row_id][] = $user->credit;
+      $rows[$row_id][] = $user->free_bundle;
+    }
+    $rows[$row_id][] = _ictpbx_user_account_list_links($user);
+  }
+  if (!isset($rows)) {
+    $rows[] = array(array('data' => t('No user found.'), 'colspan' => 8));
+  }
+  $variables = array(
+          'header'=> $header,
+          'rows'=> $rows,
+  );
+  $output  = theme('table', $variables);
+  $output .= theme('pager');
+
+  return $output;
+}
+
+/**
+ * Build the Forward and Release links for a single user.
+ *
+ * @see ictpbx_user_list()
+ */
+function _ictpbx_user_account_list_links($user) {
+  $links['edit'] = array(
+    'title' => t('Active/Block'),
+    'href' => 'ictpbx/user_account/' . $user->ictpbx_user_id . '/edit',
+    'html' => TRUE,
+  );
+  if(module_exists('ictpbx_billing')) {
+    $links['topup'] = array(
+      'title' => t('Topup'),
+      'href' => 'ictpbx/user_account/' . $user->ictpbx_user_id . '/topup',
+      'html' => TRUE,
+    );
+  }
+  // If enabled, please add a confirmation before removing a user
+  /*$links['delete'] = array(
+    'title' => t('Remove'),
+    'href' => 'ictpbx/user_account/' . $user->ictpbx_user_id . '/delete',
+    'html' => TRUE,
+  ); */
+  return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
+}
+
+/**
+ * Build the user_account form.
+ */
+function ictpbx_user_account_form($form, &$form_state, $edit = array()) {
+  // It's safe to use on both an empty array, and an incoming array with full or partial data.
+  $edit += array(
+    'ictpbx_user_id'  => '',
+    'name'            => '',
+    'active'      => '',
+    'package'          => '',
+  );
+  
+  // If we're editing an existing fax, we'll add a value field to the form
+  // containing the fax's unique ID.
+  if (!empty($edit['ictpbx_user_id'])) {
+    $form['ictpbx_user_id'] = array(
+      '#type'          => 'value',
+      '#value'         => $edit['ictpbx_user_id'],
+    );
+  }
+
+  $form['info'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('User Information'),
+  );
+  
+  $form['info']['name'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Name'),
+    '#default_value' => $edit['name'],
+    '#attributes' => array('readonly' => 'readonly'),  
+  );
+  
+  $form['info']['active'] = array(
+    '#type'          => 'radios',
+    '#title'         => t('Choose Status'),
+    '#options'       => array(0 => 'Blocked', 1 => 'Active'),
+    '#default_value' => $edit['active'],
+  );
+
+  $form['info']['package'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Select Default Package'),
+    '#options'       => array('package1'=>'package1', 'package2'=>'package2', 'package3'=>'package3'),
+    '#default_value' => $edit['package'],
+  );
+    
+  $form['buttons']['submit'] = array(
+    '#type'          => 'submit',
+    '#value'         => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Inserts a new user, or updates an existing one.
+ *
+ * @param $user
+ *   A user to be saved. If $user['user_id'] is set, the user will be updated.
+ *   Otherwise, a new user will be inserted into the database.
+ * @return
+ *   The saved user, with its ID set.
+ */
+function ictpbx_user_account_form_submit($form, &$form_state) {
+  global $user;
+  //print_r($form['info']['active']['#default_value']); exit();
+  $user = $form_state['values'];
+  if($form['info']['active']['#default_value'] == 0 && $user['active'] == 1) {
+    switch($user['package']) {
+      case 'package1':
+        $user['free_bundle'] = variable_get('ictpbx_package1_free_faxes', '100');
+        $user['credit'] = variable_get('ictpbx_package1_free_credit', '10');
+        break;
+      case 'package2':
+        $user['free_bundle'] = variable_get('ictpbx_package2_free_faxes', '250');
+        $user['credit'] = variable_get('ictpbx_package2_free_credit', '10');
+        break;
+      case 'package3':
+        $user['free_bundle'] = variable_get('ictpbx_package3_free_faxes', '500');
+        $user['credit'] = variable_get('ictpbx_package3_free_credit', '20');
+        break;
+    }
+  }
+  // save the user
+  if (isset($user['ictpbx_user_id'])) {
+    drupal_write_record('ictpbx_user', $user, 'ictpbx_user_id');
+    drupal_set_message(t('User status updated successfully!'), 'status');
+  } 
+  $form_state['redirect'] = 'ictpbx/user_account/list';
+}
+
+
+/**
+ * Loader function for individual users.
+ */
+function ictpbx_user_account_load($user_id) {
+  $sql    = "SELECT * FROM {ictpbx_user} WHERE ictpbx_user_id = :ictpbx_user_id";
+  //$sql    = ictbilling_db_filter($sql);
+  $result = db_query($sql, array(':ictpbx_user_id' => $user_id));
+  if ($user = $result->fetchAssoc()) {
+    return $user;
+  } else {
+    drupal_set_message(t('Specified user does not exist! or you have not proper permissions!'), 'error');
+    return FALSE;
+  }
+}
+
+/**
+ * Deletes a user, given its unique ID.
+ *
+ * @param $user
+ *   An array of user containing the ID of a user.
+ */
+function ictpbx_user_account_delete($user) {
+  $sql = 'DELETE FROM {ictpbx_user} WHERE ictpbx_user_id = :ictpbx_user_id';
+  db_query($sql, array(':ictpbx_user_id'=>$user['ictpbx_user_id']));
+  drupal_set_message(t('User deleted successfully!'), 'status');
+  drupal_goto('ictpbx/user_account/list');
+}
+
+
+function ictpbx_user_account_topup($form, &$form_state, $edit = array()) {
+  // It's safe to use on both an empty array, and an incoming array with full or partial data.
+  $edit += array(
+    'ictpbx_user_id'  => '',
+    'credit'          => '',
+    'free_bundle'    => '',
+  );
+  
+  // If we're editing an existing fax, we'll add a value field to the form
+  // containing the fax's unique ID.
+  if (!empty($edit['ictpbx_user_id'])) {
+    $form['ictpbx_user_id'] = array(
+      '#type'          => 'value',
+      '#value'         => $edit['ictpbx_user_id'],
+    );
+  }
+  
+  $form['previous_credit'] = array(
+      '#type'          => 'value',
+      '#value'         => $edit['credit'],
+  );
+  
+  $form['previous_free_bundle'] = array(
+      '#type'          => 'value',
+      '#value'         => $edit['free_bundle'],
+  );
+
+  $form['info'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('Topup Information'),
+  );
+  
+  $form['info']['credit'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Outgoing Credit'),
+    '#default_value' => '0',
+  );
+  
+  $form['info']['free_bundle'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Incoming Unit'),
+    '#default_value' => '0',
+  );
+    
+  $form['buttons']['submit'] = array(
+    '#type'          => 'submit',
+    '#value'         => t('Submit'),
+  );
+
+  return $form;
+}
+
+function ictpbx_user_account_topup_validate($form, &$form_state) {
+  $user = $form_state['values'];
+  if($user['credit'] < 0 ) {
+    form_set_error('credit', t('Invalid value specified for outgoing credit'));
+  }
+  if($user['free_bundle'] < 0 ) {
+    form_set_error('free_bundle', t('Invalid value specified incoming unit'));
+  }
+}
+
+function ictpbx_user_account_topup_submit($form, &$form_state) {
+  global $user;
+  $user = $form_state['values'];
+  //print_r($form['previous_credit']['#default_value']); exit();
+  //print_r($user['credit']); exit();
+  
+  //print_r($form['previous_credit']['#value']); exit();
+  
+  $user['credit'] = $user['credit'] + $form['previous_credit']['#value'];
+  $user['free_bundle'] = $user['free_bundle'] + $form['previous_free_bundle']['#value'];
+  
+  // save the user
+  if (isset($user['ictpbx_user_id'])) {
+    drupal_write_record('ictpbx_user', $user, 'ictpbx_user_id');
+    drupal_set_message(t('User status updated successfully!'), 'status');
+  } 
+  $form_state['redirect'] = 'ictpbx/user_account/list';
+}
+
+
+

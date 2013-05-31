@@ -1,0 +1,68 @@
+<?php
+/******************************************************************
+* Copyright © 2012 ICT Innovations, All Rights Reserved           *
+* Developed By: Falak Nawaz                                       *
+*             : Nasir Iqbal                                       *
+*             : Tahir Almas                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Contact : support@ictinnovations.com, info@ictinnovations.com   *
+******************************************************************/
+
+// $Id: ictfax.install,v 1.0 2012/02/23 13:34:59 diggersf Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function ictfax_install() {
+
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function ictfax_schema() {
+  $schema['fax_outbox'] = array(
+    'fields' => array(
+      'cid'             => array('type' => 'serial',  'not null' => TRUE,  'unsigned' => TRUE),
+      'uid'             => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+      'created'         => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+      'changed'         => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+      'rating'          => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+      'send_to'         => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
+      'send_from'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
+      'file_name'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
+      'file_type'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 250),
+      'text'            => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255),
+      'accountcode'     => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 50),
+      'uniqueid'        => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 50),
+      'status'          => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 50),
+      'status_string'   => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 250),
+      'pages'           => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 10),
+      'submitted_from'  => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
+    ),
+    'primary key' => array('cid'),
+  ); 
+
+  $schema['fax_inbox'] = array(
+    'fields' => array(
+      'fax_inbox_id' => array('type' => 'serial',  'not null' => TRUE),
+      'send_to'         => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 255),
+      'send_from'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255),
+      'pages'           => array('type' => 'int',     'not null' => FALSE),
+      'status_string'   => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255),
+      'created'         => array('type' => 'int',     'not null' => FALSE, 'unsigned' => TRUE),
+      'uid'             => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+      'call_uuid'       => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 255),      
+    ),
+    'primary key' => array('fax_inbox_id'),
+  ); 
+   
+  return $schema;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ictfax_uninstall() {
+
+}

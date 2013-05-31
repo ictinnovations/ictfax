@@ -1,0 +1,56 @@
+<?php
+/******************************************************************
+* Copyright © 2012 ICT Innovations.                               *
+* Developed By: Falak Nawaz                                       *
+*             : Nasir Iqbal                                       *
+*             : Tahir Almas                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Mail : info@ictinnovations.com                                  *
+******************************************************************/
+
+//  $Id: trunk.info,v 1.0 2012/02/29 10:40:49 ictinnovations Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function ictpbx_trunk_install() {
+//  drupal_install_schema('trunk');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function ictpbx_trunk_schema() {
+  $schema['ictpbx_trunk'] = array(
+    'fields' => array(
+      'ictpbx_trunk_id'  => array('type' => 'serial',  'not null' => TRUE,  'unsigned' => TRUE),
+      'type'             => array('type' => 'int',     'not null' => FALSE),
+      'name'             => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'host'             => array('type' => 'text',    'not null' => TRUE),
+      'username'         => array('type' => 'text',    'not null' => TRUE),
+      'password'         => array('type' => 'text',    'not null' => TRUE),
+      'port'             => array('type' => 'text',    'not null' => TRUE),      
+      'channel'          => array('type' => 'int',     'not null' => FALSE),
+      'prefix'           => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255),
+      'dial_string'      => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255), 
+      'register_string'  => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255),
+      'gateway_id'       => array('type' => 'int',     'not null' => FALSE),
+      'service_flag'     => array('type' => 'int',     'not null' => FALSE),
+      'technology_id'    => array('type' => 'int',     'not null' => FALSE),
+      'weight'           => array('type' => 'int',     'not null' => FALSE),
+      'active'           => array('type' => 'int',     'not null' => FALSE),
+      'created'          => array('type' => 'int',     'not null' => FALSE, 'unsigned' => TRUE),
+      'created_by'       => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+    ),
+    'primary key' => array('ictpbx_trunk_id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ictpbx_trunk_uninstall() {
+//  drupal_uninstall_schema('trunk');
+}

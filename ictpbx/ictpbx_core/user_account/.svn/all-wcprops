@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/ict_billing/!svn/ver/25/trunk/sites/all/modules/ictpbx/ictpbx_core/user_account
+END
+ictpbx_user_account.module
+K 25
+svn:wc:ra_dav:version-url
+V 111
+/svn/ict_billing/!svn/ver/25/trunk/sites/all/modules/ictpbx/ictpbx_core/user_account/ictpbx_user_account.module
+END
+ictpbx_user_account.install
+K 25
+svn:wc:ra_dav:version-url
+V 112
+/svn/ict_billing/!svn/ver/25/trunk/sites/all/modules/ictpbx/ictpbx_core/user_account/ictpbx_user_account.install
+END
+ictpbx_user_account.info
+K 25
+svn:wc:ra_dav:version-url
+V 109
+/svn/ict_billing/!svn/ver/25/trunk/sites/all/modules/ictpbx/ictpbx_core/user_account/ictpbx_user_account.info
+END

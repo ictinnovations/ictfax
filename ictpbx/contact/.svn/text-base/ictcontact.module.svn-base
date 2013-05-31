@@ -1,0 +1,632 @@
+<?php
+/******************************************************************
+* Copyright © 2012 ICT Innovations, All Rights Reserved           *
+* Developed By: Nasir Iqbal                                       *
+*             : Tahir Almas                                       *
+* Modified By:  Falak Nawaz                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Contact : support@ictinnovations.com, info@ictinnovations.com   *
+******************************************************************/
+
+// $Id: ictcontact.module,v 1.0 2012/03/05 18:08:59 ictinnovations Exp $
+
+/**
+ * @file
+ * Provides support to add contact and manage contact groups which can be used
+ * with ictfax, ictsms modules.
+ */
+
+/**
+ * Implementation of hook_menu().
+ *
+ * Defines six menu entries: an Contacts page that lists all contacts in the module's
+ * database table, add and edit/add/delete pages for each contact, and six more
+ * menu entries for group management, and one more entry to import bulk contacts
+ * into database.
+ */
+function ictcontact_menu() {
+  $items = array();
+
+  $items['ictcontact/contact/contact'] = array(
+    'title'            => 'Contacts',
+    'description'      => 'Manage Contacts',
+    'page callback'    => 'ictcontact_list',
+    'access callback'  => 'ictcontact_access',
+    'access arguments' => array('ictcontact contact'),
+    'type'             => MENU_NORMAL_ITEM,
+  );
+
+  $items['ictcontact/contact/contact/list'] = array(
+    'title'            => 'List',
+    'description'      => 'Manage Contacts',
+    'page callback'    => 'ictcontact_list',
+    'access callback'  => 'ictcontact_access',
+    'access arguments' => array('ictcontact contact'),
+    'type'             => MENU_DEFAULT_LOCAL_TASK,
+    'weight'           => 10,
+  );
+
+  $items['ictcontact/contact/contact/add'] = array(
+    'title'            => 'Create New Contact',
+    'description'      => 'Add / Create new Contacts',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictcontact_form'),
+    'access callback'  => 'ictcontact_access',
+    'access arguments' => array('ictcontact contact admin'),
+    'type'             => MENU_LOCAL_TASK,
+    'weight'           => 11,
+  );
+  
+  $items['ictcontact/contact/contact/import'] = array(
+    'title'            => 'Import Contacts',
+    'description'      => 'Import new Contacts into groups',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictcontact_import'),
+    'access callback'  => 'ictcontact_access',
+    'access arguments' => array('ictcontact contact admin'),
+    'type'             => MENU_LOCAL_TASK,
+    'weight'           => 12,
+  );
+
+  $items['ictcontact/contact/%ictcontact/edit'] = array(
+    'title'            => 'Edit Contact',
+    'description'      => 'Edit / Change Contact',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictcontact_form', 2),
+    'access callback'  => 'ictcontact_access',
+    'access arguments' => array('ictcontact contact admin'),
+    'type'             => MENU_CALLBACK,
+  );
+
+  $items['ictcontact/contact/%ictcontact/delete'] = array(
+    'title'            => 'Delete Contact',
+    'description'      => 'Delete Contact',
+    'page callback'    => 'ictcontact_delete',
+    'page arguments'   => array(2),
+    'access callback'  => 'ictcontact_access',
+    'access arguments' => array('ictcontact contact admin'),
+    'type'             => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_perm().
+ *
+ * Defines access permissions that may be assigned to roles and used to restrict
+ * access on contact module.
+ */
+function ictcontact_permission() {
+  return array(
+    'ictcontact contact'              => array('title'=> 'ictcontact contact'),
+    'ictcontact contact admin'        => array('title'=> 'ictcontact contact admin'),
+    'ictcontact contact group'        => array('title'=> 'ictcontact contact group'),
+    'ictcontact contact group'        => array('title'=> 'ictcontact contact group admin'),
+    'ictcontact contact system admin' => array('title'=> 'ictcontact contact system admin'),
+  );
+}
+
+/**
+ * Page function for contact List
+ *
+ * It will show a list of available contacts in form of list
+ *
+ * @return
+ * page html
+*/
+function ictcontact_list() {
+  $header = array(
+    array('data' => t('First Name'), 'field' => 'first_name', 'sort' => 'asc'),
+    array('data' => t('Last Name'),  'field' => 'last_name'),
+    array('data' => t('Fax'),        'field' => 'fax'),
+    array('data' => t('E-Mail'),     'field' => 'email'),
+    array('data' => t('Operations')),
+  );
+
+  $query = db_select('ictcontact', 'c')->extend('PagerDefault');
+  $query->fields('c', array('ictcontact_id', 'first_name', 'last_name', 'fax', 'email'));
+  $query = ictcontact_select_filter($query);
+  $result = $query->limit(50)         
+            ->extend('TableSort')
+            ->orderByHeader($header)
+            ->execute();
+
+  while ($contact = $result->fetchAssoc()) {
+    $row_id = $contact['ictcontact_id'];
+    $rows[$row_id][] = check_plain($contact['first_name']);
+    $rows[$row_id][] = check_plain($contact['last_name']);
+    $rows[$row_id][] = check_plain($contact['fax']);
+    $rows[$row_id][] = check_plain($contact['email']);
+    $rows[$row_id][] = _ictcontact_list_links($contact);
+  }
+  if (!isset($rows)) {
+    $rows[] = array(array('data' => t('No contacts have been added.'), 'colspan' => 5));
+  }
+
+  $output = theme('table', array('header'=>$header, 'rows'=>$rows));
+  $output .= theme('pager');
+
+  return $output;
+}
+
+/**
+ * Build the edit and delete links for a single contact.
+ *
+ * @see ictcontact_list()
+ */
+function _ictcontact_list_links($contact) {
+  $links['edit'] = array(
+    'title' => t('Edit'),
+    'href' => 'ictcontact/contact/' . $contact['ictcontact_id'] . '/edit',
+    'html' => TRUE,
+  );
+  $links['delete'] = array(
+    'title' => t('Delete'),
+    'href' => 'ictcontact/contact/' . $contact['ictcontact_id'] . '/delete',
+    'html' => TRUE,
+  );
+  return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
+}
+
+/**
+ * Loader function for individual contacts.
+ *
+ * As we have used '%ictcontact' as a wildcard in our hook_menu()
+ *
+ * @param $ictcontact_id
+ *   An int containing the ID of a contact.
+ * @return
+ *   A single contact in array format, or FALSE if none matched the incoming ID.
+ */
+function ictcontact_load($ictcontact_id) {
+  $sql    = "SELECT * FROM {ictcontact} WHERE ictcontact_id = :ictcontact_id";
+  $sql    = ictcontact_db_filter($sql);
+  $result = db_query($sql, array(':ictcontact_id'=>$ictcontact_id));
+  if ($contact = $result->fetchAssoc()) {
+    // every contact may also have some groups assigned to it,
+    // so fetch there id into $contact['selected_group'] as arrays
+/*    $sql    = "SELECT ictcontact_group_id FROM {ictcontact_link} WHERE ictcontact_id = :ictcontact_id";
+    $result = db_query($sql, array(':ictcontact_id'=>$ictcontact_id));
+
+    $contact['selected_group'] = array();
+    while ($contact_group = $result->fetchAssoc()) {
+      $contact['selected_group'][] = $contact_group['ictcontact_group_id'];
+    } */
+
+    return $contact;
+
+  }
+  else {
+    drupal_set_message(t('Specified Contact does not exist! or you have not proper permissions!'), 'error');
+    return FALSE;
+  }
+}
+
+/**
+ * Build the contact editing form.
+ *
+ * @ingroup forms
+ * @see ictcontact_form_submit()
+ */
+function ictcontact_form($form, &$form_state, $contact = array()) {
+  // It's safe to use on both an empty array, and an incoming array with full or partial data.
+  $contact += array(
+    'first_name'    => '',
+    'last_name'     => '',
+    'company'       => '',
+    'address'       => '',
+    'fax'         => '',
+    'email'         => '',
+    'description'   => '',
+//    'selected_group'=> array(''),
+  );
+
+  // If we're editing an existing contact, we'll add a value field to the form
+  // containing the contact's unique ID.
+  if (!empty($contact['ictcontact_id'])) {
+    $form['ictcontact_id'] = array(
+      '#type'        => 'value',
+      '#value'       => $contact['ictcontact_id'],
+    );
+  }
+
+  $form['personal'] = array(
+    '#type'          => 'fieldset',
+    '#title'         => t('Personal Information'),
+  );
+
+  $form['personal']['first_name'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('First Name'),
+    '#required'      => TRUE,
+    '#default_value' => $contact['first_name'],
+  );
+
+  $form['personal']['last_name'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Last Name'),
+    '#default_value' => $contact['last_name'],
+  );
+
+  $form['personal']['company'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Company'),
+    '#default_value' => $contact['company'],
+  );
+
+  $form['contact'] = array(
+    '#type'          => 'fieldset',
+    '#title'         => t('Contact Addresses'),
+  );
+
+  $form['contact']['address'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Address'),
+    '#default_value' => $contact['address'],
+  );
+
+  $form['contact']['fax'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('fax'),
+    '#required'      => TRUE,
+    '#default_value' => $contact['fax'],
+  );
+
+  $form['contact']['fax'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Fax'),
+    '#required'      => TRUE,
+    '#default_value' => $contact['fax'],
+  );
+
+  $form['contact']['email'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('E-Mail'),
+    '#required'      => TRUE,
+    '#default_value' => $contact['email'],
+  );
+
+  $form['remark'] = array(
+    '#type'          => 'fieldset',
+    '#title'         => t('Comments / Remarks'),
+  );
+
+  $form['remark']['description'] = array(
+    '#type'          => 'textarea',
+    '#title'         => t('Description'),
+    '#default_value' => $contact['description'],
+  );
+
+  $form['buttons']['submit'] = array(
+    '#type'          => 'submit',
+    '#value'         => t('Submit'),
+  );
+
+  return $form;
+}
+
+function ictcontact_form_validate($form, &$form_state) {
+
+  $existing_record = 0;
+  $contact         = $form_state['values'];
+
+  if (isset($contact['ictcontact_id'])) {
+    // we are editing an existing record
+    $existing_record = $contact['ictcontact_id'];
+  }
+
+  if (!ictcontact_email_validate($contact['email'])) {
+    form_set_error('email', t('Please enter a valid email address'));
+  }
+
+  $contact_group_count = 0;
+
+}
+
+function ictcontact_email_validate($email) {
+  if (!preg_match('/^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{2,7})+$/', $email)) {
+    drupal_set_message(t('%email is an invalid email!', array('%email' => $email)), 'warning');
+    return FALSE;
+  }
+  return TRUE;
+}
+
+function ictcontact_fax_validate($number, $contact_group_type) {
+  static $aPatterns = FALSE;
+  $pattern_full   = '';
+  $pattern_add    = '';
+  $pattern_remove = '';
+  $pattern_match  = '';
+/*
+  if (!$aPatterns) {
+    $aPatterns          = array();
+    $gsmInput           = variable_get('ictcontact_fax_format_gsm', '923XXXXXXXXX');
+    $gsmInput           = strtoupper(str_replace('+', '\\+', $gsmInput));
+    $aPatterns['gsm']   = _ictcontact_fax_validate_helper($gsmInput);
+    $otherInput         = variable_get('ictcontact_fax_format_other', '92XX.');
+    $otherInput         = strtoupper(str_replace('+', '\\+', $otherInput));
+    $aPatterns['other'] = _ictcontact_fax_validate_helper($otherInput);
+  }
+
+  if ($contact_group_type == 'gsm') {
+    $aTestPattern = $aPatterns['gsm'];
+  } else {
+    $aTestPattern = $aPatterns['other'];
+  }
+
+  foreach($aTestPattern as $key => $test) {
+    if (preg_match('/^'.$test['match'].'/i', $number)) {
+      $number = $test['add'] . $number;
+      return $number;
+    }
+    if (preg_match('/^'.$test['add'].$test['match'].'/i', $number)) {
+      return $number;
+    }
+    if (preg_match('/^'.$test['drop'].$test['match'].'/i', $number)) {
+      $number = $test['add'] . preg_replace('/^' . $test['drop'] . '/', '', $number);
+      return $number;
+    }
+  }
+  return false;
+ */
+ return $number;
+}
+
+function _ictcontact_fax_validate_helper($pattern_input) {
+  $aPatterns    = array();
+  $patternArray = explode(',', $pattern_input);
+
+  foreach($patternArray as $key => $pattern_full) {
+	$aPatterns[$key] = array();
+    $aPatterns[$key]['match'] = $pattern_full;
+
+    if (strpos($aPatterns[$key]['match'], '|') !== false) {
+      $result = explode('|', $aPatterns[$key]['match'], 2);
+      $aPatterns[$key]['add']   = $result[0];
+      $aPatterns[$key]['match'] = $result[1];
+    } else {
+      $aPatterns[$key]['add']   = '';
+    }
+
+    if (strpos($aPatterns[$key]['match'], '!') !== false) {
+      $result       = explode('!', $aPatterns[$key]['match'], 2);
+      $aPatterns[$key]['drop']  = $result[0];
+      $aPatterns[$key]['match'] = $result[1];
+    } else {
+      $aPatterns[$key]['drop']  = '';
+    }
+
+    $aPatterns[$key]['match'] = $aPatterns[$key]['match'] . '$';
+    $aPatterns[$key]['match'] = str_replace(
+      array('X', 'Z', 'N', '.$'),
+      array('[0-9]', '[1-9]', '[2-9]', '.'),
+      $aPatterns[$key]['match']);
+
+    $aPatterns[$key]['drop'] = str_replace(
+      array('X', 'Z', 'N', '+', '&'),
+      array('[0-9]', '[1-9]', '[2-9]', '\\+', '|'),
+      $aPatterns[$key]['drop']);
+  }
+  return $aPatterns;
+}
+
+/*function ictcontact_check_duplicate($field, $value, $ictcontact_group_id, $ictcontact_id = 0) {
+  if (variable_get('ictcontact_' . $field . '_duplicate_group', 0) != 1) {
+    return TRUE;
+  } else {
+    $sql = "SELECT COUNT({ictcontact}.ictcontact_id) AS total
+      FROM {ictcontact} JOIN {ictcontact_link} 
+        ON {ictcontact}.ictcontact_id = {ictcontact_link}.ictcontact_id
+      WHERE {ictcontact}.ictcontact_id != :ictcontact_id
+        AND {ictcontact_link}.ictcontact_group_id = :ictcontact_group_id
+        AND {ictcontact}.$field = :field";
+    $result = db_query($sql, array(':ictcontact_id'=>$ictcontact_id, ':ictcontact_group_id'=>$ictcontact_group_id, ':field'=>$value));
+    $total  = $result->fetchField();
+    if ($total > 0) {
+      return FALSE;
+    }
+  }
+  return TRUE;
+}*/
+
+/**
+ * Inserts a new contact, or updates an existing one.
+ *
+ * @param $contact
+ *   A contact to be saved. If $contact['ictcontact_id'] is set, the contact will be updated.
+ *   Otherwise, a new contact will be inserted into the database.
+ * @return
+ *   The saved contact, with its ID set.
+ */
+function ictcontact_form_submit($form, &$form_state) {
+  global $user;
+
+  $contact = $form_state['values'];
+
+  if (!isset($contact['created'])) {
+    $contact['created'] = time();
+  }
+  if (!isset($contact['created_by'])) {
+    $contact['created_by'] = $user->uid;
+  }
+
+  // save the contact
+  if (isset($contact['ictcontact_id'])) {
+    drupal_write_record('ictcontact', $contact, 'ictcontact_id');
+  }
+  else {
+    drupal_write_record('ictcontact', $contact);
+  }
+
+  drupal_set_message(t('Contact saved successfully!'), 'status');
+  $form_state['redirect'] = 'ictcontact/contact/contact/list';
+}
+
+/**
+ * Deletes a contact, given its unique ID.
+ *
+ * @param $contact
+ *   An array of contact containing the ID of a contact and assigned groups.
+ */
+function ictcontact_delete($contact) {
+  $sql = 'DELETE FROM {ictcontact} WHERE ictcontact_id = :ictcontact_id';
+  db_query($sql, array(':ictcontact_id'=>$contact['ictcontact_id']));
+
+  drupal_set_message(t('Contact deleted successfully!'), 'status');
+  drupal_goto('ictcontact/contact/contact');
+}
+
+
+
+
+
+
+/**
+ * Build the contact editing form.
+ *
+ * @ingroup forms
+ * @see ictcontact_form_submit()
+ */
+function ictcontact_import($form, &$form_state) {
+  $form['from_file'] = array(
+    '#type'       => 'fieldset',
+    '#attributes' => array('id' => 'edit-from-file-wrapper'),
+    '#title'      => t('Import Contacts From'),
+  );
+
+  $form['from_file']['source_file'] = array(
+    '#type'       => 'file',
+    '#title'      => t("Upload Contact's File"),
+  );
+  $module_path = base_path() . drupal_get_path('module', 'ictcontact');
+  $form['from_file']['example'] = array(
+    '#type'          => 'markup',
+    '#markup'        => t("Example File: <a href='$module_path/sample.csv'>sample.csv</a>"),
+  );
+
+
+
+  $form['submit'] = array(
+    '#type'       => 'submit',
+    '#value'      => t('Submit'),
+  );
+
+  return $form;
+}
+
+function ictcontact_import_submit($form, &$form_state) {
+  $import = $form_state['values'];
+
+  // Ensure we have the file uploaded
+  //if ($import['source_type'] == 'file') {
+  $validators = array(
+    'file_validate_extensions' => array('csv', 'CSV'),
+  );
+  if ($file = file_save_upload('source_file', $validators)) {
+    $total_rows = ictcontact_import_file('/tmp/'.$file->filename);
+    drupal_set_message(t('%count Contacts imported successfully!', array('%count' => $total_rows)), 'status');
+  } else {
+    drupal_set_message(t('Cannot upload file!'), 'status');
+  }
+  drupal_goto('ictcontact/contact/contact');
+}
+
+function ictcontact_import_file($input_file) {
+  global $user;
+  
+  $total_rows    = 0;
+  $handle  = fopen($input_file, "r");
+  while (($data = fgetcsv($handle, 500, ",")) !== FALSE) {
+    $contact      = array();
+    $contact_link = array();
+
+    if (count($data) >= 5) {
+      $contact['first_name']  = $data[0];
+      $contact['last_name']   = $data[1];
+      $contact['company']     = $data[2];
+      $contact['address']     = $data[3];
+      $contact['fax']         = $data[4];
+      $contact['email']       = $data[5];
+      $contact['description'] = $data[6];
+      $contact['created']     = time();
+      $contact['created_by']  = $user->uid;
+
+      // first of all test if we have all required fields 
+      if ($contact['first_name'] != '' && $contact['email'] != '' && $contact['fax'] != '') {
+        // check if user has entered a valid email address
+        if (ictcontact_email_validate($contact['email'])) {
+          // if all is OK save the contact
+          drupal_write_record('ictcontact', $contact);
+          //ictcontact_import_link($contact, $contact_group);
+          $total_rows++;
+        } else {
+          // contact email is invalid
+          drupal_set_message(
+            t('Cannot add %email, invalid email', 
+              array('%email' => $contact['email'])
+            ),
+            'warning'
+          );        
+        }
+      } else {
+        // incomplete contact record
+        drupal_set_message(
+          t('incomplete record (name: %name, email: %email, fax: %fax)! cannot save, skipped!', 
+            array('%name' => $contact['first_name'],'%email' => $contact['email'], '%fax' => $contact['fax'])
+          ), 
+          'warning'
+        );
+      }
+    }
+  }
+  fclose($handle);
+
+  return $total_rows;
+}
+
+
+/********************************************************
+*                   COMMON FUNCTIONS                    *
+********************************************************/
+function ictcontact_db_filter($query, $after = 'WHERE') {
+  global $user;
+
+  if (strtoupper($after) == 'WHERE') {
+    $filter = ' created_by=' . $user->uid . ' AND';
+  } else {
+    $filter = ' WHERE created_by=' . $user->uid;
+  }
+
+  $position = strrpos(strtoupper($query), strtoupper($after)) + strlen($after);
+
+  $query = substr_replace($query, $filter, $position, 0);
+
+  return $query;
+}
+
+
+// This filter should be used when using db_select() function
+function ictcontact_select_filter($query, $table = false) {
+  global $user;
+  if($table != false) {
+    $query->condition($table.'.created_by', $user->uid, '=');
+  } else {
+    $query->condition('created_by', $user->uid, '=');
+  }
+    
+  return $query;
+}
+
+function ictcontact_access($access) {
+  global $user;
+  //if (is_array($access)) $access = $access[0];
+  //if (!user_access($access)) return false;  
+  if($user->uid) {
+    return true;
+  } else {
+    return false;
+  }
+  
+}
+

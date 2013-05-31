@@ -1,0 +1,14 @@
+;/******************************************************************
+;* Copyright © 2012 ICT Innovations, All Rights Reserved           *
+;* Developed By: Falak Nawaz                                       *
+;*             : Nasir Iqbal                                       *
+;*             : Tahir Almas                                       *
+;* Website : http://www.ictinnovations.com/                        *
+;* Contact : support@ictinnovations.com, info@ictinnovations.com   *
+;******************************************************************/
+;
+; $Id: ictfax.info,v 1.0 2012/02/23 11:08:59 ictinnovations Exp $
+name = "ICTFax Module"
+description = "Provides Fax2Email and Email2Fax Functionality"
+package = "ICTPBX System"
+core = "7.x"

@@ -1,0 +1,29 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/ict_billing/!svn/ver/8/trunk/sites/all/modules/ictpbx/contact
+END
+ictcontact.info
+K 25
+svn:wc:ra_dav:version-url
+V 83
+/svn/ict_billing/!svn/ver/21/trunk/sites/all/modules/ictpbx/contact/ictcontact.info
+END
+sample.csv
+K 25
+svn:wc:ra_dav:version-url
+V 78
+/svn/ict_billing/!svn/ver/21/trunk/sites/all/modules/ictpbx/contact/sample.csv
+END
+ictcontact.module
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/ict_billing/!svn/ver/21/trunk/sites/all/modules/ictpbx/contact/ictcontact.module
+END
+ictcontact.install
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/ict_billing/!svn/ver/8/trunk/sites/all/modules/ictpbx/contact/ictcontact.install
+END

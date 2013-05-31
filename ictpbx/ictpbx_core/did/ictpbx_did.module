@@ -1,0 +1,905 @@
+<?php
+/******************************************************************
+* Copyright © 2012 ICT Innovations.                               *
+* Developed By: Falak Nawaz                                       *
+*             : Nasir Iqbal                                       *
+*             : Tahir Almas                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Mail : info@ictinnovations.com                                  *
+******************************************************************/
+
+// $Id: ictpbx_did.module,v 1.0 2012/02/29 10:42:58 ictinnovations Exp $
+
+/**
+ * @file
+ * Provides support to buy did through web portal.
+ */
+
+/**
+ * Implementation of hook_menu().
+ */
+function ictpbx_did_menu() {
+  $items = array();
+
+  $items['ictpbx/did'] = array(
+    'title'            => 'DID Numbers',
+    'description'      => 'Manage DID Numbers',
+    'page callback'    => 'ictpbx_did_list',
+    'page arguments'   => array(false), // hide admin links
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx did admin'),
+    'type'             => MENU_NORMAL_ITEM,
+    'weight'           => 15,
+  );
+  $items['ictpbx/did/list'] = array(
+    'title'            => 'List',
+    'description'      => 'Manage DID Numbers',
+    'page callback'    => 'ictpbx_did_list',
+    'page arguments'   => array('false'), // hide admin links
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx did admin'),
+    'type'             => MENU_DEFAULT_LOCAL_TASK,
+    'weight'           => 16,
+  );
+  $items['ictpbx/did/add'] = array(
+    'title'            => t('Create New DID'),
+    'description'      => 'Create New DID',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_did_form', array()),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx did admin'),
+    'type'             => MENU_LOCAL_TASK,
+    'weight'           => 17,    
+  );
+  $items['ictpbx/did/batch'] = array(
+    'title'            => t('Create DIDs in Batch'),
+    'description'      => 'Create DIDs in Batch',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_did_batch', array()),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx did admin'),
+    'type'             => MENU_LOCAL_TASK,
+    'weight'           => 18,
+  );
+  $items['ictpbx/did/import'] = array(
+    'title'            => t('Import DID List'),
+    'description'      => 'Import DID Numbers List',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_did_import', array()),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx did admin'),
+    'type'             => MENU_LOCAL_TASK,
+    'weight'           => 19,    
+  );
+  $items['ictpbx/did/%ictpbx_did/edit'] = array(
+    'title'            => t('Edit DID'),
+    'description'      => 'Edit DID',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_did_form', 2),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx did admin'),
+    'type'             => MENU_CALLBACK,
+  );
+  $items['ictpbx/did/%ictpbx_did/assign'] = array(
+    'title'            => t('Assign DID'),
+    'description'      => 'Assign DID',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_did_assign', 2),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx did admin'),
+    'type'             => MENU_CALLBACK,
+  );
+  $items['ictpbx/did/%ictpbx_did/delete'] = array(
+    'title'            => t('Remove DID'),
+    'description'      => 'Remove DID',
+    'page callback'    => 'ictpbx_did_delete',
+    'page arguments'   => array(2),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx did admin'),
+    'type'             => MENU_CALLBACK,
+  );
+  
+  $items['setting/did'] = array(
+    'title'            => 'My Incoming Numbers',
+    'description'      => 'Manage Incoming Numbers (DIDs)',
+    'page callback'    => 'ictpbx_user_did_list',
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type'             => MENU_NORMAL_ITEM,
+    'weight'           => 16,
+  );
+  $items['setting/did/list'] = array(
+    'title'            => 'List',
+    'description'      => 'Manage Incoming Numbers (DIDs)',
+    'page callback'    => 'ictpbx_user_did_list',
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type'             => MENU_DEFAULT_LOCAL_TASK,
+    'weight'           => 16,
+  );
+/*  $items['setting/did/buy'] = array(
+    'title'            => 'Buy Number',
+    'description'      => 'Buy Incoming Numbers (DIDs)',
+    'page callback'    => 'ictpbx_user_did_buy_list',
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type'             => MENU_LOCAL_TASK,
+    'weight'           => 17,
+  ); */
+  $items['setting/did/%ictpbx_did/forward'] = array(
+    'title'            => t('Forward DID to Email'),
+    'description'      => 'Forward DID to Email',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_did_forward', 2),
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type'             => MENU_CALLBACK,
+  );
+  $items['setting/did/%ictpbx_did/buy'] = array(
+    'title'            => t('Buy New Number'),
+    'description'      => 'Buy new number',
+    'page callback'    => 'ictpbx_user_did_buy',
+    'page arguments'   => array(2),
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type'             => MENU_CALLBACK,
+  );
+
+  
+  $items['conf/did/setting'] = array(
+    'title'            => 'Settings',
+    'description'      => 'Manage did Settings',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_did_admin_settings'),
+    'access callback'  => 'ictpbx_access',
+    'access arguments' => array('ictpbx did admin'),
+    'type'             => MENU_LOCAL_TASK,
+  );
+
+  return $items;
+}
+
+/**
+ * Implementation of hook_permission().
+ *
+ * Defines access permissions that may be assigned to roles and used to restrict
+ * access on didx module.
+ */
+function ictpbx_did_permission() {
+  return array(
+    'ictpbx did user' => array('title'=> 'ictpbx did user'),
+    'ictpbx did admin' => array('title'=> 'ictpbx did admin'),
+    'ictpbx did system admin' => array('title'=> 'ictpbx did system admin'),
+  );
+}
+
+/**
+ * Page function for did List
+ *
+ * It will show a list of available dids in form of list
+ *
+ * @return
+ * page html
+*/
+function ictpbx_did_list($admin_links = false) {
+
+  $header = array(
+    array('data' => t('DID Number'),    'field' => 'did',  'sort' => 'asc'),
+    array('data' => t('Description'),   'field' => 'description'),
+    array('data' => t('Trunk Provider'),'field' => 'trunk_name'),
+    array('data' => t('Assigned To'),   'field' => 'user_name'),
+    array('data' => t('Operations')),
+  );
+  
+  $query = db_select('ictpbx_did', 't')->extend('PagerDefault');
+  $query->fields('t', array('ictpbx_did_id', 'did', 'description'));
+  $query->leftjoin('ictpbx_user','user','user.ictpbx_user_id = t.assigned_to');
+  $query->addfield('user', 'name', 'user_name');
+  $query->leftjoin('ictpbx_trunk','trunk','trunk.ictpbx_trunk_id = t.trunk_id');
+  $query->addfield('trunk', 'name', 'trunk_name');
+  //$query->addExpression('user', "CONCAT_WS(' ', last_name, first_name)", 'user_name');
+  
+  //$query->condition('t.uid', $user->uid,'='); 
+  $result = $query->limit(50)         
+            ->extend('TableSort')
+            ->orderByHeader($header)
+            ->execute();
+  
+  while ($did = $result->fetchAssoc()) {
+    $row_id = $did['ictpbx_did_id'];
+    $rows[$row_id][] = check_plain($did['did']);
+    $rows[$row_id][] = check_plain($did['description']);
+    $rows[$row_id][] = check_plain($did['trunk_name']); 
+    $rows[$row_id][] = check_plain($did['user_name']); 
+    $rows[$row_id][] = _ictpbx_did_list_links($did);
+  }
+  if (!isset($rows)) {
+    $rows[] = array(array('data' => t('No DID Number available'), 'colspan' => 6));
+  }
+  
+  $output = theme('table', array('header'=>$header, 'rows'=>$rows));
+  $output .= theme('pager');
+
+  return $output;
+}
+
+/**
+ * Build the Forward and Release links for a single did.
+ *
+ * @see did_list()
+ */
+function _ictpbx_did_list_links($did) {
+  $links['edit'] = array(
+    'title' => t('Edit'),
+    'href' => 'ictpbx/did/' . $did['ictpbx_did_id'] . '/edit',
+    'html' => TRUE,
+  );
+  $links['delete'] = array(
+    'title' => t('Remove'),
+    'href' => 'ictpbx/did/' . $did['ictpbx_did_id'] . '/delete',
+    'html' => TRUE,
+  );
+  $links['assign'] = array(
+    'title' => t('Assign / Release'),
+    'href' => 'ictpbx/did/' . $did['ictpbx_did_id'] . '/assign',
+    'html' => TRUE,
+  );
+  return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
+}
+
+/**
+ * Build the did form.
+ */
+function ictpbx_did_form($form, &$form_state, $edit = array()) {
+  // It's safe to use on both an empty array, and an incoming array with full or partial data.
+  $edit += array(
+    'ictpbx_did_id'   => '',
+    'did'             => '',
+    'description'     => '',
+    'trunk_id'        => '',
+  );
+
+  // If we're editing an existing fax, we'll add a value field to the form
+  // containing the fax's unique ID.
+  if (!empty($edit['ictpbx_did_id'])) {
+    $form['ictpbx_did_id'] = array(
+      '#type'          => 'value',
+      '#value'         => $edit['ictpbx_did_id'],
+    );
+  }
+
+  $form['info'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('did Information'),
+  );
+
+  $form['info']['did'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('DID Number'),
+    '#required'      => TRUE,
+    '#default_value' => $edit['did'],
+  );
+
+  $form['info']['description'] = array(
+    '#type'          => 'textarea',
+    '#title'         => t('Description'),
+    '#default_value' => $edit['description'],
+  );
+  
+  $form['setting'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('DID Settings'),
+  );
+  
+  $form['setting']['trunk_id'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Choose Provider Trunk'),
+    '#options'       => array(0 => 'None') + ictpbx_trunk_option(),
+    '#default_value' => $edit['trunk_id'],
+  );
+
+  $form['buttons']['submit'] = array(
+    '#type'          => 'submit',
+    '#value'         => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Validate
+ *
+ */
+function ictpbx_did_form_validate($form, &$form_state) {
+  $did = $form_state['values'];
+  $query  = "SELECT ictpbx_did_id FROM {ictpbx_did} WHERE did = :did";
+  $result = db_query($query, array(':did'=>$did['did']));
+  if ($res = $result->fetchAssoc()) {
+    form_set_error('did', t('DID already exist!'));
+  }
+}
+/**
+ * Inserts a new did, or updates an existing one.
+ *
+ * @param $did
+ *   A did to be saved. If $did['did_id'] is set, the did will be updated.
+ *   Otherwise, a new did will be inserted into the database.
+ * @return
+ *   The saved did, with its ID set.
+ */
+function ictpbx_did_form_submit($form, &$form_state) {
+  global $user;
+
+  $did = $form_state['values'];
+
+  if (!isset($did['created'])) {
+    $did['created'] = time();
+  }
+  if (!isset($did['created_by'])) {
+    $did['created_by'] = $user->uid;
+  }
+  
+  // save the did
+  if (isset($did['ictpbx_did_id'])) {
+    drupal_write_record('ictpbx_did', $did, 'ictpbx_did_id');
+    drupal_set_message(t('DID updated successfully!'), 'status');
+  } else {
+    drupal_write_record('ictpbx_did', $did);
+    drupal_set_message(t('DID created successfully!'), 'status');
+  }
+  
+  $form_state['redirect'] = 'ictpbx/did/list';
+}
+
+/**
+ * Loader function for individual dids.
+ */
+function ictpbx_did_load($did_id) {
+  $sql    = "SELECT * FROM {ictpbx_did} WHERE ictpbx_did_id = :ictpbx_did_id";
+  //$sql    = ictbilling_db_filter($sql);
+  $result = db_query($sql, array(':ictpbx_did_id' => $did_id));
+  if ($did = $result->fetchAssoc()) {
+    return $did;
+  } else {
+    drupal_set_message(t('Specified did does not exist! or you have not proper permissions!'), 'error');
+    return FALSE;
+  }
+}
+
+/**
+ * Loader function for all dids.
+ */
+function ictpbx_did_option() {
+  $sql = "SELECT ictpbx_did_id, did FROM {ictpbx_did}";
+  $result = db_query($sql);
+  $rows = array();
+  while ($did = $result->fetchAssoc()) {
+    $row_id = $did['ictpbx_did_id'];
+    $rows[$row_id] = check_plain($did['did']);
+  }
+  if (!isset($rows)) {
+    return FALSE;
+  }
+  return $rows;
+}
+
+
+
+/**
+ * Deletes a did, given its unique ID.
+ *
+ * @param $did
+ *   An array of did containing the ID of a did.
+ */
+function ictpbx_did_delete($did) {
+  $sql = 'DELETE FROM {ictpbx_did} WHERE ictpbx_did_id = :ictpbx_did_id';
+  db_query($sql, array(':ictpbx_did_id'=>$did['ictpbx_did_id']));
+  drupal_set_message(t('DID deleted successfully!'), 'status');
+  drupal_goto('ictpbx/did/list');
+}
+
+
+/**
+ * Build the did batch form.
+ */
+function ictpbx_did_batch($form, &$form_state, $edit = array()) {
+  $edit += array(
+    'from'       => '',
+    'to'         => '',
+    'description'=> '',
+    'trunk_id'   => '',
+  );
+
+  $form['info'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('DID Information'),
+  );
+
+  $form['info']['from'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Range From'),
+    '#required'      => TRUE,
+    '#default_value' => $edit['from'],
+  );
+  
+  $form['info']['to'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('Range To'),
+    '#required'      => TRUE,
+    '#default_value' => $edit['to'],
+  );
+
+  $form['info']['description'] = array(
+    '#type'          => 'textarea',
+    '#title'         => t('Description'),
+    '#default_value' => $edit['description'],
+  );
+  
+  $form['setting'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('DID Settings'),
+  );
+  
+  $form['setting']['trunk_id'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Choose Provider Trunk'),
+    '#options'       => array(0 => 'None') + ictpbx_trunk_option(),
+    '#default_value' => $edit['trunk_id'],
+  );
+
+  $form['buttons']['submit'] = array(
+    '#type'          => 'submit',
+    '#value'         => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Validates did batch insert
+*/
+function ictpbx_did_batch_validate($form, &$form_state) {
+  $did = $form_state['values'];
+  
+  // validation in case of batch insert
+  if ($did['from'] == '' || $did['to'] == '') {
+    form_set_error('from', t('Both fileds in DID Range cannot be empty'));    
+  } else {
+    if (!is_numeric($did['from']) || !is_numeric($did['to'])) {
+      form_set_error('from', t('Please enter a valid DID range only numbers are allowed!'));
+    } else {
+      $query  = "SELECT count(ictpbx_did_id) as num FROM {ictpbx_did} WHERE did >= :from AND did<= :to";
+      $result = db_query($query, array(':from'=>$did['from'], ':to'=>$did['to']));
+      $count = $result->fetchField();
+      //print_r($count); exit();
+      //if ($count > 0) {
+      //  form_set_error('from', t('Some DIDs already exist in specified range! please use a new range'));
+      //}
+    }
+  }
+}
+
+/**
+ * Creates dids in batch and saves them.
+ */
+function ictpbx_did_batch_submit($form, &$form_state) {
+  global $user;
+
+  $did = $form_state['values'];
+
+  if (!isset($did['created'])) {
+    $did['created'] = time();
+  }
+  if (!isset($did['created_by'])) {
+    $did['created_by'] = $user->uid;
+  }
+
+  for ($num = $did['from']; $num <= $did['to']; $num++) {
+    $did['did'] = $num;
+    unset($did['ictpbx_did_id']);
+    drupal_write_record('ictpbx_did', $did);
+  }
+
+  $form_state['redirect'] = 'ictpbx/did/list';
+}
+
+/**
+ * Build the did import form.
+ */
+function ictpbx_did_import($form, &$form_state, $edit = array()) {
+  $edit += array(
+    'upload'       => '',
+    'to'         => '',
+    'description'=> '',
+    'trunk_id'   => '',
+  );
+
+  $form['info'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('did Information'),
+  );
+
+  // helper field for file upload
+  $form['#attributes'] = array('enctype' => "multipart/form-data");
+  $form['info']['upload'] = array(
+    '#type'          => 'file',
+    '#title'         => t('Upload DID List'),
+    '#default_value' => $edit['upload'],
+  );
+  $module_path = base_path() . drupal_get_path('module', 'ictpbx_did');
+  $form['info']['example'] = array(
+    '#type'          => 'markup',
+    '#markup'        => t("Example File: <a href='$module_path/did_sample.csv'>did_sample.csv</a>"),
+  );
+  
+  $form['setting'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('DID Settings'),
+  );
+  
+  $form['setting']['trunk_id'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Choose Provider Trunk'),
+    '#options'       => array(0 => 'None') + ictpbx_trunk_option(),
+    '#default_value' => $edit['trunk_id'],
+  );
+
+  $form['buttons']['submit'] = array(
+    '#type'          => 'submit',
+    '#value'         => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Validates did import insert
+*/
+function ictpbx_did_import_validate($form, &$form_state) {
+
+}
+
+/**
+ * Creates dids in import and saves them.
+ */
+function ictpbx_did_import_submit($form, &$form_state) {
+  global $user;
+  $did = $form_state['values'];
+  // set source file path
+  //$file = file_save_upload('file_upload');
+  $validators = array(
+    'file_validate_extensions' => array('csv', 'xls'),
+  );
+  if($file = file_save_upload('file_upload', $validators)) {
+    $orgFile = '/tmp/'.$file->filename;
+    if (strtolower($ext) == 'xls') {
+      $file_name = tempnam('', 'did-list-');
+      $command = sys_which('xlhtml') . " -csv -xp:0 ". $orgFile ." > $file_name";
+      exec($command);
+    } else {
+      $file_name = $orgFile;
+    }
+    $handle  = fopen($file_name, "r");
+    while (($data = fgetcsv($handle, 500, ",")) !== false) {
+        $did       = array();
+        if (count($data) == 1) {
+            $did['name']        = $data[0];
+        } else if (count($data) >= 2) {
+            $did['name']        = $data[0];
+            $did['description'] = $data[1];
+        }
+        if (count($did) > 0) {
+          $did['trunk_id']   = $trg_trunk;
+          $did['created_by'] = -1; // new did not assigned to anybody
+
+          // now save did
+          $result = db_update('did', $did);
+          $total_rows++;
+        } else {
+          // incomplete did record
+          $skipped_rows++;
+        }
+    }
+    fclose($handle);
+    return $total_rows;
+  }
+}
+
+function sys_which($cmd, $search_path=NULL) {
+  global $_ENV, $path_lib;
+  $scpath = is_null($search_path) ? $_ENV['PATH'] : $search_path;
+
+  foreach(explode(':', $scpath) as $path) {
+    if(is_executable("$path/$cmd")) {
+      return "$path/$cmd";
+    }
+  }
+
+  if(is_null($search_path)) {
+    $possible_path  = '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11R6/bin:/usr/local/apache/bin:/usr/local/mysql/bin';
+    $possible_path .= ':' . real_name($path_lib);
+    return sys_which($cmd, $all_path);
+  }
+
+  return false;
+}
+
+
+/**
+ * Build the did form.
+ */
+function ictpbx_did_assign($form, &$form_state, $edit = array()) {
+  $edit += array(
+    'did'         => '',
+    'description' => '',
+    'assigned_to' => '',
+    'forwarded_to' => '',
+  );
+
+  $form['info'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('DID Information'),
+  );
+
+  // containing the DID's unique ID.
+  if (!empty($edit['ictpbx_did_id'])) {
+    $form['info']['ictpbx_did_id'] = array(
+      '#type'          => 'value',
+      '#value'         => $edit['ictpbx_did_id'],
+    );
+  }
+
+  $form['info']['did'] = array(
+    '#type'          => 'item',
+    '#title'         => t('DID Number'),
+    '#markup'        => $edit['did'],
+  );
+
+  $form['setting'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('User Information'),
+  );
+
+  $form['setting']['assigned_to'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Assign to User'),
+    '#options'       => array(0 => 'None') + ictpbx_user_option(),
+    '#default_value' => $edit['assigned_to'],
+  );
+
+  $form['setting']['forwarded_to'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('E-mail to Forward DID'),
+    '#default_value' => $edit['forwarded_to'],
+  );
+
+  $form['buttons']['submit'] = array(
+    '#type'          => 'submit',
+    '#value'         => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Inserts a new did, or updates an existing one.
+ *
+ * @param $did
+ *   A did to be saved. If $did['did_id'] is set, the did will be updated.
+ *   Otherwise, a new did will be inserted into the database.
+ * @return
+ *   The saved did, with its ID set.
+ */
+function ictpbx_did_assign_submit($form, &$form_state) {
+  global $user;
+
+  $did = $form_state['values'];
+  
+  if($did['assigned_to'] == 0) {
+    $did['assigned_to'] = NULL;
+    $did['forwarded_to'] = NULL;
+  }
+  // save the did assignment
+  if (isset($did['ictpbx_did_id'])) {
+    drupal_write_record('ictpbx_did', $did, 'ictpbx_did_id');
+  }
+  drupal_set_message(t('DID assigned successfully!'), 'status');
+  $form_state['redirect'] = 'ictpbx/did/list';
+} 
+
+/**********************************
+* Now ICTFax User to Manage DIDs  *
+***********************************/
+/**
+ * Page function for did List
+ *
+ * It will show a list of available dids in form of list
+ *
+ * @return
+ * page html
+*/
+function ictpbx_user_did_list() {
+  global $user;
+  $header = array(
+    array('data' => t('DID Number'),    'field' => 'did',  'sort' => 'asc'),
+    array('data' => t('Description'),   'field' => 'description'),
+    array('data' => t('Forwarded To'),  'field' => 'email'),
+    array('data' => t('Operations')),
+  );
+  
+  $query = db_select('ictpbx_did', 't')->extend('PagerDefault');
+  $query->fields('t', array('ictpbx_did_id', 'did', 'description', 'forwarded_to'));
+  $query->leftjoin('ictpbx_user','user','user.ictpbx_user_id = t.assigned_to');
+  $query->condition('user.uid', $user->uid , '=');
+
+  $result = $query->limit(50)         
+            ->extend('TableSort')
+            ->orderByHeader($header)
+            ->execute();
+  
+  while ($did = $result->fetchAssoc()) {
+    $row_id = $did['ictpbx_did_id'];
+    $rows[$row_id][] = check_plain($did['did']);
+    $rows[$row_id][] = check_plain($did['description']);
+    $rows[$row_id][] = check_plain($did['forwarded_to']); 
+    $rows[$row_id][] = _ictpbx_user_did_list_links($did);
+  }
+  if (!isset($rows)) {
+    $rows[] = array(array('data' => t('No DID Number available'), 'colspan' => 6));
+  }
+  
+  $output = theme('table', array('header'=>$header, 'rows'=>$rows));
+  $output .= theme('pager');
+
+  return $output;
+}
+
+/**
+ * Build the Forward and Release links for a single did.
+ *
+ * @see did_list()
+ */
+function _ictpbx_user_did_list_links($did) {
+  $links['forward'] = array(
+    'title' => t('Forward'),
+    'href' => 'setting/did/' . $did['ictpbx_did_id'] . '/forward',
+    'html' => TRUE,
+  );
+  return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
+}
+
+/**
+ * Build the did form.
+ */
+function ictpbx_did_forward($form, &$form_state, $edit = array()) {
+
+  $form['info'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('DID Information'),
+  );
+  
+    // containing the DID's unique ID.
+  if (!empty($edit['ictpbx_did_id'])) {
+    $form['info']['ictpbx_did_id'] = array(
+      '#type'          => 'value',
+      '#value'         => $edit['ictpbx_did_id'],
+    );
+  }
+
+  $form['info']['did'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('DID Number'),
+    '#value'         => $edit['did'],
+  );
+  
+  $form['setting'] = array(
+    '#type'  => 'fieldset',
+    '#title' => t('User Information'),
+  );
+  
+  $form['setting']['forwarded_to'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('E-mail to Forward DID'),
+    '#default_value' => $edit['forwarded_to'],
+  );
+
+  $form['buttons']['submit'] = array(
+    '#type'          => 'submit',
+    '#value'         => t('Submit'),
+  );
+
+  return $form;
+}
+
+/**
+ * Inserts a new did, or updates an existing one.
+ *
+ * @param $did
+ *   A did to be saved. If $did['did_id'] is set, the did will be updated.
+ *   Otherwise, a new did will be inserted into the database.
+ * @return
+ *   The saved did, with its ID set.
+ */
+function ictpbx_did_forward_submit($form, &$form_state) {
+  $did = $form_state['values'];
+  
+  //print_r($did['ictpbx_did_id']); exit();
+  
+  // save the did assignment
+  if (isset($did['ictpbx_did_id'])) {
+    drupal_write_record('ictpbx_did', $did, 'ictpbx_did_id');
+  }
+  drupal_set_message(t('DID assigned successfully!'), 'status');
+  $form_state['redirect'] = 'setting/did/list';
+} 
+
+
+/**
+ * Page function for did Buy
+ *
+ * It will show a list of available for buying dids in form of list
+ *
+ * @return
+ * page html
+*/
+function ictpbx_user_did_buy_list() {
+  global $user;
+  $header = array(
+    array('data' => t('DID Number'),    'field' => 'did',  'sort' => 'asc'),
+    array('data' => t('Description'),   'field' => 'description'),
+    array('data' => t('Trunk Provider'),   'field' => 'trunk_name'),
+    array('data' => t('Operations')),
+  );
+  
+  $query = db_select('ictpbx_did', 't')->extend('PagerDefault');
+  $query->fields('t', array('ictpbx_did_id', 'did', 'description'));
+  $query->leftjoin('ictpbx_trunk','trunk','trunk.ictpbx_trunk_id = t.trunk_id');
+  $query->addfield('trunk', 'name', 'trunk_name');
+  $query->condition('t.assigned_to', NULL);
+
+  $result = $query->limit(50)         
+            ->extend('TableSort')
+            ->orderByHeader($header)
+            ->execute();
+  
+  while ($did = $result->fetchAssoc()) {
+    $row_id = $did['ictpbx_did_id'];
+    $rows[$row_id][] = check_plain($did['did']);
+    $rows[$row_id][] = check_plain($did['description']);
+    $rows[$row_id][] = check_plain($did['trunk_name']); 
+    $rows[$row_id][] = _ictpbx_user_did_buy_list_links($did);
+  }
+  if (!isset($rows)) {
+    $rows[] = array(array('data' => t('No DID Number available'), 'colspan' => 6));
+  }
+  
+  $output = theme('table', array('header'=>$header, 'rows'=>$rows));
+  $output .= theme('pager');
+
+  return $output;
+}
+
+/**
+ * Build the Forward and Release links for a single did.
+ *
+ * @see did_list()
+ */
+function _ictpbx_user_did_buy_list_links($did) {
+  $links['buy'] = array(
+    'title' => t('Buy'),
+    'href' => 'setting/did/' . $did['ictpbx_did_id'] . '/buy',
+    'html' => TRUE,
+  );
+  return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
+}
+
+function ictpbx_user_did_buy($did) {
+  global $user;
+  $uid = $user->uid;
+  $ictpbx_user = db_query("SELECT ictpbx_user_id from {ictpbx_user} WHERE uid =:uid", array(':uid'=>$user->uid))->fetchAssoc();
+  $did['assigned_to'] = $ictpbx_user['ictpbx_user_id'];
+  variable_set('ictpbx_did_buy', $did);
+    
+  drupal_goto('/cart/add/p9', array('query'=>array('destination'=>'cart')));  
+}
+

@@ -1,0 +1,53 @@
+K 25
+svn:wc:ra_dav:version-url
+V 66
+/svn/ict_billing/!svn/ver/10/trunk/sites/all/modules/ictpbx/ictfax
+END
+ictfax.info
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/ict_billing/!svn/ver/7/trunk/sites/all/modules/ictpbx/ictfax/ictfax.info
+END
+fax_email.tpl.php
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/ict_billing/!svn/ver/22/trunk/sites/all/modules/ictpbx/ictfax/fax_email.tpl.php
+END
+fax_email.txt.php
+K 25
+svn:wc:ra_dav:version-url
+V 84
+/svn/ict_billing/!svn/ver/22/trunk/sites/all/modules/ictpbx/ictfax/fax_email.txt.php
+END
+smtp.module_backup
+K 25
+svn:wc:ra_dav:version-url
+V 85
+/svn/ict_billing/!svn/ver/22/trunk/sites/all/modules/ictpbx/ictfax/smtp.module_backup
+END
+email.inc
+K 25
+svn:wc:ra_dav:version-url
+V 76
+/svn/ict_billing/!svn/ver/22/trunk/sites/all/modules/ictpbx/ictfax/email.inc
+END
+makepdf.sh
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/ict_billing/!svn/ver/22/trunk/sites/all/modules/ictpbx/ictfax/makepdf.sh
+END
+ictfax.module
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/ict_billing/!svn/ver/24/trunk/sites/all/modules/ictpbx/ictfax/ictfax.module
+END
+ictfax.install
+K 25
+svn:wc:ra_dav:version-url
+V 80
+/svn/ict_billing/!svn/ver/9/trunk/sites/all/modules/ictpbx/ictfax/ictfax.install
+END

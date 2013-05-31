@@ -1,0 +1,46 @@
+<?php
+/******************************************************************
+* Copyright © 2012 ICT Innovations.                               *
+* Developed By: Falak Nawaz                                       *
+*             : Nasir Iqbal                                       *
+*             : Tahir Almas                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Mail : info@ictinnovations.com                                  *
+******************************************************************/
+
+//  $Id: did.info,v 1.0 2012/02/28 10:40:49 ictinnovations Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function ictpbx_did_install() {
+//  drupal_install_schema('did');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function ictpbx_did_schema() {
+  $schema['ictpbx_did'] = array(
+    'fields' => array(
+      'ictpbx_did_id'   => array('type' => 'serial',  'not null' => TRUE,  'unsigned' => TRUE),
+      'did'             => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'description'     => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 255),
+      'assigned_to'     => array('type' => 'int',     'not null' => FALSE),
+      'forwarded_to'    => array('type' => 'varchar', 'not null' => FALSE,  'length'   => 255),
+      'trunk_id'        => array('type' => 'int',     'not null' => FALSE),
+      'created'         => array('type' => 'int',     'not null' => FALSE, 'unsigned' => TRUE),
+      'created_by'      => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+    ),
+    'primary key' => array('ictpbx_did_id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ictpbx_did_uninstall() {
+//  drupal_uninstall_schema('did');
+}

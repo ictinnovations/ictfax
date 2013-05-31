@@ -1,0 +1,49 @@
+<?php
+/******************************************************************
+* Copyright © 2012 ICT Innovations, All Rights Reserved           *
+* Developed By: Nasir Iqbal                                       *
+*             : Tahir Almas                                       *
+* Modified By:  Falak Nawaz                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Contact : support@ictinnovations.com, info@ictinnovations.com   *
+******************************************************************/
+
+//  $Id: ictcontact.info,v 1.0 2012/03/05 18:08:59 ictinnovations Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function ictcontact_install() {
+
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function ictcontact_schema() {
+  $schema['ictcontact'] = array(
+    'fields' => array(
+      'ictcontact_id' => array('type' => 'serial',  'not null' => TRUE,  'unsigned' => TRUE),
+      'first_name'    => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'last_name'     => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 32),
+      'company'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 32),
+      'address'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
+      'phone'         => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 32),
+      'fax'           => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 32),
+      'email'         => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 64),
+      'description'   => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
+      'created'       => array('type' => 'int',     'not null' => FALSE, 'unsigned' => TRUE),
+      'created_by'    => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+    ),
+    'primary key' => array('ictcontact_id'),
+  );
+
+  return $schema;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ictcontact_uninstall() {
+
+}

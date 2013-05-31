@@ -1,0 +1,14 @@
+; /******************************************************************
+; * Copyright © 2012 ICT Innovations.                               *
+; * Developed By: Falak Nawaz                                       *
+; *             : Nasir Iqbal                                       *
+; *             : Tahir Almas                                       *
+; * Website : http://www.ictinnovations.com/                        *
+; * Mail : info@ictinnovations.com                                  *
+; ******************************************************************/
+;
+; $Id: trunk.info,v 1.0 2012/02/29 10:40:02 ictinnovations Exp $
+name = "Trunk module"
+description = "Manages Trunks for All destinations"
+package = "ICTPBX System"
+core = "7.x"

@@ -1,0 +1,107 @@
+<?php
+/******************************************************************
+* Copyright © 2012 ICT Innovations.                               *
+* Developed By: Falak Nawaz                                       *
+*             : Nasir Iqbal                                       *
+*             : Tahir Almas                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Mail : info@ictinnovations.com                                  *
+******************************************************************/
+
+// $Id: ictpbx.install,v 1.0 2012/02/29 13:34:59 diggersf Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function ictpbx_install() {
+$services = "
+INSERT INTO ictpbx_service VALUES(1, 'voice', 1, 1289015931, 1);
+INSERT INTO ictpbx_service VALUES(2, 'sms',   1, 1289015931, 1);
+INSERT INTO ictpbx_service VALUES(3, 'fax',   1, 1289015931, 1);
+";
+db_query($services);
+
+$technologies = "
+INSERT INTO ictpbx_technology VALUES(1, 'SIP',  0, 1, 1289015931, 1);
+INSERT INTO ictpbx_technology VALUES(2, 'IAX2', 0, 1, 1289015931, 1);
+INSERT INTO ictpbx_technology VALUES(3, 'H323', 0, 1, 1289015931, 1);
+INSERT INTO ictpbx_technology VALUES(4, 'ZAP',  0, 1, 1289015931, 1);
+";
+db_query($technologies);
+
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function ictpbx_schema() {
+    $schema['ictpbx_user'] = array(
+    'fields' => array(
+      'ictpbx_user_id'    => array('type' => 'serial',  'not null' => TRUE),
+      'name'              => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32), // name = username
+      'first_name'        => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'last_name'         => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'mail'              => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'phone_number'      => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'mobile_number'     => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'fax_number'        => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'address'           => array('type' => 'text',    'not null' => TRUE),
+      'country'           => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'company'           => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'website'           => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'uid'               => array('type' => 'int',     'not null' => TRUE),
+      'active'            => array('type' => 'int',     'not null' => TRUE),
+      'credit'            => array('type' => 'float',   'not null' => FALSE),
+      'free_bundle'       => array('type' => 'int',     'not null' => FALSE), // for incoming, where bundle = faxes
+      'reserve_credit'    => array('type' => 'float',   'not null' => FALSE),
+      'reserve_free_bundle'=> array('type' => 'int',     'not null' => FALSE), 
+      'package'           => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 32),
+    ),
+    'primary key' => array('ictpbx_user_id')
+  );
+  
+  $schema['ictpbx_gateway'] = array(
+    'fields' => array(
+      'ictpbx_gateway_id'=> array('type' => 'serial',  'not null' => TRUE,  'unsigned' => TRUE),
+      'name'             => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'type'             => array('type' => 'int',     'not null' => FALSE),
+      'active'           => array('type' => 'int',     'not null' => FALSE),
+      'created'          => array('type' => 'int',     'not null' => FALSE, 'unsigned' => TRUE),
+      'created_by'       => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+    ),
+    'primary key' => array('ictpbx_gateway_id'),
+  );
+
+  $schema['ictpbx_technology'] = array(
+    'fields' => array(
+      'ictpbx_technology_id'  => array('type' => 'serial',  'not null' => TRUE,  'unsigned' => TRUE),
+      'name'                  => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'type'                  => array('type' => 'int',     'not null' => FALSE),
+      'active'                => array('type' => 'int',     'not null' => FALSE),
+      'created'               => array('type' => 'int',     'not null' => FALSE, 'unsigned' => TRUE),
+      'created_by'            => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+    ),
+    'primary key' => array('ictpbx_technology_id'),
+  );
+  
+  $schema['ictpbx_service'] = array(
+    'fields' => array(
+      'ictpbx_service_id'     => array('type' => 'serial',  'not null' => TRUE,  'unsigned' => TRUE),
+      'name'                  => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'active'                => array('type' => 'int',     'not null' => FALSE),
+      'created'               => array('type' => 'int',     'not null' => FALSE, 'unsigned' => TRUE),
+      'created_by'            => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
+    ),
+    'primary key' => array('ictpbx_service_id'),
+  );
+  
+  
+  return $schema;
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ictpbx_uninstall() {
+
+}

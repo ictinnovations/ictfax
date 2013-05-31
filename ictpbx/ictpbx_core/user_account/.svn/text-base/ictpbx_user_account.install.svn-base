@@ -1,0 +1,31 @@
+<?php
+/******************************************************************
+* Copyright © 2012 ICT Innovations.                               *
+* Developed By: Falak Nawaz                                       *
+*             : Nasir Iqbal                                       *
+*             : Tahir Almas                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Mail : info@ictinnovations.com                                  *
+******************************************************************/
+
+//  $Id: user_account.info,v 1.0 2012/02/29 10:40:49 ictinnovations Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function ictpbx_user_account_install() {
+
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function ictpbx_user_account_schema() {
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ictpbx_user_account_uninstall() {
+
+}

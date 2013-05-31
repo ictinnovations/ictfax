@@ -1,0 +1,23 @@
+K 25
+svn:wc:ra_dav:version-url
+V 77
+/svn/ict_billing/!svn/ver/12/trunk/sites/all/modules/ictpbx/ictpbx_core/trunk
+END
+ictpbx_trunk.module
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/ict_billing/!svn/ver/12/trunk/sites/all/modules/ictpbx/ictpbx_core/trunk/ictpbx_trunk.module
+END
+ictpbx_trunk.install
+K 25
+svn:wc:ra_dav:version-url
+V 97
+/svn/ict_billing/!svn/ver/7/trunk/sites/all/modules/ictpbx/ictpbx_core/trunk/ictpbx_trunk.install
+END
+ictpbx_trunk.info
+K 25
+svn:wc:ra_dav:version-url
+V 94
+/svn/ict_billing/!svn/ver/7/trunk/sites/all/modules/ictpbx/ictpbx_core/trunk/ictpbx_trunk.info
+END
