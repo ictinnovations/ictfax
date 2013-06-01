@@ -442,7 +442,6 @@ function ictfax_form($form, &$form_state, $edit = array()) {
     '#required'      => FALSE,
     '#cols'          => 60, 
     '#rows'          => 10,
-    '#description'   => t('enter here your message if you choose not to upload a file'),
     '#default_value' => $edit['text'],
   );
   
@@ -452,8 +451,7 @@ function ictfax_form($form, &$form_state, $edit = array()) {
     '#type'          => 'file',
     '#title'         => t('Fax file'),
     '#required'      => FALSE,
-    '#description'   => t('Select a file to send as fax, please use only MS Word doc file, tif, pdf, jpg or text file'),
-//    '#default_value' => $edit['file_name'],
+    '#description'   => t('Select a file to send as fax, please use only tif, pdf, jpg, png, gif or txt file'),
   );
   
   $form['info']['rating'] = array(
