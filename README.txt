@@ -1,3 +1,8 @@
+2013-06-03 Version 2.1.1
+
+* Updated ambiguous create fax descriptions
+* ictfax new theme and GUI
+
 2012-12-26 Version 2.1
 
 * Bug fixing for registered user's activation
