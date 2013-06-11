@@ -2,6 +2,7 @@
 
 * Updated ambiguous create fax descriptions
 * ictfax new theme and GUI
+* Bug fix for permission issue in Fax Account
 
 2012-12-26 Version 2.1
 
