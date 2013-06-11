@@ -211,8 +211,8 @@ function ictfax_permission() {
 
 function ictfax_access($access) {
   global $user;
-  //if (is_array($access)) $access = $access[0];
-  //if (!user_access($access)) return false;
+  if (is_array($access)) $access = $access[0];
+  if (!user_access($access)) return false;
   return true;
 }
 
