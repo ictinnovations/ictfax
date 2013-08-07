@@ -245,8 +245,6 @@ function ictfax_list_faxs() {
 
   $query = db_select('fax_outbox', 'fax')->extend('PagerDefault');
   $query->fields('fax', array('cid', 'send_to', 'file_name', 'text', 'pages', 'status_string', 'created', 'send_from'));
-//  $query->leftjoin('astaccount','acc','fax.send_from = acc.uid');
-//  $query->addfield('fax', 'accountcode', 'send_from');
   $query->condition('fax.uid', $user->uid,'=');
   $result = $query->limit(50)         
             ->extend('TableSort')
@@ -373,11 +371,6 @@ function ictfax_load($cid) {
     }
   }
 }
-/*
-function ictfax_load_fax($cid) {
-  $result = db_query('SELECT * FROM fax_outbox WHERE cid = :cid', array(':cid'=>$cid));
-  return $result->fetchObject();
-} */
 
 /**
  * Crates a input form
@@ -484,11 +477,6 @@ function ictfax_form($form, &$form_state, $edit = array()) {
   if ($fax['send_to'] == '') {
     form_set_error('send_to', t('Recipient cannot be empty'));
   }
-  // etc
-
-/*  if (empty($fax['send_from'])) {
-    form_set_error('send_from', t('Account code is required.'));
-  }*/
   if (empty($fax['send_to'])) {
     form_set_error('send_to', t('Fax Number is required.'));
   } else {
@@ -650,9 +638,6 @@ function ictfax_form_submit($form, &$form_state) {
       if (!$pages[0] || $pages[0] < 1) {
         drupal_set_message(t('unknow error occured while processing file.'), 'error');
       }
-      //$aFile[$curFile['name']]['file_name'] = $curFile['name'];
-      //$aFile[$curFile['name']]['file_path'] = $fileNameTiff;
-      //$aFile[$curFile['name']]['file_type'] = substr($fileExten, -3);
       $fax['file_path'] = $fileNameTiff;
     }
   } 
@@ -708,235 +693,6 @@ function ictfax_delete($fax) {
   }
   drupal_goto('ictfax/outbox');
 }
-
-/* 
-function ictfax_save_fax($fax, $edit, $faxFiles) {
-  $oOfficeTypes = array('.odt', '.ott', '.sxw', '.stw', '.doc', '.dot', '.sdw', '.vor', 
-            '.htm', '.sdd', '.sdp', '.wpd', '.ods', '.ots', '.sxc', '.stc', 
-            '.xls', '.xlw', '.xlt', '.sdc', '.csv', '.odp', '.otp', '.sxi', 
-            '.sti', '.ppt', '.pps', '.pot', '.sxd');
-
-  $allTypes     = array('.odt', '.ott', '.sxw', '.stw', '.doc', '.dot', '.sdw', '.vor', 
-            '.htm', '.sdd', '.sdp', '.wpd', '.ods', '.ots', '.sxc', '.stc', 
-            '.xls', '.xlw', '.xlt', '.sdc', '.csv', '.odp', '.otp', '.sxi', 
-            '.sti', '.ppt', '.pps', '.pot', '.sxd', '.txt', '.tif', '.jpg', 
-            '.pdf');
-
-  //$fields = array_keys(ictfax_get_fields());
-
-  $noFILES    = 0;
-  $validFILES = 0;
-  foreach ($faxFiles as $key => $value) {
-      $fileExten = strtolower(substr($value['name'], -4));
-      if ($value['error'] == '0') {
-          $noFILES = $noFILES + 1;
-          if (in_array($fileExten, $allTypes)) {
-            $validFILES = $validFILES + 1;
-          }
-      }
-  }
-
-  if (!$uid) {
-    form_set_error('password',t('Invalid account credential.'));
-  }
-  
-  if (empty($edit['send_from'])) {
-    $allAccounts = ictfax_getaccount();
-    $edit['send_from'] = array_shift($allAccounts);
-    if (empty($edit['send_from'])) {
-        form_set_error('send_from', t('Account code is required.'));
-    }
-  }
-
-  if (empty($edit['send_to'])) {
-    form_set_error('send_to', t('Fax Number is required.'));
-  } else {
-    if (!ctype_digit(str_replace(array('+', ','), '',$edit['send_to']))) {
-        form_set_error('send_to', t('Fax Number is not valid.'));
-    }
-  }
-
-  // if no attachment
-  if ($noFILES > 0 && $validFILES <= 0) {
-    form_set_error('file_name', t('attached file type not supported.'));
-  } elseif ($noFILES <= 0 && strlen($edit['text']) <= 0) {
-    form_set_error('text', t('no file and no message. can not send empty fax'));
-  }
-
-  //escape special charecter to avoide risk in command line
-  $edit['text'] = addcslashes($edit['text'],'$"\\');
-
-  if ( !form_get_errors() ) {
-    // Test if the fax is new or already exists
-    if ($fax->cid) {
-    } else {
-      // Insert fax
-
-      $edit['status'] = '0';
-      $edit['status_string'] = 'in queue';
-      $edit['file_name'] = '';
-      $edit['file_path'] = '';
-      $edit['file_type'] = '';
-      $edit['pages'] = 0;
-      $edit['ictfax_outbox_id'] = db_next_id('ictfax_outbox_id');
-      $edit['uid'] = $uid;
-      $edit['created'] = time();
-      $edit['changed'] = time();
-      //Fileds listed below commited out cos already contain a value
-      //$edit['send_to'] = $edit['send_to'];
-      //$edit['rating'] = $edit['rating'];
-      //$edit['submitted_from'] = $edit['submitted_from'];
-
-      $recordDir = '/var/spool/asterisk/fax/outbox/' . $edit['ictfax_outbox_id'] . '/';
-      $cmd = "mkdir -p -m 777 $recordDir";
-      exec($cmd);
-
-      $aFiles = array();
-
-      if ($noFILES <= 0) {
-        $tmpFile = array();
-        $tmpFile['tmp_name'] = $recordDir . 'temp.txt';
-        $cmd = 'echo "'.$edit['text'].'" > '.$tmpFile['tmp_name']; 
-        exec($cmd);
-        $tmpFile['name'] = 'input.txt';
-        $tmpFile['error'] = '0';
-        $tmpFile['size'] = 999;
-        $faxFiles['input.txt'] = $tmpFile;
-
-        if ($edit['submitted_from'] != 'web') {
-          $edit['text'] = $edit['subject'];        
-        } else {
-          $edit['text'] = truncate_utf8($edit['text'], 30, TRUE, TRUE);
-        }
-      } else {
-        if ($edit['submitted_from'] != 'web') {
-          $edit['text'] = $edit['subject'];        
-        } else {
-          $edit['text'] =  truncate_utf8($edit['text'], 30, TRUE, TRUE);
-        }
-      }
-
-      //clean up the header. so it will be safe in asterisk dialplan
-      $edit['text'] = str_replace(array("\n", "\r", '#', '$', '[', ']', '{', '}', '|', ','), ' ', $edit['text']);
-      if ($edit['text']=='') {
-        $edit['text'] = 'no subject';
-      }
-
-      foreach ($faxFiles as $key => $curFile) {
-
-        $fileExten = strtolower(substr($curFile['name'], -4));
-
-        if ($curFile['error'] == '0' && in_array($fileExten, $allTypes)) {
-          $sourceFile = $curFile['tmp_name'];
-          $targetFile = $recordDir . $curFile['name'];
-          $cmd = "mv $sourceFile $targetFile";
-          exec($cmd);
-          $fileName = $recordDir . $curFile['name'];
-
-          if ($fileExten == '.tif') {
-            $pdfFilePath = str_replace('.tif', '.pdf', $fileName);
-            $cmd = ictfax_which('tiff2pdf', '/usr/bin') . " -o $pdfFilePath -z $fileName";
-            exec($cmd);
-            $cmd = "rm -rf $fileName";
-            // existing tiff file must be deleted before new tiff file creation
-            exec($cmd);
-          } elseif ($fileExten == '.txt') {
-            $psFilePath = str_replace('.txt', '.ps', $fileName);
-            $pdfFilePath = str_replace('.ps', '.pdf', $psFilePath);
-            $cmd = ictfax_which('uniprint', '/usr/local/bin') . " -hsize 0 -size 9 -in $fileName -out $psFilePath";
-            exec($cmd);
-            $cmd = "rm -rf $fileName";
-            //exec($cmd);
-            $cmd = ictfax_which('ps2pdf', '/usr/bin') . " $psFilePath $pdfFilePath";
-            exec($cmd);
-            $cmd = "rm -rf $psFilePath";
-            //exec($cmd);
-          } elseif (in_array($fileExten,$oOfficeTypes)) {
-            $pdfFilePath = str_replace($oOfficeTypes, '.pdf', $fileName);
-            $cmd = ictfax_which('makepdf.sh', '/usr/ictfax/wwwroot/modules/email2fax') . " $fileName";
-            exec($cmd);
-            $cmd = "rm -rf $fileName";
-            //exec($cmd);
-          } elseif ($fileExten == '.jpg') {
-            $pdfFilePath = str_replace('.jpg', '.pdf', $fileName);
-            $cmd = ictfax_which('convert', '/usr/bin') . " $fileName -type Bilevel -monochrome $pdfFilePath";
-            exec($cmd);
-            //$pdfFilePath = str_replace(array('.tiff', '.tif'), '.pdf', $tifFilePath);
-            //$cmd = "tiff2pdf -o $pdfFilePath -z $tifFilePath";
-            //exec($cmd);
-            $cmd = "rm -rf $fileName";
-            //exec($cmd);
-          } elseif ($fileExten == '.pdf') {
-            $pdfFilePath = $fileName;
-          }
-          // get total page count of pdf
-          $cmd = ictfax_which('pdfinfo', '/usr/bin') . " '$pdfFilePath' | sed -n 's#^Pages:[^0-9]*\\([0-9.]*\)$#\\1#p'";
-          exec($cmd, $edit['pages']);
-
-          $fileNameTiff = str_replace('.pdf', '.tif', $pdfFilePath);
-          //$cmd = "convert -quiet -density 150 $fileName -shave 65x65 -colorspace rgb -quality 100 -resample 320 $fileName.tif";
-          //$cmd = "cat $fileName | gs -q -sDEVICE=tiffg3 -sPAPERSIZE=a4 -r204x196 -dNOPAUSE -sOutputFile=$fileName.tif";
-          $cmd = ictfax_which('gs', '/usr/bin') . " -dBATCH -dNOPAUSE -sDEVICE=tiffg4 -sPAPERSIZE=a4 -r204x98 -dAutoRotatePages -sOutputFile=$fileNameTiff $pdfFilePath";
-          exec($cmd);
-          $cmd = "chmod -R 777 $recordDir";
-          exec($cmd);
-
-          if (!$edit['pages'] || $edit['pages'] < 1) {
-            form_set_error('file_name', t('unknow error occured while processing file.'));
-          }
-
-          $aFile[$curFile['name']]['file_name'] = $curFile['name'];
-          $aFile[$curFile['name']]['file_path'] = $fileNameTiff;
-          $aFile[$curFile['name']]['file_type'] = substr($fileExten, -3);
-        }
-      }
-
-      $aSendTo = explode(',',$edit['send_to']);
-      array_walk($aSendTo,'ictfax_getPhoneNo');
-
-      $aCid = array();
-      $entryNo=0;
-      foreach ($aFile as $key => $cFile) {
-        $edit['file_name'] = $cFile['file_name'];
-        $edit['file_path'] = $cFile['file_path'];
-        $edit['file_type'] = $cFile['file_type'];
-
-        foreach ($aSendTo as $key => $value) {
-          $edit['send_to'] = $value;
-
-          if ($entryNo != 0) {
-            $edit['ictfax_outbox_id'] = db_next_id('ictfax_outbox_id');
-          }
-
-          $columns = array();
-          $params = array();
-          $types = array();
-
-          foreach ($edit as $key => $value) {
-            if (in_array($key, $fields)) {
-              $columns[] = $key;
-              $params[] = $value;
-              $types[] = "'%s'";
-            }
-          }
-
-          $sql = 'INSERT INTO ictfax_outbox ('. implode(', ', $columns) .') VALUES ('. implode(', ', $types) .')';
-          db_query($sql, $params);
-          //db_query("UPDATE ictfax_outbox SET send_from = %d WHERE ictfax_outbox_id = %d", $edit['send_from'], $edit['ictfax_outbox_id']);
-          if ($edit['pages'] == 0) {
-            db_query("UPDATE ictfax_outbox SET status = 150, status_string = 'invalid file' WHERE ictfax_outbox_id = :ictfax_outbox_id", array(':ictfax_outbox_id'=>$edit['ictfax_outbox_id']));
-          } else {
-            ictfax_sendfax($uid, $edit);
-          }
-
-          $aCid[] = $edit['ictfax_outbox_id'];
-          $entryNo++;
-        }
-      }
-      $_SESSION['fax_cid'] = $aCid;
-    }
-  }
-} */
 
 function ictfax_getaccount() {
   global $user;
@@ -1265,67 +1021,7 @@ function ictfax_getfaxstatus() {
     return $output;
 }
 
-
-
 //Email Part
-/*
-function ictfax_mailhandler($node, $result, $i, $header, $mailbox) {
-
-    if ($node->type != 'fax') {
-        return $node;
-    }
-
-    if (!$node->subject) $node->subject = $node->title;
-
-    $node->attachments = array();
-    if (file_exists('modules/email2fax/mailsave.module')) {
-        include_once 'modules/email2fax/mailsave.module';
-        $node = mailsave_disabled_mailhandler($node, $result, $i, $header, $mailbox);
-    }
-
-    $attachments = array();
-    foreach ($node->attachments as $key => $value) {
-        $attachments[$key] = array();
-
-        $attachments[$key]['tmp_name'] = $value['filepath'];
-        $attachments[$key]['name']     = $value['filename'];
-        $attachments[$key]['size']     = $value['filesize'];
-        $attachments[$key]['error']    = 0;
-    }
-
-    global $user, $_SESSION, $GLOBALS;
-    
-    // gets the specified fax
-    $fax  = ictfax_load_fax(0);
-    $emailData = object2array($fax);
-
-    $from = $header->from;
-    $emailTo = explode('@', $header->toaddress);
-
-    $emailData['submitted_from']= $from[0]->mailbox ."@". $from[0]->host;
-    $emailData['send_to']      = str_replace(array(' ', '-', '"', "'", '+', '<', '>'), array(), $emailTo[0]);
-    $emailData['subject']      = $node->subject;
-    $emailData['text']         = $node->body;
-    $emailData['send_from']    = $node->account;
-    $emailData['rating']       = 3 - $node->try;
-
-    //  _fax_dir_edit_validate($edit);
-    ictfax_save_fax($fax, $emailData, $attachments, $user->uid);
-    if (!form_get_errors()) {
-      drupal_set_message(t('<div name="faxstatus" id="faxstatus" class="message status">The new fax has added to queue.</div>'));
-      //$_SESSION['fax_status'] = 'in_queue';
-    } else {
-      $user->mail = $from[0]->mailbox ."@". $from[0]->host;
-      ictfax_sendmail_error($user, $emailData, form_get_errors());
-    }
-
-    // clean variables
-    $_SESSION['fax_status'] = '';
-    $GLOBALS['form']        = array();
-
-    return false;
-} */
-
 function ictfax_sendmail_received($user, $fax) {
     echo exec("echo Executing ictfax_sendmail_received >> /tmp/mytest.txt"); 
     $company_name  = variable_get('site_name', 'ICTFAX');
@@ -1486,7 +1182,6 @@ function user_mail_wrapper($to, $subject, $message, $header, $attachments = fals
 	return true;
 }
 
-
 function ictfax_sendmail_error($user, $fax, $errors) {
   $from = variable_get('site_mail', ini_get('sendmail_from'));
   $error_message = $errors;
@@ -1564,45 +1259,6 @@ function _ictfax_mail_text($messageid, $variables = array()) {
     }
   }
 }
-
-/**
- * Resend fax
- *
- 
-function ictfax_resend($fax) {
-    global $user;
-    $uid = $user->uid;
-
-    $fax['submitted_from'] = 'resend';
-    $fax['status'] = '0';
-    $fax['status_string'] = 'in queue';
-    //$fax['cid'] = db_next_id('cid');
-    $fax['uid'] = $uid;
-    $fax['created'] = time();
-    $fax['changed'] = time();
-    $fax['rating'] = 3;  // Not sure what value should set here: falak
-    
-
-        $columns = array();
-        $params = array();
-        $types = array();
-
-        foreach ($fax as $key => $value) {
-           $columns[] = $key;
-           $params[] = $value;
-           $types[] = "'%s'";
-        }
-        $sql = 'INSERT INTO fax_outbox ('. implode(', ', $columns) .') VALUES ('. implode(', ', $types) .')';
-        db_query($sql,$params);
-
-        ictfax_sendfax($uid, $fax);
-    
-    drupal_set_message(t('<div name="faxstatus" id="faxstatus" class="message status">The new fax has added to queue.</div>'));
-    $_SESSION['fax_cid'] = array($fax['cid']);
-    $_SESSION['fax_status'] = 'in_queue';
-    drupal_goto("ictfax");
-}
-*/
 
 function ictfax_which($cmd, $search_path=NULL) {
   global $_ENV;
@@ -1742,25 +1398,6 @@ function ictfax_list_contacts_submit($form, &$form_state) {
   //$phone = implode($phone, ',');
   $form_state['values']['phone_list'] = $phone;
     
-  $form_state['complete'] = TRUE;
-  
+  $form_state['complete'] = TRUE; 
 }
-
-/*function releaseBalance($fax, $user, $estimated_cost) {
-  echo exec("echo estimatedcost in release balance=$estimated_cost >> /tmp/mytest.txt");                    
-  $user['reserve_credit'] = $user['reserve_credit'] - (float)$estimated_cost;
-  echo exec("echo '".print_r($user, true)."' >> /tmp/mytest.txt");                    
-  drupal_write_record('ictpbx_user', $user, 'ictpbx_user_id');
-  return true;
-}*/
-
-
-
 ?>
-
-
-
-
-
-
-
