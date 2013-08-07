@@ -1350,7 +1350,7 @@ function ictfax_sendmail_received($user, $fax) {
     include(dirname(__FILE__).'/fax_email.tpl.php');
     $html_message = ob_get_clean();
 
-    if (!(variable_get('smtp_library', '') && file_exists(variable_get('smtp_library', '')))) {
+    if ((variable_get('smtp_library', '') && file_exists(variable_get('smtp_library', '')))) {
       include_once variable_get('smtp_library', '');
       echo exec("echo SMTP library success >> /tmp/mytest.txt"); 
       $header  = "From: $company_name <$company_email>\n";
