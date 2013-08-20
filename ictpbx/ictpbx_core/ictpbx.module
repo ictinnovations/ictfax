@@ -558,7 +558,7 @@ function ictpbx_default_settings($form) {
     '#type'  => 'fieldset',
     '#title' => t('General Settings'),
   );
-  $form['general']['caller_id'] = array(
+  $form['general']['default_caller_id'] = array(
     '#type'          => 'textfield',
     '#title'         => t("Default Outgoing Caller ID"),
     '#default_value' => variable_get('default_caller_id', '33184164306'),

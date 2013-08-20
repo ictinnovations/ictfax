@@ -51,7 +51,7 @@ function ictfax_menu() {
   $items['ictfax/outbox'] = array(
     'title'            => t('Fax Outbox'),
     'description'      => 'Fax Outbox',
-    'page callback'    => 'ictfax_list_faxs',
+    'page callback'    => 'ictfax_outbox_list',
     'access callback'  => 'ictfax_access',
     'access arguments' => array('can use ictfax'),
     'type'             => MENU_NORMAL_ITEM,
@@ -60,8 +60,8 @@ function ictfax_menu() {
 
   $items['ictfax/outbox/list'] = array(
     'title'            => t('List'),
-    'description'      => 'Fax Account',
-    'page callback'    => 'ictfax_list_faxs',
+    'description'      => 'Fax Outbox',
+    'page callback'    => 'ictfax_outbox_list',
     'access callback'  => 'ictfax_access',
     'access arguments' => array('can use ictfax'),
     'type'             => MENU_DEFAULT_LOCAL_TASK,
@@ -79,18 +79,8 @@ function ictfax_menu() {
     'type'             => MENU_LOCAL_TASK,
     'weight'           => 11,
   );
-  
-  $items['ictfax/inbox'] = array(
-    'title'            => t('Fax Inbox'),
-    'description'      => 'Fax Inbox',
-    'page callback'    => 'ictfax_list_did_faxs',
-    'access callback'  => 'ictfax_access',
-    'access arguments' => array('can use ictfax'),
-    'type'             => MENU_NORMAL_ITEM,
-    'weight'           => 11,
-  );
 
-  $items['ictfax/%ictfax/edit'] = array(
+  $items['ictfax/outbox/%ictfax_outbox/edit'] = array(
     'title'            => t('Edit Fax'),
     'description'      => 'Edit Fax',
     'page callback'    => 'drupal_get_form',
@@ -99,18 +89,18 @@ function ictfax_menu() {
     'access arguments' => array('can use ictfax'),
     'type' => MENU_CALLBACK,
   );
-  
-  $items['ictfax/%ictfax/delete'] = array(
+
+  $items['ictfax/outbox/%ictfax_outbox/delete'] = array(
     'title'            => t('Delete Fax'),
     'description'      => 'Delete Fax',
-    'page callback'    => 'ictfax_delete',
-    'page arguments'   => array(1),
+    'page callback'    => 'ictfax_outbox_delete',
+    'page arguments'   => array(2),
     'access callback'  => 'ictfax_access',
     'access arguments' => array('can use ictfax'),
     'type' => MENU_CALLBACK,
   );
-  
-  $items['ictfax/%ictfax/resend'] = array(
+
+  $items['ictfax/%ictfax_outbox/resend'] = array(
     'title'            => t('Resend Fax'),
     'description'      => 'Resend Fax',
     'page callback'    => 'drupal_get_form',
@@ -121,7 +111,7 @@ function ictfax_menu() {
     //'weight' => -10,
   );
    
-  $items['ictfax/%ictfax/view'] = array(
+  $items['ictfax/outbox/%ictfax_outbox/view'] = array(
     'title'            => t('View Fax'),
     'description'      => 'View Fax',
     'page callback'    => 'drupal_get_form',
@@ -130,6 +120,36 @@ function ictfax_menu() {
     'access arguments' => array('can use ictfax'),
 //    'type' => MENU_DEFAULT_LOCAL_TASK,
     //'weight' => -10,
+  );
+
+  $items['ictfax/inbox'] = array(
+    'title'            => t('Fax Inbox'),
+    'description'      => 'Fax Inbox',
+    'page callback'    => 'ictfax_inbox_list',
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type'             => MENU_NORMAL_ITEM,
+    'weight'           => 11,
+  );
+
+  $items['ictfax/inbox/list'] = array(
+    'title'            => t('List'),
+    'description'      => 'Fax Inbox',
+    'page callback'    => 'ictfax_inbox_list',
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type'             => MENU_DEFAULT_LOCAL_TASK,
+    'weight'           => 11,
+  );
+
+  $items['ictfax/inbox/%ictfax_inbox/delete'] = array(
+    'title'            => t('Delete Fax'),
+    'description'      => 'Delete Fax',
+    'page callback'    => 'ictfax_inbox_delete',
+    'page arguments'   => array(2),
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type' => MENU_CALLBACK,
   );
 
   $items['ictfax/phonebookpopup'] = array(
@@ -150,7 +170,7 @@ function ictfax_menu() {
     'page callback'    => 'ictfax_send_fax',
     'page arguments'   => array(2),
     'access callback'  => 'ictfax_access',
-    'access arguments' => array('can use ictfax'),
+    'access arguments' => array('access content'),
     'type'             => MENU_CALLBACK,
   );
 
@@ -161,7 +181,7 @@ function ictfax_menu() {
     'page callback'    => 'ictfax_send_fax_hangup',
     'page arguments'   => array(2),
     'access callback'  => 'ictfax_access',
-    'access arguments' => array('can use ictfax'),
+    'access arguments' => array('access content'),
     'type'             => MENU_CALLBACK,
   );
 
@@ -231,7 +251,7 @@ function ictfax_fax_outbox_load($cid) {
 /**
  * This function creates a list of faxs for the specified interface
  */
-function ictfax_list_faxs() {
+function ictfax_outbox_list() {
   global $user;
 
   $header = array(
@@ -276,12 +296,12 @@ function ictfax_list_faxs() {
 function _ictfax_list_links($fax) {
   $links['edit'] = array(
     'title' => t('Edit'),
-    'href' => 'ictfax/' . $fax['cid'] . '/edit',
+    'href' => 'ictfax/outbox/' . $fax['cid'] . '/edit',
     'html' => TRUE,
   );
   $links['delete'] = array(
     'title' => t('Delete'),
-    'href' => 'ictfax/' . $fax['cid'] . '/delete',
+    'href' => 'ictfax/outbox/' . $fax['cid'] . '/delete',
     'html' => TRUE,
   );
   return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
@@ -290,7 +310,7 @@ function _ictfax_list_links($fax) {
 /**
  * This function creates a list of incomming faxs
  */
-function ictfax_list_did_faxs() {
+function ictfax_inbox_list() {
   global $user;
   
   $header = array(
@@ -341,7 +361,7 @@ function _ictfax_list_incoming_links($fax) {
   );
   $links['delete'] = array(
     'title' => t('Delete'),
-    'href' => 'ictfax/' . $fax['fax_inbox_id'] . '/delete',
+    'href' => 'ictfax/inbox/' . $fax['fax_inbox_id'] . '/delete',
     'html' => TRUE,
   );
   return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
@@ -356,12 +376,31 @@ function ictfax_view($fax) {
 }
 
 /**
- * Loads a fax
+ * Loads a fax from inbox
  */
-function ictfax_load($cid) {
+function ictfax_inbox_load($cid) {
   global $user;
   if($cid != null) {
-    $result = db_query('SELECT * FROM fax_outbox WHERE cid = :cid AND uid=:uid', array(':cid'=>$cid, ':uid'=>$user->uid));
+    $query  = 'SELECT * FROM fax_inbox WHERE fax_inbox_id = :fax_inbox_id AND uid=:uid';
+    $result = db_query($query, array(':fax_inbox_id'=>$cid, ':uid'=>$user->uid));
+    if ($fax = $result->fetchAssoc()) {
+      return $fax;
+    }
+    else {
+      drupal_set_message(t('Specified Fax does not exist! or you have not proper permissions!'), 'error');
+      return FALSE;
+    }
+  }
+}
+
+/**
+ * Loads a fax from outbox
+ */
+function ictfax_outbox_load($cid) {
+  global $user;
+  if($cid != null) {
+    $query  = 'SELECT * FROM fax_outbox WHERE cid = :cid AND uid=:uid';
+    $result = db_query($query, array(':cid'=>$cid, ':uid'=>$user->uid));
     if ($fax = $result->fetchAssoc()) {
       return $fax;
     }
@@ -681,7 +720,7 @@ function ictfax_form_submit($form, &$form_state) {
  * @param $recording
  *   An array of recording containing the ID of a recording
  */
-function ictfax_delete($fax) {
+function ictfax_outbox_delete($fax) {
   $sql = 'DELETE FROM {fax_outbox} WHERE cid = :cid';
   if(db_query($sql, array(':cid'=>$fax['cid']))) {
     $path = variable_get('fax_directory_outbox', '/usr/ictfax/sites/default/files/ictfax/webfax');
@@ -692,6 +731,19 @@ function ictfax_delete($fax) {
     drupal_set_message(t('Cannot delete specified fax! or you have not proper permissions!'), 'error');
   }
   drupal_goto('ictfax/outbox');
+}
+
+function ictfax_inbox_delete($fax) {
+  $sql = 'DELETE FROM {fax_inbox} WHERE fax_inbox_id = :fax_inbox_id';
+  if(db_query($sql, array(':fax_inbox_id'=>$fax['fax_inbox_id']))) {
+    $path = variable_get('fax_directory_inbox', '/usr/ictfax/sites/default/files/ictfax/inbox');
+    $filepath = "$path/$fax[fax_inbox_id].tif";
+    exec("rm -rf '$filepath'");
+    drupal_set_message(t('Fax deleted successfully!'), 'status');
+  } else {
+    drupal_set_message(t('Cannot delete specified fax! or you have not proper permissions!'), 'error');
+  }
+  drupal_goto('ictfax/inbox');
 }
 
 function ictfax_getaccount() {
@@ -891,7 +943,16 @@ function ictfax_receive_fax() {
   }
 }
 // After receiving a fax, send an email to user
-function ictfax_send_email($fax_id) {
+function ictfax_send_email($fax_id = 'post') {
+    if (empty($fax_id) || $fax_id == 'post') {
+      $sql = "SELECT * FROM {fax_inbox} WHERE call_uuid = :call_uuid";
+      $fax = db_query($sql, array(':call_uuid' => $_REQUEST['CallUUID']))->fetchAssoc();
+      if (empty($fax['fax_inbox_id'])) {
+        return false; // not a incoming fax request, don't proceed
+      }
+      $fax_id = $fax['fax_inbox_id'];
+    }
+
     echo exec("echo ictfax_send_email called >> /tmp/mytest.txt");
     $path = variable_get('fax_directory_inbox', '/usr/ictfax/sites/default/files/ictfax/inbox');
     $tifFile = "$path/$fax_id.tif";
@@ -1400,4 +1461,129 @@ function ictfax_list_contacts_submit($form, &$form_state) {
     
   $form_state['complete'] = TRUE; 
 }
+
+/*****************************************************************
+ * Following hook is implemented from mailhandler_default module *
+/*****************************************************************/
+/**
+ * Implements hook_feeds_importer_default().
+
+function ictfax_feeds_importer_default() {
+  $export = array();
+
+  $feeds_importer = new stdClass;
+  $feeds_importer->disabled = FALSE; 
+  $feeds_importer->api_version = 1;
+  $feeds_importer->id = 'mailhandler_nodes';
+  $feeds_importer->config = array(
+    'name' => 'Mailhandler nodes',
+    'description' => 'Imports nodes from a Mailhandler mailbox',
+    'fetcher' => array(
+      'plugin_key' => 'MailhandlerFetcher',
+      'config' => array(
+        'filter' => 'MailhandlerFiltersNodes',
+      ),
+    ),
+    'parser' => array(
+      'plugin_key' => 'MailhandlerParser',
+      'config' => array(
+        'default_commands' => 'status: 1',
+        'commands_failed_auth' => 'status: 0',
+        'command_plugin' => array(
+          'MailhandlerCommandsDefault' => 'MailhandlerCommandsDefault',
+          'MailhandlerCommandsHeaders' => 'MailhandlerCommandsHeaders',
+          'MailhandlerCommandsFiles' => 'MailhandlerCommandsFiles',
+        ),
+        'authenticate_plugin' => 'MailhandlerAuthenticateDefault',
+        'available_commands' => 'status',
+      ),
+    ),
+    'processor' => array(
+      'plugin_key' => 'FeedsFaxProcessor',
+      'config' => array(
+        'content_type' => 'fax',
+        'expire' => '-1',
+        'author' => 0,
+        'mappings' => array(
+          0 => array(
+            'source' => 'subject',
+            'target' => 'title',
+            'unique' => FALSE,
+          ),
+          1 => array(
+            'source' => 'authenticated_uid',
+            'target' => 'uid',
+            'unique' => FALSE,
+          ),
+          2 => array(
+            'source' => 'status',
+            'target' => 'status',
+            'unique' => FALSE,
+          ),
+          3 => array(
+            'source' => 'body_text',
+            'target' => 'body',
+            'unique' => FALSE,
+          ),
+          4 => array(
+            'source' => 'message_id',
+            'target' => 'guid',
+            'unique' => 1,
+          ),
+          5 => array(
+            'source' => 'fromaddress',
+            'target' => 'field_from',
+            'unique' => FALSE,
+          ),
+          6 => array(
+            'source' => 'toaddress',
+            'target' => 'field_to',
+            'unique' => FALSE,
+          ),
+          7 => array(
+            'source' => 'attachments',
+            'target' => 'field_file',
+            'unique' => FALSE,
+          ),
+        ),
+        'update_existing' => '0',
+        'input_format' => 'plain_text',
+      ),
+    ),
+    'content_type' => 'mailhandler_source',
+    'update' => 0,
+    'import_period' => '0',
+    'expire_period' => 3600,
+    'import_on_create' => 1,
+    'process_in_background' => 0,
+  );
+  $export['mailhandler_nodes'] = $feeds_importer;
+
+  return $export;
+}
+
+/***************************************************
+ * Following hook is implemented from feeds module *
+/***************************************************/
+/**
+ * Break out for feeds_feed_plugins().
+
+function ictfax_feeds_plugins() {
+  $path = drupal_get_path('module', 'ictfax');
+
+  $info = array();
+  $info['FeedsFaxProcessor'] = array(
+    'name' => 'Fax processor',
+    'description' => 'Create and update faxes.',
+    'help' => 'Create and update faxes from parsed content.',
+    'handler' => array(
+      'parent' => 'FeedsProcessor',
+      'class' => 'FeedsFaxProcessor',
+      'file' => 'FeedsFaxProcessor.inc',
+      'path' => $path,
+    ),
+  );
+  return $info;
+}
+
 ?>
