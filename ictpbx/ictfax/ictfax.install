@@ -45,7 +45,7 @@ function ictfax_schema() {
 
   $schema['fax_inbox'] = array(
     'fields' => array(
-      'fax_inbox_id' => array('type' => 'serial',  'not null' => TRUE),
+      'fax_inbox_id'    => array('type' => 'serial',  'not null' => TRUE),
       'send_to'         => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 255),
       'send_from'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255),
       'pages'           => array('type' => 'int',     'not null' => FALSE),

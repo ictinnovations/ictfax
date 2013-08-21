@@ -144,10 +144,10 @@ function ictpbx_menu() {
  */
 function ictpbx_permission() {
   return array(
-    'ictpbx blocked' => array('title' => 'ictpbx blocked'),
-    'ictpbx user'  => array('title' => 'ictpbx user'),
-    'ictpbx admin'  => array('title' => 'ictpbx admin'),
-    'ictpbx system admin'  => array('title' => 'ictpbx system admin')
+    'ictpbx blocked'      => array('title' => 'ictpbx blocked'),
+    'ictpbx user'         => array('title' => 'ictpbx user'),
+    'ictpbx admin'        => array('title' => 'ictpbx admin'),
+    'ictpbx system admin' => array('title' => 'ictpbx system admin')
   );
 }
 

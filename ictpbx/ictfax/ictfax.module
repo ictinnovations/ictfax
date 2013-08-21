@@ -613,7 +613,7 @@ function ictfax_form_submit($form, &$form_state) {
       if ($fileExten == 'tif') {
         echo exec("echo tif file >> /tmp/mytest.txt");
         $pdfFilePath = str_replace('.tif', '.pdf', $fileName);
-        $cmd = ictfax_which('tiff2pdf', '/usr/bin') . " -o $pdfFilePath -z $fileName";
+        $cmd = ictfax_which('tiff2pdf', '/usr/bin') . " -o '$pdfFilePath' -z '$fileName'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
         // existing tiff file must be deleted before new tiff file creation
@@ -622,28 +622,28 @@ function ictfax_form_submit($form, &$form_state) {
         echo exec("echo txt file >> /tmp/mytest.txt");
         $psFilePath = str_replace('.txt', '.ps', $fileName);
         $pdfFilePath = str_replace('.ps', '.pdf', $psFilePath);
-        $cmd = ictfax_which('uniprint', '/usr/local/bin') . " -hsize 0 -size 9 -in $fileName -out $psFilePath";
+        $cmd = ictfax_which('uniprint', '/usr/local/bin') . " -hsize 0 -size 9 -in '$fileName' -out '$psFilePath'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
-        $cmd = ictfax_which('ps2pdf', '/usr/bin') . " $psFilePath $pdfFilePath";
+        $cmd = ictfax_which('ps2pdf', '/usr/bin') . " '$psFilePath' '$pdfFilePath'";
         exec($cmd);
         $cmd = "rm -rf $psFilePath";
       } elseif ($fileExten == 'jpg') {
         echo exec("echo jpg file >> /tmp/mytest.txt");
         $pdfFilePath = str_replace('.jpg', '.pdf', $fileName);
-        $cmd = ictfax_which('convert', '/usr/bin') . " $fileName -type Bilevel -monochrome $pdfFilePath";
+        $cmd = ictfax_which('convert', '/usr/bin') . " '$fileName' -type Bilevel -monochrome '$pdfFilePath'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
       } elseif ($fileExten == 'png') {
         echo exec("echo png file >> /tmp/mytest.txt");
         $pdfFilePath = str_replace('.png', '.pdf', $fileName);
-        $cmd = ictfax_which('convert', '/usr/bin') . " $fileName -type Bilevel -monochrome $pdfFilePath";
+        $cmd = ictfax_which('convert', '/usr/bin') . " '$fileName' -type Bilevel -monochrome '$pdfFilePath'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
       } elseif ($fileExten == 'gif') {
         echo exec("echo gif file >> /tmp/mytest.txt");
         $pdfFilePath = str_replace('.gif', '.pdf', $fileName);
-        $cmd = ictfax_which('convert', '/usr/bin') . " $fileName -type Bilevel -monochrome $pdfFilePath";
+        $cmd = ictfax_which('convert', '/usr/bin') . " '$fileName' -type Bilevel -monochrome '$pdfFilePath'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
       } elseif ($fileExten == 'pdf') {
@@ -652,7 +652,7 @@ function ictfax_form_submit($form, &$form_state) {
       } elseif (in_array($fileExten, $allowedTypes)) {
         echo exec("echo any other file >> /tmp/mytest.txt");
         $pdfFilePath = str_replace($allowedTypes, 'pdf', $fileName);
-        $cmd = ictfax_which('makepdf.sh', '/usr/ictfax/sites/all/modules/ictpbx/ictfax') . " $fileName";
+        $cmd = ictfax_which('makepdf.sh', '/usr/ictfax/sites/all/modules/ictpbx/ictfax') . " '$fileName'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
         exec($cmd); 
@@ -661,16 +661,16 @@ function ictfax_form_submit($form, &$form_state) {
       $cmd = ictfax_which('pdfinfo', '/usr/bin') . " '$pdfFilePath' | sed -n 's#^Pages:[^0-9]*\\([0-9.]*\)$#\\1#p'";
       exec($cmd, $pages);
       echo exec("echo '".print_r($pages, true)."' >> /tmp/mytest.txt");
-  
+
       $fileNameTiff = str_replace('.pdf', '.tif', $pdfFilePath);
-      $cmd = ictfax_which('gs', '/usr/bin') . " -dBATCH -dNOPAUSE -sDEVICE=tiffg4 -sPAPERSIZE=a4 -r204x98 -dAutoRotatePages -sOutputFile=$fileNameTiff $pdfFilePath";
+      $cmd = ictfax_which('gs', '/usr/bin') . " -dBATCH -dNOPAUSE -sDEVICE=tiffg4 -sPAPERSIZE=a4 -r204x98 -dAutoRotatePages -sOutputFile='$fileNameTiff' '$pdfFilePath'";
       exec($cmd);
       $cmd = "chmod -R 777 $path";
       exec($cmd);
-      
+
       echo exec("echo converting back to tif: $fileNameTiff, $pdfFilePath >> /tmp/mytest.txt");
       $targetTifFile = "$path/$fax[cid].tif";
-      $cmd = "cp $fileNameTiff $targetTifFile";
+      $cmd = "cp '$fileNameTiff' '$targetTifFile'";
       exec($cmd);
 
 
@@ -1462,11 +1462,15 @@ function ictfax_list_contacts_submit($form, &$form_state) {
   $form_state['complete'] = TRUE; 
 }
 
+
 /*****************************************************************
  * Following hook is implemented from mailhandler_default module *
 /*****************************************************************/
 /**
  * Implements hook_feeds_importer_default().
+**/
+
+/********* Following code has been commited out 
 
 function ictfax_feeds_importer_default() {
   $export = array();
@@ -1586,4 +1590,5 @@ function ictfax_feeds_plugins() {
   return $info;
 }
 
+********** end of commited out code */
 ?>
