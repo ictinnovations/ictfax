@@ -202,7 +202,7 @@ function ictfax_menu() {
     'access arguments' => array('access content'),
     'type'             => MENU_CALLBACK,
   );
-  
+
   return $items;
 }
 
@@ -616,6 +616,7 @@ function ictfax_form_submit($form, &$form_state) {
         $cmd = ictfax_which('tiff2pdf', '/usr/bin') . " -o '$pdfFilePath' -z '$fileName'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
+        exec($cmd);
         // existing tiff file must be deleted before new tiff file creation
         exec($cmd);
       } elseif ($fileExten == 'txt') {
@@ -625,27 +626,32 @@ function ictfax_form_submit($form, &$form_state) {
         $cmd = ictfax_which('uniprint', '/usr/local/bin') . " -hsize 0 -size 9 -in '$fileName' -out '$psFilePath'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
+        exec($cmd);
         $cmd = ictfax_which('ps2pdf', '/usr/bin') . " '$psFilePath' '$pdfFilePath'";
         exec($cmd);
         $cmd = "rm -rf $psFilePath";
+        exec($cmd);
       } elseif ($fileExten == 'jpg') {
         echo exec("echo jpg file >> /tmp/mytest.txt");
         $pdfFilePath = str_replace('.jpg', '.pdf', $fileName);
         $cmd = ictfax_which('convert', '/usr/bin') . " '$fileName' -type Bilevel -monochrome '$pdfFilePath'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
+        exec($cmd);
       } elseif ($fileExten == 'png') {
         echo exec("echo png file >> /tmp/mytest.txt");
         $pdfFilePath = str_replace('.png', '.pdf', $fileName);
         $cmd = ictfax_which('convert', '/usr/bin') . " '$fileName' -type Bilevel -monochrome '$pdfFilePath'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
+        exec($cmd);
       } elseif ($fileExten == 'gif') {
         echo exec("echo gif file >> /tmp/mytest.txt");
         $pdfFilePath = str_replace('.gif', '.pdf', $fileName);
         $cmd = ictfax_which('convert', '/usr/bin') . " '$fileName' -type Bilevel -monochrome '$pdfFilePath'";
         exec($cmd);
         $cmd = "rm -rf $fileName";
+        exec($cmd);
       } elseif ($fileExten == 'pdf') {
         echo exec("echo pdf file >> /tmp/mytest.txt");
         $pdfFilePath = $fileName;
@@ -656,7 +662,7 @@ function ictfax_form_submit($form, &$form_state) {
         exec($cmd);
         $cmd = "rm -rf $fileName";
         exec($cmd); 
-      } 
+      }
       // get total page count of pdf
       $cmd = ictfax_which('pdfinfo', '/usr/bin') . " '$pdfFilePath' | sed -n 's#^Pages:[^0-9]*\\([0-9.]*\)$#\\1#p'";
       exec($cmd, $pages);
