@@ -973,31 +973,36 @@ function ictfax_send_email($fax_id = 'post') {
     exec($cmd, $pages);
     echo exec("echo 'Pages=".print_r($pages, true)."' >> /tmp/mytest.txt"); 
 
-    // load inbox fax
-    $sql    = "SELECT * FROM {fax_inbox} WHERE fax_inbox_id = :fax_inbox_id";
-    $fax = db_query($sql, array(':fax_inbox_id' => $fax_id))->fetchAssoc();
-    // update fax status
-    $fax['status_string'] = 'received';
-    $fax['pages'] = $pages[0];
-    drupal_write_record('fax_inbox', $fax, 'fax_inbox_id');
-    
-    // get user name
-    $sql    = "SELECT name FROM {ictpbx_user} WHERE uid = :uid";
-    $user = db_query($sql, array(':uid' => $fax['uid']))->fetchAssoc();
-    // get email to forward
-    $sql    = "SELECT forwarded_to FROM {ictpbx_did} WHERE did = :did";
-    $did = db_query($sql, array(':did' => $fax['send_to']))->fetchAssoc();
-    
-    // Send email now
-    $fax['file_path'] = "$path/$fax[fax_inbox_id].pdf";
-    $fax['mail_to'] = $did['forwarded_to'];
-    
-    echo exec("echo fax_id=$fax_id >> /tmp/mytest.txt"); 
-    echo exec("echo did=$fax[send_to] >> /tmp/mytest.txt"); 
-    echo exec("echo user_name=$user[name] >> /tmp/mytest.txt"); 
-    echo exec("echo mail_to=$fax[mail_to] >> /tmp/mytest.txt"); 
+    if (isset($pages) && $pages >= 1) {
+      // load inbox fax
+      $sql    = "SELECT * FROM {fax_inbox} WHERE fax_inbox_id = :fax_inbox_id";
+      $fax = db_query($sql, array(':fax_inbox_id' => $fax_id))->fetchAssoc();
+      // update fax status
+      $fax['status_string'] = 'received';
+      $fax['pages'] = $pages[0];
+      drupal_write_record('fax_inbox', $fax, 'fax_inbox_id');
+      
+      // get user name
+      $sql    = "SELECT name FROM {ictpbx_user} WHERE uid = :uid";
+      $user = db_query($sql, array(':uid' => $fax['uid']))->fetchAssoc();
+      // get email to forward
+      $sql    = "SELECT forwarded_to FROM {ictpbx_did} WHERE did = :did";
+      $did = db_query($sql, array(':did' => $fax['send_to']))->fetchAssoc();
+      
+      // Send email now
+      $fax['file_path'] = "$path/$fax[fax_inbox_id].pdf";
+      $fax['mail_to'] = $did['forwarded_to'];
+      
+      echo exec("echo fax_id=$fax_id >> /tmp/mytest.txt"); 
+      echo exec("echo did=$fax[send_to] >> /tmp/mytest.txt"); 
+      echo exec("echo user_name=$user[name] >> /tmp/mytest.txt"); 
+      echo exec("echo mail_to=$fax[mail_to] >> /tmp/mytest.txt"); 
 
-    ictfax_sendmail_received($user['name'], $fax);
+      ictfax_sendmail_received($user['name'], $fax);
+    } else {
+      // nothing to do on fax fail / 0 pages
+      exec("echo ictfax_send_email called >> /tmp/mytest.txt");
+    }
     
     // responed to plivo server
     $response = '<?xml version="1.0" encoding="UTF-8"?>
