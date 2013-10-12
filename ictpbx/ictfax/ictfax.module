@@ -354,11 +354,13 @@ function ictfax_inbox_list() {
 
 function _ictfax_list_incoming_links($fax) {
   $app = variable_get('ictfax_app_root', 'http://127.0.0.1/ictfax/sites/default/files/ictfax/inbox');
-  $links['view'] = array(
-    'title' => t('View'),
-    'href' => $app . '/' . $fax['fax_inbox_id'] . '.pdf',
-    'html' => TRUE,
-  );
+  if (isset($fax['pages']) && $fax['pages'] >= 1) {
+    $links['view'] = array(
+      'title' => t('View'),
+      'href' => $app . '/' . $fax['fax_inbox_id'] . '.pdf',
+      'html' => TRUE,
+    );
+  }
   $links['delete'] = array(
     'title' => t('Delete'),
     'href' => 'ictfax/inbox/' . $fax['fax_inbox_id'] . '/delete',
@@ -417,10 +419,10 @@ function ictfax_outbox_load($cid) {
 function ictfax_form($form, &$form_state, $edit = array()) {
   $edit += array(
     'send_to'    => '',
-    'send_from'     => '',
+    'send_from'  => '',
     'text'       => '',
-    'file_name'      => '',
-    'rating'       => 3,
+    'file_name'  => '',
+    'rating'     => 0,
   );
   
   // Include the CTools tools that we need.
@@ -467,7 +469,7 @@ function ictfax_form($form, &$form_state, $edit = array()) {
     '#attributes' => array('class' => array('ctools-use-modal')),
     '#id' => 'contact-button',
   );
-  
+
   $form['info']['text'] = array(
     '#type'          => 'textarea',
     '#title'         => t('Message'),
@@ -489,7 +491,7 @@ function ictfax_form($form, &$form_state, $edit = array()) {
   $form['info']['rating'] = array(
     '#type'          => 'select',
     '#title'         => t('No. of Retries'),
-    '#options'       => array(1=>1, 2=>2, 3=>3),
+    '#options'       => array(0=>0, 1=>1, 2=>2, 3=>3),
     '#description'   => t('No. of tries if call failed'),
     '#default_value' => $edit['rating'],
   );
@@ -973,26 +975,27 @@ function ictfax_send_email($fax_id = 'post') {
     exec($cmd, $pages);
     echo exec("echo 'Pages=".print_r($pages, true)."' >> /tmp/mytest.txt"); 
 
-    if (isset($pages) && $pages >= 1) {
-      // load inbox fax
-      $sql    = "SELECT * FROM {fax_inbox} WHERE fax_inbox_id = :fax_inbox_id";
-      $fax = db_query($sql, array(':fax_inbox_id' => $fax_id))->fetchAssoc();
+    // load inbox fax
+    $sql    = "SELECT * FROM {fax_inbox} WHERE fax_inbox_id = :fax_inbox_id";
+    $fax = db_query($sql, array(':fax_inbox_id' => $fax_id))->fetchAssoc();
+
+    if (isset($pages[0]) && $pages[0] >= 1) {
       // update fax status
       $fax['status_string'] = 'received';
       $fax['pages'] = $pages[0];
       drupal_write_record('fax_inbox', $fax, 'fax_inbox_id');
-      
+
       // get user name
       $sql    = "SELECT name FROM {ictpbx_user} WHERE uid = :uid";
       $user = db_query($sql, array(':uid' => $fax['uid']))->fetchAssoc();
       // get email to forward
       $sql    = "SELECT forwarded_to FROM {ictpbx_did} WHERE did = :did";
       $did = db_query($sql, array(':did' => $fax['send_to']))->fetchAssoc();
-      
+
       // Send email now
       $fax['file_path'] = "$path/$fax[fax_inbox_id].pdf";
       $fax['mail_to'] = $did['forwarded_to'];
-      
+
       echo exec("echo fax_id=$fax_id >> /tmp/mytest.txt"); 
       echo exec("echo did=$fax[send_to] >> /tmp/mytest.txt"); 
       echo exec("echo user_name=$user[name] >> /tmp/mytest.txt"); 
@@ -1000,10 +1003,14 @@ function ictfax_send_email($fax_id = 'post') {
 
       ictfax_sendmail_received($user['name'], $fax);
     } else {
-      // nothing to do on fax fail / 0 pages
+      // update fax status
+      $fax['status_string'] = 'failed';
+      $fax['pages'] = '0';
+      drupal_write_record('fax_inbox', $fax, 'fax_inbox_id');
+
       exec("echo ictfax_send_email called >> /tmp/mytest.txt");
     }
-    
+
     // responed to plivo server
     $response = '<?xml version="1.0" encoding="UTF-8"?>
     <Response>

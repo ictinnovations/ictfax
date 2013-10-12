@@ -38,17 +38,17 @@ function ictpbx_schema() {
     $schema['ictpbx_user'] = array(
     'fields' => array(
       'ictpbx_user_id'    => array('type' => 'serial',  'not null' => TRUE),
-      'name'              => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32), // name = username
-      'first_name'        => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
-      'last_name'         => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
-      'mail'              => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'name'              => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 60), // name = username
+      'first_name'        => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 60),
+      'last_name'         => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 60),
+      'mail'              => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 128),
       'phone_number'      => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
       'mobile_number'     => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
       'fax_number'        => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
       'address'           => array('type' => 'text',    'not null' => TRUE),
       'country'           => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
-      'company'           => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
-      'website'           => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
+      'company'           => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 120),
+      'website'           => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 128),
       'uid'               => array('type' => 'int',     'not null' => TRUE),
       'active'            => array('type' => 'int',     'not null' => TRUE),
       'credit'            => array('type' => 'float',   'not null' => FALSE),
