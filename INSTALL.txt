@@ -108,7 +108,7 @@ Plivo Configurations:
 4. Set Incoming DEFAULT_ANSWER_URL, DEFAULT_HANGUP_URL
 
 DEFAULT_ANSWER_URL = http://127.0.0.1/ictfax/index.php?q=ictfax/receive_fax
-DEFAULT_HANGUP_URL = http://127.0.0.1/ictfax/index.php?q=ictfax/receive_fax_billing
+DEFAULT_HANGUP_URL = http://127.0.0.1/ictfax/index.php?q=ictfax/send_email/post
 
 Modify above urls according to your installation settings. 
 Don't forget to remove “#” sign before DEFAULT_HANGUP_URL and EXTRA_FS_VARS. 

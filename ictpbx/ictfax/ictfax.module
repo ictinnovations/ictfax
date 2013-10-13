@@ -422,7 +422,7 @@ function ictfax_form($form, &$form_state, $edit = array()) {
     'send_from'  => '',
     'text'       => '',
     'file_name'  => '',
-    'rating'     => 0,
+    'try_max'    => 1,
   );
   
   // Include the CTools tools that we need.
@@ -487,15 +487,19 @@ function ictfax_form($form, &$form_state, $edit = array()) {
     '#required'      => FALSE,
     '#description'   => t('Select a file to send as fax, please use only tif, pdf, jpg, png, gif or txt file'),
   );
-  
-  $form['info']['rating'] = array(
+
+  $form['info']['try_max'] = array(
     '#type'          => 'select',
     '#title'         => t('No. of Retries'),
-    '#options'       => array(0=>0, 1=>1, 2=>2, 3=>3),
+    '#options'       => array(
+       1 => t('[disabled]'), // no retry = 1 try
+       2 => t('1'),          // 1 retry  = 2 tries and so on ...
+       3 => t('2'), 
+       4 => t('3'),
     '#description'   => t('No. of tries if call failed'),
-    '#default_value' => $edit['rating'],
+    '#default_value' => $edit['try_max'],
   );
- 
+
   $form['submit'] = array(
     '#type'          => 'submit',
     '#value'         => t('Create new Fax'),
@@ -571,7 +575,7 @@ function ictfax_form_submit($form, &$form_state) {
   $fax['uid'] = $uid;
   $fax['created'] = time();
   $fax['changed'] = time();
-  $fax['rating'] = $edit['rating'];
+  $fax['try_max'] = $edit['try_max'];
   $fax['submitted_from'] = 'web';  
   
   if(!isset($fax['send_from'])) {
@@ -786,7 +790,7 @@ function ictfax_sendfax($uid, $fax) {
   $tiffFile = $fax['file_path'];
   $recordId = $fax['cid'];
   $description = $fax['text'];
-  $retries = $fax['rating'];
+  $retries = $fax['try_max'];
   
   //Create dial string
   $trunk = get_trunk_active();

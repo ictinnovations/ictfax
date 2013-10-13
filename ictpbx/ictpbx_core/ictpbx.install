@@ -54,7 +54,7 @@ function ictpbx_schema() {
       'credit'            => array('type' => 'float',   'not null' => FALSE),
       'free_bundle'       => array('type' => 'int',     'not null' => FALSE), // for incoming, where bundle = faxes
       'reserve_credit'    => array('type' => 'float',   'not null' => FALSE),
-      'reserve_free_bundle'=> array('type' => 'int',     'not null' => FALSE), 
+      'reserve_free_bundle'=>array('type' => 'int',     'not null' => FALSE), 
       'package'           => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 32),
     ),
     'primary key' => array('ictpbx_user_id')
@@ -104,4 +104,40 @@ function ictpbx_schema() {
  */
 function ictpbx_uninstall() {
 
+}
+
+/**
+ * implement recent updates.
+ */
+function ictpbx_update_7101() {
+  db_change_field('ictpbx_user', 'name', 'name', array(
+    'type'     => 'varchar',
+    'not null' => TRUE,
+    'length'   => 60,
+  ));
+  db_change_field('ictpbx_user', 'first_name', 'first_name', array(
+    'type'     => 'varchar',
+    'not null' => TRUE,
+    'length'   => 60,
+  ));
+  db_change_field('ictpbx_user', 'last_name', 'last_name', array(
+    'type'     => 'varchar',
+    'not null' => TRUE,
+    'length'   => 60,
+  ));
+  db_change_field('ictpbx_user', 'mail', 'mail', array(
+    'type'     => 'varchar',
+    'not null' => TRUE,
+    'length'   => 128,
+  ));
+  db_change_field('ictpbx_user', 'company', 'company', array(
+    'type'     => 'varchar',
+    'not null' => TRUE,
+    'length'   => 120,
+  ));
+  db_change_field('ictpbx_user', 'website', 'website', array(
+    'type'     => 'varchar',
+    'not null' => TRUE,
+    'length'   => 128,
+  ));
 }
