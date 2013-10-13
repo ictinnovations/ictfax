@@ -8,6 +8,8 @@ ICTFAX can be used in following faxing scenarios
 * G.711 based Fax Origination / Termination / Gateway
 * T.38 based Fax Origination / Termination
 
+For more information please visit [ICTFAX Website][official]
+
 
 Documentation
 =============
@@ -39,7 +41,7 @@ Credits
 =======
 ICTFAX is developed by [ICT Innovations][developer]
 
-
+[official]: http://ictfax.org/ "ICTFAX Open Source Online FAX & Email to FAX Solution"
 [gpl3]: http://www.gnu.org/licenses/gpl-3.0.html "GNU GPL V.3 License"
 [install]: http://ictfax.org/content/ictfax-20-installation-guide "ICTFAX Installation Guide"
 [admin]: http://ictfax.org/content/ictfax-20-admin-guide "ICTFAX Administration Guide"
