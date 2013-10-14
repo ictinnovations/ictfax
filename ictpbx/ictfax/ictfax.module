@@ -294,11 +294,11 @@ function ictfax_outbox_list() {
 }
 
 function _ictfax_list_links($fax) {
-  $links['edit'] = array(
+  /*$links['edit'] = array(
     'title' => t('Edit'),
     'href' => 'ictfax/outbox/' . $fax['cid'] . '/edit',
     'html' => TRUE,
-  );
+  );*/
   $links['delete'] = array(
     'title' => t('Delete'),
     'href' => 'ictfax/outbox/' . $fax['cid'] . '/delete',
@@ -353,6 +353,11 @@ function ictfax_inbox_list() {
 }
 
 function _ictfax_list_incoming_links($fax) {
+  $links['delete'] = array(
+    'title' => t('Delete'),
+    'href' => 'ictfax/inbox/' . $fax['fax_inbox_id'] . '/delete',
+    'html' => TRUE,
+  );
   $app = variable_get('ictfax_app_root', 'http://127.0.0.1/ictfax/sites/default/files/ictfax/inbox');
   if (isset($fax['pages']) && $fax['pages'] >= 1) {
     $links['view'] = array(
@@ -361,11 +366,6 @@ function _ictfax_list_incoming_links($fax) {
       'html' => TRUE,
     );
   }
-  $links['delete'] = array(
-    'title' => t('Delete'),
-    'href' => 'ictfax/inbox/' . $fax['fax_inbox_id'] . '/delete',
-    'html' => TRUE,
-  );
   return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
 }
 
@@ -471,7 +471,7 @@ function ictfax_form($form, &$form_state, $edit = array()) {
   );
 
   $form['info']['text'] = array(
-    '#type'          => 'textarea',
+    '#type'          => 'hidden',
     '#title'         => t('Message'),
     '#required'      => FALSE,
     '#cols'          => 60, 
@@ -1016,7 +1016,8 @@ function ictfax_send_email($fax_id = 'post') {
       $fax['pages'] = '0';
       drupal_write_record('fax_inbox', $fax, 'fax_inbox_id');
 
-      exec("echo ictfax_send_email called >> /tmp/mytest.txt");
+      // Make a note of the fax failing in the mytest.txt file for debug purposes
+      exec("echo ictfax_send_email called - Fax Failed - NO FAX Received >> /tmp/mytest.txt");
     }
 
     // responed to plivo server
