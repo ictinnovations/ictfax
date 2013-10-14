@@ -41,7 +41,7 @@ function ictpbx_schema() {
       'name'              => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 60), // name = username
       'first_name'        => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 60),
       'last_name'         => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 60),
-      'mail'              => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 128),
+      'mail'              => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 254),
       'phone_number'      => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
       'mobile_number'     => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
       'fax_number'        => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
