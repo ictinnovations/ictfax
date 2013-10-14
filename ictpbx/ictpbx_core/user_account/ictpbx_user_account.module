@@ -171,11 +171,12 @@ function _ictpbx_user_account_list_links($user) {
     );
   }
   // If enabled, please add a confirmation before removing a user
-  /*$links['delete'] = array(
+  // Enabled on 14-10-2013 by Marc - NEED to add confirmation before deleting a user - DTUK
+  $links['delete'] = array(
     'title' => t('Remove'),
     'href' => 'ictpbx/user_account/' . $user->ictpbx_user_id . '/delete',
     'html' => TRUE,
-  ); */
+  );
   return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
 }
 
