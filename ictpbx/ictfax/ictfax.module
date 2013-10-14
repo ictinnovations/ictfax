@@ -492,10 +492,10 @@ function ictfax_form($form, &$form_state, $edit = array()) {
     '#type'          => 'select',
     '#title'         => t('No. of Retries'),
     '#options'       => array(
-       1 => t('[disabled]'), // no retry = 1 try
+       1 => t('[None]'), // no retry = 1 try
        2 => t('1'),          // 1 retry  = 2 tries and so on ...
        3 => t('2'), 
-       4 => t('3'),
+       4 => t('3')),
     '#description'   => t('No. of tries if call failed'),
     '#default_value' => $edit['try_max'],
   );
