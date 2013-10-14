@@ -833,6 +833,10 @@ function ictfax_sendfax($uid, $fax) {
   );
   try {
       $response = $client->call($call_params);
+      // increase try_done  count
+      db_query('UPDATE {fax_outbox} SET try_done=try_done+1, try_recent=UNIX_TIMESTAMP() 
+                WHERE cid = :cid', array(':cid'=>$fax['cid']));
+
       watchdog("Plivo", "Success: Call sent to $sendTo" , array(), WATCHDOG_INFO);
       watchdog("Plivo", "rec_id: $fax[cid]" , array(), WATCHDOG_INFO);
       drupal_set_message(t('Fax sent successfully!'), 'status');
