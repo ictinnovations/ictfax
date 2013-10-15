@@ -576,6 +576,7 @@ function ictfax_form_submit($form, &$form_state) {
   $fax['created'] = time();
   $fax['changed'] = time();
   $fax['try_max'] = $edit['try_max'];
+  $fax['try_recent'] = 0;
   $fax['submitted_from'] = 'web';  
   
   if(!isset($fax['send_from'])) {
