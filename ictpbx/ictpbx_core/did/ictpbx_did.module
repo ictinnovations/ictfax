@@ -186,17 +186,19 @@ function ictpbx_did_list($admin_links = false) {
   $header = array(
     array('data' => t('DID Number'),    'field' => 'did',  'sort' => 'asc'),
     array('data' => t('Description'),   'field' => 'description'),
-    array('data' => t('Trunk Provider'),'field' => 'trunk_name'),
+// Commented out by Marc Banyard on 17-10-2013 as it is not needed. Most people will only have 1 trunk provider.
+//    array('data' => t('Trunk Provider'),'field' => 'trunk_name'),
     array('data' => t('Assigned To'),   'field' => 'user_name'),
     array('data' => t('Operations')),
   );
   
   $query = db_select('ictpbx_did', 't')->extend('PagerDefault');
-  $query->fields('t', array('ictpbx_did_id', 'did', 'description'));
+  $query->fields('t', array('ictpbx_did_id', 'did', 'description', 'forwarded_to'));
   $query->leftjoin('ictpbx_user','user','user.ictpbx_user_id = t.assigned_to');
   $query->addfield('user', 'name', 'user_name');
-  $query->leftjoin('ictpbx_trunk','trunk','trunk.ictpbx_trunk_id = t.trunk_id');
-  $query->addfield('trunk', 'name', 'trunk_name');
+// Commented out by Marc Banyard on 17-10-2013 as it is not needed. Most people will only have 1 trunk provider.
+//  $query->leftjoin('ictpbx_trunk','trunk','trunk.ictpbx_trunk_id = t.trunk_id');
+//  $query->addfield('trunk', 'name', 'trunk_name');
   //$query->addExpression('user', "CONCAT_WS(' ', last_name, first_name)", 'user_name');
   
   //$query->condition('t.uid', $user->uid,'='); 
@@ -209,9 +211,11 @@ function ictpbx_did_list($admin_links = false) {
     $row_id = $did['ictpbx_did_id'];
     $rows[$row_id][] = check_plain($did['did']);
     $rows[$row_id][] = check_plain($did['description']);
-    $rows[$row_id][] = check_plain($did['trunk_name']); 
+// Commented out by Marc Banyard on 17-10-2013 as it is not needed. Most people will only have 1 trunk provider.
+//    $rows[$row_id][] = check_plain($did['trunk_name']); 
     $rows[$row_id][] = check_plain($did['user_name']); 
-    $rows[$row_id][] = _ictpbx_did_list_links($did);
+    $rows[$row_id][] = "<p style='width:125px; height:2px;'>" . _ictpbx_did_list_links($did) . "</p>".
+			  "<p style='font-size:9px'>" . check_plain($did['forwarded_to']) . "</p>";
   }
   if (!isset($rows)) {
     $rows[] = array(array('data' => t('No DID Number available'), 'colspan' => 6));
