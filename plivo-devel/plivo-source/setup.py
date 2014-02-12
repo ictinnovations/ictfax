@@ -1,7 +1,8 @@
 from setuptools import find_packages
 import sys
 
-requires = ['gevent', 'flask==0.7.2', 'ujson==1.9', 'redis==2.4.9']
+# following line modified by nasir, added ==0.3.7 due to gevent issue in CentOs 6.5
+requires = ['gevent==0.13.7', 'flask==0.7.2', 'ujson==1.9', 'redis==2.4.9']
 
 if sys.prefix == '/usr':
     etc_prefix = '/etc'

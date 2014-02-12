@@ -185,7 +185,8 @@ virtualenv --no-site-packages $REAL_PATH
 source $REAL_PATH/bin/activate
 
 # force installation of gevent 1.03a
-pip install --upgrade -f http://gevent.googlecode.com/files/gevent-1.0a3.tar.gz gevent
+# following line disabled by nasir, due to gevent issue in CentOs 6.5
+# pip install --upgrade -f http://gevent.googlecode.com/files/gevent-1.0a3.tar.gz gevent
 
 #pip install -e git+${PLIVO_GIT_REPO}@${BRANCH}#egg=plivo
 
