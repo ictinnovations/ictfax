@@ -1,3 +1,15 @@
+#### 2013-06-03 Version 2.2.0
+
+* Bugfix regarding new gevent issue in centos 6.5
+* Show email address in DID Screen
+* FAX user delation allowed
+* Documentation converted into Markdown syntax
+* Fax preview support added
+* No notification on failed incoming faxes
+* Tmporary file issue fixed
+* Code converted into unix format
+* space in attachement file issue has been fixed
+
 #### 2013-06-03 Version 2.1.1
 
 * Updated ambiguous create fax descriptions
