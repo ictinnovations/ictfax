@@ -1,4 +1,4 @@
-#### 2013-06-03 Version 2.2.0
+#### 2014-02-12 Version 2.2.0
 
 * Bugfix regarding new gevent issue in centos 6.5
 * Show email address in DID Screen
