@@ -16,260 +16,113 @@ Fax2Email and Billing.
  2.  Apache 2
  3.  MySQL 5
  4.  PHP 5.3.3
- 5.  php-mysql
- 6.  php-gd
- 7.  php-curl
- 8.  php-imap
- 9.  perl
- 10. perl-DBD-mysql
- 11. libtiff
- 12. ghostscript
- 14. ImageMagick
- 15. poppler-utils
- 15. curl
- 16. mysql-devel
- 17. sendmail
+ 5.  ICTCore
+ 6.  Sendmail
+ 7.  FreeSWITCH
 
-To install above requirements issue following commands at shell prompt
+To install above requirements, first of all we need to install their respective repositories
 
 ```bash
-yum -y install httpd mysql-server mysql mysql-devel
-yum -y install php php-common php-cli php-gd php-imap php-curl php-mysql php-dom php-mbstring
-yum -y install perl perl-DBD-mysql
-yum -y install ghostscript ImageMagick poppler-utils curl sendmail sendmail-cf
-```
-
-following dependencies are required for Freeswitch installations
-
-```bash
-yum -y install git make 
-```
-
-also install yudit for text to pdf support
-
-```bash
-cd /usr/src
-wget "http://www.yudit.org/download/yudit-2.9.2.tar.gz"
-tar xzf yudit-2.9.2.tar.gz
-cd yudit*
-./configure --prefix=/usr/local
-make
-make install
-```
-
-before continue, make sure that MySQL and Apache is running
-
-```bash
-chkconfig httpd on
-chkconfig mysqld on
-
-service httpd start
-service mysqld start
-```
-
-3: Freeswitch Installation
-==========================
-Execute following command at linux shell as being root user
-
-```bash
+rpm -Uvh 'http://service.ictinnovations.com/repo/6/ict-release-6-2.noarch.rpm'
 rpm -Uvh 'http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
 rpm -Uvh 'http://files.freeswitch.org/freeswitch-release-1-0.noarch.rpm'
-
-yum -y install freeswitch freeswitch-lua freeswitch-config-vanilla
-yum -y freeswitch-asrtts-flite freeswitch-codec-mp4v freeswitch-codec-opus freeswitch-format-native-file 
-yum -y install freeswitch-application-conference freeswitch-application-curl freeswitch-application-db freeswitch-application-sms freeswitch-application-voicemail
-yum -y install freeswitch-sounds-en-us-callie-all freeswitch-sounds-music
 ```
 
-* Before doing anything disable selinux and to disable it permanently edit /etc/selinux/config file
+Before proceeding further please disable selinux and to disable it permanently edit /etc/selinux/config file
+
 ```bash
 setenforce 0
 ```
 
-* Run FreeSWITCH 
+3: ICTCore Installation
+=======================
+ICTCore is main dependency of ICTFAX, if you have proper repositories pre installed (see above) then all other dependencies will be installed along with ICTCore. so we just need to issue following command
 
 ```bash
-# Run freeswitch and set boot
-chkconfig freeswitch on
-service freeswitch start
+yum -y install ictcore ictcore-fax ictcore-email
 ```
 
-Setup ICTCore
--------------
+### 3.1 Setup ICTCore database
+To create database in mysql for ictcore issue following commands at mysql prompt
 
-1. (if any) clear /usr/ictcore
-2. Download, Copy and Paste ictcore folders in /usr/
-3. issue following commands on linux shell as root
-
-```bash
-groupadd ictcore
-useradd ictcore -g ictcore
-
-chown -R ictcore:ictcore /usr/ictcore
-chmod -R og+rwx /usr/ictcore
-
-ln -sf /usr/ictcore/etc/ictcore.conf /etc/ictcore.conf
-ln -sf /usr/ictcore/etc/odbc.ini /etc/odbc.ini
-ln -sf /usr/ictcore/etc/php/ictcore.conf /etc/httpd/conf.d/ictcore.conf
-ln -sf /usr/ictcore/etc/freeswitch/sip_profiles/ictcore.xml /etc/freeswitch/sip_profiles/ictcore.xml
-ln -sf /usr/ictcore/etc/freeswitch/dialplan/ictcore.xml /etc/freeswitch/dialplan/ictcore.xml
-
-crontab -u ictcore /usr/ictcore/etc/default.cron
-
-service httpd restart
-service freeswitch restart
-```
-
-ICTCore Configurations:
------------------------
-1. To create database in mysql for ictcore issue following commands at mysql prompt
 ```bash
 CREATE DATABASE ictfax;
 USE ictfax;
-GRANT ALL PRIVILEGES ON ictfax.* TO ictfaxuser@localhost IDENTIFIED BY 'ictfaxpass';
+GRANT ALL PRIVILEGES ON ictfax.* TO ictfaxuser@localhost IDENTIFIED BY 'plsChangeIt';
 FLUSH PRIVILEGES;
 
 SOURCE /usr/ictcore/db/database.sql;
-SOURCE /usr/ictcore/db/voice.sql;
 SOURCE /usr/ictcore/db/email.sql;
 SOURCE /usr/ictcore/db/fax.sql;
-
 ```
 
-Setup ICTFax
-------------
+Now update /usr/ictcore/etc/ictcore.conf and /usr/ictcore/etc/odbc.ini files as per above created database
 
-1. (if any) clear /usr/ictfax
+
+4: ICTFax Installation
+======================
+1. (if any) delete /usr/ictfax
 2. Download, ictfax folders into temp folder
 3. move ICTFAX wwwroot folder into /usr/ictfax
 4. move ictpbx folder into /usr/ictfax/sites/all/modules
+5. issue following command to create website configuration file
 
 ```bash
 cp /usr/ictfax/sites/default/default.settings.php /usr/ictfax/sites/default/settings.php
-chown -R ictcore:ictcore /usr/ictfax
-chmod -R og+rwx /usr/ictcore
+chown -R apache:apache /usr/ictfax
 ```
 
-ICTFAX Configurations:
-----------------------
-1. 
-2. edit following configuration files and update database access info
-/usr/ictcore/etc/ictcore.conf
-/usr/ictcore/etc/odbc.ini
+### 4.1 Frontend / Web GUI
+1. Now visit http://DOMAIN.COM/ictfax and follow the installation instructions for ICTFax (drupal based) front end installation.
+2. When asked for database please provide access info to recently created database ( in ictcore section ) and enter `web_` as database prefix
+2. Once you are done with installation, visit the website and login as site administrator with username and password that you provided during installation.
+4. Now comeback to Web GUI and go to Modules menu and enable all modules in __ICTCore System__ Package.
+5. And also enable __Chaos tools__ Package.
+6. Now you'll see menu item Fax Account, ICTPBX System and others in your Navigation Menu.
 
-```conf
-DEFAULT_ANSWER_URL = http://127.0.0.1/ictfax/index.php?q=ictfax/receive_fax
-DEFAULT_HANGUP_URL = http://127.0.0.1/ictfax/index.php?q=ictfax/send_email/post
-```
-
-Modify above urls according to your installation settings. 
-Don't forget to remove `#` sign before `DEFAULT_HANGUP_URL` and `EXTRA_FS_VARS`. 
-
-3. After installation issue following commands against ictfax database
+### 4.2 User Synchronization
+After installation issue following commands against ictfax database, to synchronize ICTFAX users with ICTCore
 
 ```sql
 INSERT INTO usr SELECT NULL, NULL, name, pass, NULL, NULL, NULL, NULL, NULL, mail, NULL, NULL, NULL, NULL, NULL, 1, UNIX_TIMESTAMP(), 1, NULL, NULL FROM web_users WHERE uid > 0;
 
 INSERT INTO account SELECT NULL, username, passwd, passwd_pin, first_name, last_name, phone, email, address, active, date_created, usr_id, NULL, NULL FROM usr;
 ```
-4: ICT FAX Installation
-=======================
-
-4.1: Database
--------------
-
-* Database Installation:
-  Create "ictfax" database in mysql (Run `CREATE DATABASE ictfax;` query on mysql)
-
-
-4.2: Frontend / Web GUI
-------------------------------
-Locate the folder "wwwroot" in the extracted ICTFAX directory. 
-Rename this folder to ictfax and copy-paste it to /usr directory.
-  
-  1. Create a symbolic link for /usr/ictfax in /var/www/html 
-
-```bash
-ln -s /usr/ictfax /var/www/html/ictfax
-```
-
-  2. Now visit http://DOMAIN.COM/ictfax 
-     and follow the installation instructions for 
-     ICTFax (drupal based) front end installation.
-
-  3. Once you are done with installation, visit the website 
-     and login as site administrator with username and password 
-     that you provided during installation.
-
-  4. Now comback to Web GUI and go to Modules menu and enable all modules in __ICTCore System__ Package.
-
-  5. And also enable __Chaos tools__ Package.
-
-  6. Now you'll see menu item Fax Account, ICTPBX System and others in your Navigation Menu.
-
 
 5: Email to FAX / FAX to Email service (optional)
 =================================================
-
 1. make sure that your desired domain's MX records are properly configured for email2fax server.
-2. install sendmail service and enable sendmail service at startup.
- 2a. Also make sure you have created linux user "freeswitch".
-3. enable sendmail to listen on public ip address look for following line in /etc/mail/sendmail.mc
-
+2. enable sendmail to listen on public ip address look for following line in /etc/mail/sendmail.mc
 ```conf
 DAEMON_OPTIONS(`Port=smtp,Addr=127.0.0.1, Name=MTA')dnl
 ```
-
-4. and change line mentioned above into
-
+3. and change line mentioned above into
 ```conf
 DAEMON_OPTIONS(`Port=smtp, Addr=0.0.0.0, Name=MTA')dnl
 ```
-
-5. apply changes
-
-```bash
-m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
-```
-
-6. Add freeswitch to list of trusted user 
-
+4. Add ictcore and apache to list of trusted user 
 ```bash
 echo "ictcore" >> /etc/mail/trusted-users
 echo "apache" >> /etc/mail/trusted-users
 ```
-
-7. Add your domain name in allowed local domain list to let sendmail receive mails for that domain
- 
+5. Add your domain name in allowed local domain list to let sendmail receive mails for that domain
 ```bash
 echo "FAX_DOMAIN.COM" >> /etc/mail/local-host-names
 ```
-
-8. route all mails for none-existing addresses into freeswitch mailbox so we can receive emails for addresses like `xyz_number@FAX_DOMAIN.COM`
-
+6. route all mails for none-existing addresses into ictcore mailbox so we can receive emails for addresses like `xyz_number@FAX_DOMAIN.COM`
 ```bash
 echo '@FAX_DOMAIN.COM ictcore' >> /etc/mail/virtusertable
-makemap hash /etc/mail/virtusertable < /etc/mail/virtusertable # >
-
+```
+7. to apply email related changes
+```
 /etc/mail/make
 ```
-
-9. grant proper permission to ictcore user on mail folder 
-
-```bash
-gpasswd -a ictcore mail
-gpasswd -a apache ictcore
-chmod +t /var/spool/mail 
-```
-
-10. restart sendmail service so changes can take affect
-
+8. restart sendmail service so changes can take affect
 ```bash
 chkconfig sendmail on
 service sendmail restart
 ```
-
-11. edit /usr/ictcore/etc/ictcore.conf and update __mailbox__ section like following
+9. edit /usr/ictcore/etc/ictcore.conf and update __mailbox__ section like following
 ```ini
 folder = /var/spool/email/ictcore
 ```
@@ -280,15 +133,14 @@ NOTE: make sure that `/etc/hosts.allow` is properly configured for accepting mai
 /sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 25 -j ACCEPT    # smtp
 /etc/init.d/iptables save
 ```
-
-12. Now you are ready to send faxes through your email. See Admin/User Guide for further details.
+  
+Now you are ready to send faxes through your email. See Admin/User Guide for further details.
 
 
 6: First FAX
 ============
 
-6.1: Sending First FAX
-----------------------
+### 6.1: Sending First FAX
 1. Login as admin
 2. Add gateway / trunk for outgoing fax at "ICTCore System" => "Provider Trunks"
 3. Currently, in ICTFAX3.0 only one gateway/trunk will be used for calling. Currently routing is not supported.
@@ -308,8 +160,7 @@ or via email2fax
 NOTE: Attach only a single file. Every time create new email message and give unique email subject. 
 Using Forward or Reply may confuse ictfax system with some previous email subjects.
 
-6.2: Receiving First FAX
-------------------------
+### 6.2: Receiving First FAX
 1. Point DIDs to fax server
 2. Configure freeswitch to receive traffic for this DID provider. 
 3. Usually only IP address of the DID provider is sufficient to be added in ACL.
@@ -322,8 +173,27 @@ Using Forward or Reply may confuse ictfax system with some previous email subjec
 10. Forward fax by selecting "Forward" and enter some email address in given box and save
 11. Send test fax to selected did
 
+7: Extra
+========
+Optionally for text to fax support you can install
 
-6: Contacts
+```bash
+yum -y install git make 
+```
+
+also install yudit for text to pdf support
+
+```bash
+cd /usr/src
+wget "http://www.yudit.org/download/yudit-2.9.2.tar.gz"
+tar xzf yudit-2.9.2.tar.gz
+cd yudit*
+./configure --prefix=/usr/local
+make
+make install
+```
+
+8: Contacts
 ===========
 info@ictinnovations.com
 http://www.ictinnovations.com
