@@ -8,7 +8,7 @@
 ; ******************************************************************/
 ;
 ; $Id: ictpbx.info,v 1.0 2012/02/29 18:08:59 ictinnovations Exp $
-name = "ICTPBX Module"
+name = "ICTCore Module"
 description = "Provides control panel for VoIP services"
-package = "ICTPBX System"
+package = "ICTCore System"
 core = "7.x"

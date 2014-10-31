@@ -13,9 +13,6 @@
 * 23 Feb 2012
 */
 
-// Include the PHP Plivo Rest library
-require_once "lib/plivohelper.php";
-
 /**
 * Display help and module information
 * @param section which section of the site we're displaying help
@@ -45,9 +42,10 @@ function ictfax_menu() {
     'access callback'  => 'ictfax_access',
     'access arguments' => array('can use ictfax'),
     'position'         => 'left',
+    'expanded'         => TRUE,
     'weight'           => -10,
   );
-  
+
   $items['ictfax/outbox'] = array(
     'title'            => t('Fax Outbox'),
     'description'      => 'Fax Outbox',
@@ -80,7 +78,7 @@ function ictfax_menu() {
     'weight'           => 11,
   );
 
-  $items['ictfax/outbox/%ictfax_outbox/edit'] = array(
+  $items['ictfax/outbox/%ictfax/edit'] = array(
     'title'            => t('Edit Fax'),
     'description'      => 'Edit Fax',
     'page callback'    => 'drupal_get_form',
@@ -90,17 +88,17 @@ function ictfax_menu() {
     'type' => MENU_CALLBACK,
   );
 
-  $items['ictfax/outbox/%ictfax_outbox/delete'] = array(
+  $items['ictfax/outbox/%ictfax/delete'] = array(
     'title'            => t('Delete Fax'),
     'description'      => 'Delete Fax',
-    'page callback'    => 'ictfax_outbox_delete',
+    'page callback'    => 'ictfax_delete',
     'page arguments'   => array(2),
     'access callback'  => 'ictfax_access',
     'access arguments' => array('can use ictfax'),
     'type' => MENU_CALLBACK,
   );
 
-  $items['ictfax/%ictfax_outbox/resend'] = array(
+  $items['ictfax/outbox/%ictfax/resend'] = array(
     'title'            => t('Resend Fax'),
     'description'      => 'Resend Fax',
     'page callback'    => 'drupal_get_form',
@@ -110,15 +108,26 @@ function ictfax_menu() {
     'type' => MENU_CALLBACK,
     //'weight' => -10,
   );
-   
-  $items['ictfax/outbox/%ictfax_outbox/view'] = array(
+
+  $items['ictfax/outbox/%ictfax/view'] = array(
     'title'            => t('View Fax'),
     'description'      => 'View Fax',
-    'page callback'    => 'drupal_get_form',
-    'page arguments'   => array('ictfax_view', 2),
+    'page callback'    => 'ictfax_view',
+    'page arguments'   => array(1),
     'access callback'  => 'ictfax_access',
     'access arguments' => array('can use ictfax'),
-//    'type' => MENU_DEFAULT_LOCAL_TASK,
+    'type' => MENU_CALLBACK,
+    //'weight' => -10,
+  );
+
+  $items['ictfax/outbox/%ictfax/download'] = array(
+    'title'            => t('Download Fax'),
+    'description'      => 'Download Fax',
+    'page callback'    => 'ictfax_download',
+    'page arguments'   => array(1),
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type' => MENU_CALLBACK,
     //'weight' => -10,
   );
 
@@ -142,14 +151,36 @@ function ictfax_menu() {
     'weight'           => 11,
   );
 
-  $items['ictfax/inbox/%ictfax_inbox/delete'] = array(
+  $items['ictfax/inbox/%ictfax/delete'] = array(
     'title'            => t('Delete Fax'),
     'description'      => 'Delete Fax',
-    'page callback'    => 'ictfax_inbox_delete',
+    'page callback'    => 'ictfax_delete',
     'page arguments'   => array(2),
     'access callback'  => 'ictfax_access',
     'access arguments' => array('can use ictfax'),
     'type' => MENU_CALLBACK,
+  );
+
+  $items['ictfax/inbox/%ictfax/view'] = array(
+    'title'            => t('View Fax'),
+    'description'      => 'View Fax',
+    'page callback'    => 'ictfax_view',
+    'page arguments'   => array(1),
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type' => MENU_CALLBACK,
+    //'weight' => -10,
+  );
+
+  $items['ictfax/inbox/%ictfax/download'] = array(
+    'title'            => t('Download Fax'),
+    'description'      => 'Download Fax',
+    'page callback'    => 'ictfax_download',
+    'page arguments'   => array(1),
+    'access callback'  => 'ictfax_access',
+    'access arguments' => array('can use ictfax'),
+    'type' => MENU_CALLBACK,
+    //'weight' => -10,
   );
 
   $items['ictfax/phonebookpopup'] = array(
@@ -160,47 +191,6 @@ function ictfax_menu() {
     'access callback'  => 'ictfax_access',
     'access arguments' => array('can use ictfax'),
     'type' => MENU_CALLBACK,
-  );
-  
-  /* Plivo URLs */
-  // send fax from web or email
-  $items['ictfax/send_fax/%'] = array(
-    'title'            => 'Send Fax',
-    'description'      => 'Sends Fax',
-    'page callback'    => 'ictfax_send_fax',
-    'page arguments'   => array(2),
-    'access callback'  => 'ictfax_access',
-    'access arguments' => array('access content'),
-    'type'             => MENU_CALLBACK,
-  );
-
-  // Post send fax status e.g. email, cdr and billing
-  $items['ictfax/send_fax_hangup/%'] = array(
-    'title'            => 'Send Fax Hangup',
-    'description'      => 'Update post fax send status e.g. email, cdr and billing',
-    'page callback'    => 'ictfax_send_fax_hangup',
-    'page arguments'   => array(2),
-    'access callback'  => 'ictfax_access',
-    'access arguments' => array('access content'),
-    'type'             => MENU_CALLBACK,
-  );
-
-  // receive fax
-  $items['ictfax/receive_fax'] = array(
-    'title'            => 'Receive Fax',
-    'description'      => 'Receive Fax',
-    'page callback'    => 'ictfax_receive_fax',
-    'access arguments' => array('access content'),
-    'type'             => MENU_CALLBACK,
-  );
-  // send email after fax is received
-  $items['ictfax/send_email/%'] = array(
-    'title'            => 'Send Fax as Email',
-    'description'      => 'Send Fax as Email',
-    'page callback'    => 'ictfax_send_email',
-    'page arguments'   => array(2),
-    'access arguments' => array('access content'),
-    'type'             => MENU_CALLBACK,
   );
 
   return $items;
@@ -236,72 +226,60 @@ function ictfax_access($access) {
   return true;
 }
 
-function ictfax_fax_outbox_load($cid) {
-  $sql    = "SELECT * FROM {fax_outbox} WHERE cid = :cid";
-  $result = db_query($sql, array(':cid'=>$cid));
-  if ($fax = $result->fetchAssoc()) {
-    return $fax;
-  }
-  else {
-    drupal_set_message(t('Specified Recording does not exist! or you have not proper permissions!'), 'error');
-    return FALSE;
-  }
-}
-
 /**
  * This function creates a list of faxs for the specified interface
  */
 function ictfax_outbox_list() {
   global $user;
-
+  $service_flag = 2; // SERVICE_FAX
   $header = array(
-    array('data' => t('Job ID'), 'field' => 'cid', 'sort' => 'desc'),
-    array('data' => t('Send To'), 'field' => 'send_to'),
-    array('data' => t('Pages'), 'field' => 'pages'),
-    array('data' => t('Fax Status'), 'field' => 'status_string'),
-    array('data' => t('Created'), 'field' => 'created'),
-    array('data' => t('Action'), 'field' => ''),
+    array('data' => t('Job ID'),    'field' => 'transmission_id', 'sort' => 'desc'),
+    array('data' => t('File Name'), 'field' => 'message_id'),
+    array('data' => t('Fax From'),  'field' => 'account_id'),
+    array('data' => t('Fax To'),    'field' => 'contact_id'),
+    array('data' => t('Status'),    'field' => 'status'),
+    array('data' => t('Action'),    'field' => ''),
   );
 
-  $query = db_select('fax_outbox', 'fax')->extend('PagerDefault');
-  $query->fields('fax', array('cid', 'send_to', 'file_name', 'text', 'pages', 'status_string', 'created', 'send_from'));
-  $query->condition('fax.uid', $user->uid,'=');
+  $query = CoreDB::db_select('transmission', 't')->extend('PagerDefault');
+  $query->fields('t', array('transmission_id', 'message_id', 'account_id', 'contact_id', 'status'));
+  $query->condition('t.direction', 'outbound', '=');
+  $query->condition('t.service_flag', $service_flag, '=');
   $result = $query->limit(50)         
             ->extend('TableSort')
             ->orderByHeader($header)
             ->execute();
-  
-  while ($fax = $result->fetchAssoc()) {
-    $row_id = $fax['cid'];
-    $rows[$row_id][] = check_plain($fax['cid']);
-    $rows[$row_id][] = check_plain($fax['send_to']);
-    $rows[$row_id][] = check_plain($fax['pages']);
-    $rows[$row_id][] = check_plain($fax['status_string']);
-    $rows[$row_id][] = check_plain(date('d-M-Y H:i',$fax['created']));
-    $rows[$row_id][] = _ictfax_list_links($fax);
+  while ($transmission = $result->fetchAssoc()) {
+    $row_id = $transmission['transmission_id']; 
+    $rows[$row_id][] = check_plain($transmission['transmission_id']);
+    $rows[$row_id][] = check_plain(ictfax_get_message_filename($transmission['message_id']));
+    $rows[$row_id][] = check_plain(ictfax_get_account_name($transmission['account_id']));  // to 
+    $rows[$row_id][] = check_plain(ictfax_get_contact_name($transmission['contact_id']));  // from
+    $rows[$row_id][] = check_plain($transmission['status']);
+    $rows[$row_id][] = _ictfax_list_links($transmission);
   }
   if (!isset($rows)) {
     $rows[] = array(array('data' => t('No faxes have been created to send.'), 'colspan' => 8));
   }
-  
   $output = theme('table', array('header'=>$header, 'rows'=>$rows));
   $output .= theme('pager');
 
   if (!isset($_SESSION['fax_status']) || $_SESSION['fax_status'] == 'in_queue') {
     $output .= ictfax_getJaveScript();
   }
+ 
   return $output;
 }
 
-function _ictfax_list_links($fax) {
+function _ictfax_list_links($transmission) {
   /*$links['edit'] = array(
     'title' => t('Edit'),
-    'href' => 'ictfax/outbox/' . $fax['cid'] . '/edit',
+    'href' => 'ictfax/outbox/' . $transmission['cid'] . '/edit',
     'html' => TRUE,
   );*/
   $links['delete'] = array(
     'title' => t('Delete'),
-    'href' => 'ictfax/outbox/' . $fax['cid'] . '/delete',
+    'href' => 'ictfax/outbox/' . $transmission['transmission_id'] . '/delete',
     'html' => TRUE,
   );
   return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
@@ -312,81 +290,95 @@ function _ictfax_list_links($fax) {
  */
 function ictfax_inbox_list() {
   global $user;
-  
+
+  $service_flag = 2; // SERVICE_FAX
   $header = array(
-    array('data' => t('Job ID'), 'field' => 'fax_inbox_id', 'sort' => 'desc'),
-    array('data' => t('Send To'), 'field' => 'send_to'),
-    array('data' => t('Account'), 'field' => 'send_from'),
-    array('data' => t('Pages'), 'field' => 'pages'),
-    array('data' => t('Fax Status'), 'field' => 'status_string'),
-    array('data' => t('Created'), 'field' => 'created'),
-    array('data' => t('Action'), 'field' => ''),
+    array('data' => t('Job ID'),    'field' => 'transmission_id', 'sort' => 'desc'),
+    array('data' => t('File Name'), 'field' => 'message_id'),
+    array('data' => t('Fax From'),  'field' => 'contact_id'),
+    array('data' => t('Fax To'),    'field' => 'account_id'),
+    array('data' => t('Status'),    'field' => 'status'),
+    array('data' => t('Action'),    'field' => ''),
   );
-  
-  $query = db_select('fax_inbox', 'fax')->extend('PagerDefault');
-  $query->fields('fax', array('fax_inbox_id', 'send_to', 'send_from', 'pages', 'status_string', 'created'));
-  $query->condition('fax.uid', $user->uid,'=');
-  $result = $query->limit(50)
+
+  $query = CoreDB::db_select('transmission', 't')->extend('PagerDefault');
+  $query->fields('t', array('transmission_id', 'message_id', 'contact_id', 'account_id', 'status'));
+  $query->condition('t.direction', 'inbound','=');
+  $query->condition('t.service_flag', $service_flag,'=');
+  $result = $query->limit(50)         
             ->extend('TableSort')
             ->orderByHeader($header)
-            ->execute(); 
-  
-  while ($fax = $result->fetchAssoc()) {
-    $row_id = $fax['fax_inbox_id'];
-    $rows[$row_id][] = check_plain($fax['fax_inbox_id']);
-    $rows[$row_id][] = check_plain($fax['send_to']);
-    $rows[$row_id][] = check_plain($fax['send_from']); 
-    $rows[$row_id][] = check_plain($fax['pages']);
-    $rows[$row_id][] = check_plain($fax['status_string']);
-    $rows[$row_id][] = check_plain(date('Y-m-d H:i',$fax['created']));
-    $rows[$row_id][] = _ictfax_list_incoming_links($fax);
+            ->execute();
+  while ($transmission = $result->fetchAssoc()) {
+    $row_id = $transmission['transmission_id']; 
+    $rows[$row_id][] = check_plain($transmission['transmission_id']); 
+    $rows[$row_id][] = check_plain(ictfax_get_message_filename($transmission['message_id']));
+    $rows[$row_id][] = check_plain(ictfax_get_contact_name($transmission['contact_id']));
+    $rows[$row_id][] = check_plain(ictfax_get_account_name($transmission['account_id']));
+    $rows[$row_id][] = check_plain($transmission['status']);
+    $rows[$row_id][] = _ictfax_list_links($transmission);
   }
   if (!isset($rows)) {
-    $rows[] = array(array('data' => t('No faxes in inbox.'), 'colspan' => 9));
+    $rows[] = array(array('data' => t('No faxes have been received.'), 'colspan' => 8));
   }
-  
   $output = theme('table', array('header'=>$header, 'rows'=>$rows));
   $output .= theme('pager');
-  
-  return $output;
 
+  if (!isset($_SESSION['fax_status']) || $_SESSION['fax_status'] == 'in_queue') {
+    $output .= ictfax_getJaveScript();
+  }
+ 
+  return $output;
 }
 
-function _ictfax_list_incoming_links($fax) {
+function ictfax_get_message_filename($message_id){
+  $query    = 'SELECT file_name FROM document WHERE document_id = :document_id';
+  $query_rs = CoreDB::db_query($query, array(':document_id' => $message_id));
+  $document = $query_rs->fetchAssoc();
+  return $document['file_name'];
+}
+
+function ictfax_get_account_name($account_id){
+  $query    = 'SELECT CONCAT(first_name, last_name) AS name FROM account WHERE account_id = :account_id';
+  $query_rs = CoreDB::db_query($query, array(':account_id' => $account_id));
+  $account  = $query_rs->fetchAssoc(); 
+  return $account['name'];
+} 
+
+function ictfax_get_contact_name($contact_id){
+  $query    = 'SELECT CONCAT(first_name, last_name) AS name FROM contact WHERE contact_id = :contact_id';
+  $query_rs = CoreDB::db_query($query, array(':contact_id' => $contact_id));
+  $contact  = $query_rs->fetchAssoc(); 
+  return $contact['name'];
+} 
+
+function _ictfax_list_incoming_links($transmission) {
   $links['delete'] = array(
     'title' => t('Delete'),
-    'href' => 'ictfax/inbox/' . $fax['fax_inbox_id'] . '/delete',
+    'href' => 'ictfax/inbox/' . $transmission['transmission_id'] . '/delete',
     'html' => TRUE,
   );
-  $app = variable_get('ictfax_app_root', 'http://127.0.0.1/ictfax/sites/default/files/ictfax/inbox');
-  if (isset($fax['pages']) && $fax['pages'] >= 1) {
+  if (!empty($transmission['message_id'])) {
     $links['view'] = array(
       'title' => t('View'),
-      'href' => $app . '/' . $fax['fax_inbox_id'] . '.pdf',
-      'html' => TRUE,
+      'href'  => 'ictfax/'.$transmission['message_id'].'/view',
+      'html'  => TRUE,
     );
   }
   return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
 }
 
-
 /**
- * Display a page with the fax info
+ * Display / Download fax document
  */
-function ictfax_view($fax) {
-  
-}
 
-/**
- * Loads a fax from inbox
- */
-function ictfax_inbox_load($cid) {
+function ictfax_message_load($message_id) {
   global $user;
   if($cid != null) {
-    $query  = 'SELECT * FROM fax_inbox WHERE fax_inbox_id = :fax_inbox_id AND uid=:uid';
-    $result = db_query($query, array(':fax_inbox_id'=>$cid, ':uid'=>$user->uid));
-    if ($fax = $result->fetchAssoc()) {
-      return $fax;
+    $query  = 'SELECT * FROM document WHERE document_id = :document_id AND created_by=:created_by';
+    $result = CoreDB::db_query($query, array(':document_id' => $message_id, ':created_by' => $user->uid));
+    if ($document = $result->fetchAssoc()) {
+      return $document;
     }
     else {
       drupal_set_message(t('Specified Fax does not exist! or you have not proper permissions!'), 'error');
@@ -395,18 +387,25 @@ function ictfax_inbox_load($cid) {
   }
 }
 
+function ictfax_view($message) {
+  
+}
+
+function ictfax_download($message) {
+  
+}
+
 /**
- * Loads a fax from outbox
+ * Loads a fax
  */
-function ictfax_outbox_load($cid) {
+function ictfax_load($transmission_id) {
   global $user;
-  if($cid != null) {
-    $query  = 'SELECT * FROM fax_outbox WHERE cid = :cid AND uid=:uid';
-    $result = db_query($query, array(':cid'=>$cid, ':uid'=>$user->uid));
-    if ($fax = $result->fetchAssoc()) {
-      return $fax;
-    }
-    else {
+  if ($transmission_id != null) {
+    $query  = 'SELECT * FROM transmission WHERE transmission_id = :transmission_id AND created_by=:created_by';
+    $result = CoreDB::db_query($query, array(':transmission_id' => $transmission_id, ':created_by' => $user->uid));
+    if ($transmission = $result->fetchAssoc()) {
+      return $transmission;
+    } else {
       drupal_set_message(t('Specified Fax does not exist! or you have not proper permissions!'), 'error');
       return FALSE;
     }
@@ -424,13 +423,13 @@ function ictfax_form($form, &$form_state, $edit = array()) {
     'file_name'  => '',
     'try_max'    => 1,
   );
-  
+
   // Include the CTools tools that we need.
   ctools_include('ajax');
   ctools_include('modal');
   // Add CTools' javascript to the page.
   ctools_modal_add_js();
-
+//  drupal_add_js(drupal_get_path('module', 'ictfax') . '/fax_answer.js');
   // If we're editing an existing fax, we'll add a value field to the form
   // containing the fax's unique ID.
   if (!empty($edit['cid'])) {
@@ -444,7 +443,7 @@ function ictfax_form($form, &$form_state, $edit = array()) {
     '#type'          => 'fieldset',
     '#title'         => t('Fax Information'),
   );
-  
+
   $form['info']['send_to'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Send To'),
@@ -506,7 +505,6 @@ function ictfax_form($form, &$form_state, $edit = array()) {
   );
   
   return $form;
-  
 }
 
 /**
@@ -514,18 +512,18 @@ function ictfax_form($form, &$form_state, $edit = array()) {
  *
  */ 
  function ictfax_form_validate($form, &$form_state) {
-  $fax = $form_state['values'];
-  if (isset($fax['ictfax_outbox_id'])) {
+  $transmission = $form_state['values'];
+  if (isset($transmission['transmission_id'])) {
     // we are editing an existing record
-    $existing_record = $fax['ictfax_outbox_id'];
+    $existing_record = $transmission['transmission_id'];
   }
-  if ($fax['send_to'] == '') {
+  if ($transmission['send_to'] == '') {
     form_set_error('send_to', t('Recipient cannot be empty'));
   }
-  if (empty($fax['send_to'])) {
+  if (empty($transmission['send_to'])) {
     form_set_error('send_to', t('Fax Number is required.'));
   } else {
-    if (!ctype_digit(str_replace(array('+', ','), '',$fax['send_to']))) {
+    if (!ctype_digit(str_replace(array('+', ','), '',$transmission['send_to']))) {
         form_set_error('send_to', t('Fax Number is not valid.'));
     }
   }
@@ -542,10 +540,9 @@ function ictfax_form($form, &$form_state, $edit = array()) {
   $validators = array('file_validate_extensions' => $allowedTypes);
   $file = file_save_upload('file_name', $validators);
   if ($file) {
-       $form_state['values']['file_name'] = $file; // drupal file object
-  }
-  else{
-       form_set_error('file_name', "File is required");
+    $form_state['values']['file_name'] = $file; // drupal file object
+  } else {
+    form_set_error('file_name', "File is required");
   }
 }
 
@@ -553,178 +550,43 @@ function ictfax_form($form, &$form_state, $edit = array()) {
  * Persist the changes to the database
  */
 function ictfax_form_submit($form, &$form_state) {
-  
-  /****** add id of the user who creates this fax *******/
-
   global $user;
-  $uid = $user->uid;
 
-  $path = variable_get('fax_directory_outbox', '/usr/ictfax/sites/default/files/ictfax/webfax');
-  file_prepare_directory($path, FILE_CREATE_DIRECTORY);
+  include_once "/usr/ictcore/core/core.php";
 
-  $edit = $form_state['values'];
-  
-  //Set other database required fields
-  $fax['send_to'] = $edit['send_to'];
-  $fax['text'] = addcslashes($edit['text'],'$"\\');
-  $fax['status'] = '0';
-  $fax['status_string'] = 'in queue';
-  $fax['file_name'] = $edit['file_name']->filename;
-  $fax['file_type'] = '';
-  $fax['pages'] = 0;
-  $fax['uid'] = $uid;
-  $fax['created'] = time();
-  $fax['changed'] = time();
-  $fax['try_max'] = $edit['try_max'];
-  $fax['try_recent'] = 0;
-  $fax['submitted_from'] = 'web';  
-  
-  if(!isset($fax['send_from'])) {
-    $fax['send_from'] = variable_get('default_caller_id', '33184164306');
+  // first of all load user in ict framework
+  do_login($user->uid);
+  $data = $form_state['values'];
+
+  // prepare new transmission
+  $oTransmission = new Transmission();
+  $oTransmission->set('service_flag',  2); // SERVICE_FAX
+  $oTransmission->set('origin', 'web');
+  $oTransmission->set('direction', 'outbound');
+  $oTransmission->set('account_id', ACCOUNT_DEFAULT); // send from default account / source
+  $oTransmission->set('try_allowed', $data['try_max']);
+
+  $oTransmission->set('contact_id', NULL);
+  $oTransmission->oContact->set('phone', $data['send_to']);
+  $oTransmission->oContact->save();
+
+  $oTransmission->set('message_id', NULL);
+  if (!empty($data['file_name']->uri)) {
+    $oTransmission->oMessage->set('file_name', drupal_realpath($data['file_name']->uri));
+  } else if (!empty($text)) {
+    $oTransmission->oMessage->set('text', $data['text']);
   }
-  // get caller id
-  $result = db_query("SELECT did FROM ictpbx_did JOIN ictpbx_user ON assigned_to = ictpbx_user_id WHERE uid = :uid", array(':uid'=>$uid));
-  if($did = $result->fetchAssoc()) {
-    $fax['send_from'] = $did['did'];
+  $oTransmission->oMessage->save();
+
+  $result = $oTransmission->send();
+
+  if (!$result) {
+      drupal_set_message(t('Unable to send fax, error occured!'), 'error');
+      return false;
   }
-  
-  $allowedTypes = array(
-     1=>'odt',  2=>'ott',  3=>'sxw',  4=>'stw',  5=>'doc',  6=>'dot',  7=>'sdw',  8=>'vor',  9=>'htm', 10=>'sdd', 
-    11=>'sdp', 12=>'wpd', 13=>'ods', 14=>'ots', 15=>'sxc', 16=>'stc', 17=>'xls', 18=>'xlw', 19=>'xlt', 20=>'sdc', 
-    21=>'csv', 22=>'odp', 23=>'otp', 24=>'sxi', 25=>'sti', 26=>'ppt', 27=>'pps', 28=>'pot', 29=>'sxd', 30=>'odt', 
-    31=>'ott', 32=>'sxw', 33=>'stw', 34=>'doc', 35=>'dot', 36=>'sdw', 37=>'vor', 38=>'htm', 39=>'sdd', 40=>'sdp', 
-    41=>'wpd', 42=>'ods', 43=>'ots', 44=>'sxc', 45=>'stc', 46=>'xls', 47=>'xlw', 48=>'xlt', 49=>'sdc', 50=>'csv', 
-    51=>'odp', 52=>'otp', 53=>'sxi', 54=>'sti', 55=>'ppt', 56=>'pps', 57=>'pot', 58=>'sxd', 59=>'txt', 60=>'tif', 
-    61=>'jpg', 62=>'pdf', 63=>'png', 64=>'gif',
-  );
-  
-  if (isset($fax['cid'])) {
-    drupal_write_record('fax_outbox', $fax, 'cid');
-  }
-  else {
-    drupal_write_record('fax_outbox', $fax);
-  }
-  
-  $sourceFile = '/tmp/'.$fax['file_name'];
-  // set destination file path
-  //$targetFile = "$path/$fax[cid].tif";
-  //$cmd = "cp $sourceFile $targetFile";
-  //exec($cmd);
-  
-  if (isset($fax['file_name']) && $fax['file_name'] != '') {
-    $fileExten = strtolower(end(explode('.', $fax['file_name'])));
-    echo exec("echo checking file extensions: $fileExten > /tmp/mytest.txt");
-    if (in_array($fileExten, $allowedTypes)) {
-      $fileName = $sourceFile;
-      echo exec("echo file:$fileName >> /tmp/mytest.txt");
-      if ($fileExten == 'tif') {
-        echo exec("echo tif file >> /tmp/mytest.txt");
-        $pdfFilePath = str_replace('.tif', '.pdf', $fileName);
-        $cmd = ictfax_which('tiff2pdf', '/usr/bin') . " -o '$pdfFilePath' -z '$fileName'";
-        exec($cmd);
-        $cmd = "rm -rf $fileName";
-        exec($cmd);
-        // existing tiff file must be deleted before new tiff file creation
-        exec($cmd);
-      } elseif ($fileExten == 'txt') {
-        echo exec("echo txt file >> /tmp/mytest.txt");
-        $psFilePath = str_replace('.txt', '.ps', $fileName);
-        $pdfFilePath = str_replace('.ps', '.pdf', $psFilePath);
-        $cmd = ictfax_which('uniprint', '/usr/local/bin') . " -hsize 0 -size 9 -in '$fileName' -out '$psFilePath'";
-        exec($cmd);
-        $cmd = "rm -rf $fileName";
-        exec($cmd);
-        $cmd = ictfax_which('ps2pdf', '/usr/bin') . " '$psFilePath' '$pdfFilePath'";
-        exec($cmd);
-        $cmd = "rm -rf $psFilePath";
-        exec($cmd);
-      } elseif ($fileExten == 'jpg') {
-        echo exec("echo jpg file >> /tmp/mytest.txt");
-        $pdfFilePath = str_replace('.jpg', '.pdf', $fileName);
-        $cmd = ictfax_which('convert', '/usr/bin') . " '$fileName' -type Bilevel -monochrome '$pdfFilePath'";
-        exec($cmd);
-        $cmd = "rm -rf $fileName";
-        exec($cmd);
-      } elseif ($fileExten == 'png') {
-        echo exec("echo png file >> /tmp/mytest.txt");
-        $pdfFilePath = str_replace('.png', '.pdf', $fileName);
-        $cmd = ictfax_which('convert', '/usr/bin') . " '$fileName' -type Bilevel -monochrome '$pdfFilePath'";
-        exec($cmd);
-        $cmd = "rm -rf $fileName";
-        exec($cmd);
-      } elseif ($fileExten == 'gif') {
-        echo exec("echo gif file >> /tmp/mytest.txt");
-        $pdfFilePath = str_replace('.gif', '.pdf', $fileName);
-        $cmd = ictfax_which('convert', '/usr/bin') . " '$fileName' -type Bilevel -monochrome '$pdfFilePath'";
-        exec($cmd);
-        $cmd = "rm -rf $fileName";
-        exec($cmd);
-      } elseif ($fileExten == 'pdf') {
-        echo exec("echo pdf file >> /tmp/mytest.txt");
-        $pdfFilePath = $fileName;
-      } elseif (in_array($fileExten, $allowedTypes)) {
-        echo exec("echo any other file >> /tmp/mytest.txt");
-        $pdfFilePath = str_replace($allowedTypes, 'pdf', $fileName);
-        $cmd = ictfax_which('makepdf.sh', '/usr/ictfax/sites/all/modules/ictpbx/ictfax') . " '$fileName'";
-        exec($cmd);
-        $cmd = "rm -rf $fileName";
-        exec($cmd); 
-      }
-      // get total page count of pdf
-      $cmd = ictfax_which('pdfinfo', '/usr/bin') . " '$pdfFilePath' | sed -n 's#^Pages:[^0-9]*\\([0-9.]*\)$#\\1#p'";
-      exec($cmd, $pages);
-      echo exec("echo '".print_r($pages, true)."' >> /tmp/mytest.txt");
-
-      $fileNameTiff = str_replace('.pdf', '.tif', $pdfFilePath);
-      $cmd = ictfax_which('gs', '/usr/bin') . " -dBATCH -dNOPAUSE -sDEVICE=tiffg4 -sPAPERSIZE=a4 -r204x98 -dAutoRotatePages -sOutputFile='$fileNameTiff' '$pdfFilePath'";
-      exec($cmd);
-      $cmd = "chmod -R 777 $path";
-      exec($cmd);
-
-      echo exec("echo converting back to tif: $fileNameTiff, $pdfFilePath >> /tmp/mytest.txt");
-      $targetTifFile = "$path/$fax[cid].tif";
-      $cmd = "cp '$fileNameTiff' '$targetTifFile'";
-      exec($cmd);
-
-
-      if (!$pages[0] || $pages[0] < 1) {
-        drupal_set_message(t('unknow error occured while processing file.'), 'error');
-      }
-      $fax['file_path'] = $fileNameTiff;
-    }
-  } 
-  /////////////////////////////////////////
-  // Perform balance check before dialing//
-  /////////////////////////////////////////
-  $cmd = "rm -rf $pdfFilePath";
-  exec($cmd);
-  $fax['pages'] = $pages[0];
-  //echo exec("echo '".print_r($fax['pages'], true)."' >> /tmp/mytest.txt");
-  
-  if ($fax['pages'] > 0) {
-    $status = module_invoke_all('check_balance', $fax);
-    if(is_array($status) && isset($status[0])) {
-      $status = $status[0];
-    } else {
-      $status = TRUE; // set to TRUE to send fax without billing
-    }
-    echo exec("echo 'remaining-balance-status=".print_r($status, true)."' >> /tmp/mytest.txt");
-    if($status) {
-      drupal_write_record('fax_outbox', $fax, 'cid');
-      ictfax_sendfax($uid, $fax);
-    } else {
-      drupal_set_message(t('Insufficient balance!'), 'error');
-    }
-  } else {
-    drupal_set_message(t('No pages or error opening file!'), 'error');
-  }
-  //clear file entry in file_managed
-  $uri = $edit['file_name']->uri;
-  $query = "DELETE FROM {file_managed} WHERE uri = '$uri'";
-  db_query($query);
-  
-  $form_state['redirect'] = 'ictfax/outbox';
-
+  drupal_set_message(t('FAX uploaded successfully!'), 'info');
+  $form_state['redirect'] = 'ictfax/outbox/list';
+  return true;
 }
 
 /**
@@ -733,301 +595,17 @@ function ictfax_form_submit($form, &$form_state) {
  * @param $recording
  *   An array of recording containing the ID of a recording
  */
-function ictfax_outbox_delete($fax) {
-  $sql = 'DELETE FROM {fax_outbox} WHERE cid = :cid';
-  if(db_query($sql, array(':cid'=>$fax['cid']))) {
-    $path = variable_get('fax_directory_outbox', '/usr/ictfax/sites/default/files/ictfax/webfax');
-    $filepath = "$path/$fax[cid].tif";
-    exec("rm -rf '$filepath'");
+function ictfax_delete($transmission) {
+  include_once "/usr/ictcore/core/core.php";
+
+  $oTransmission = new Transmission($transmission['transmission_id']);
+  if ($oTransmission->delete()) {
     drupal_set_message(t('Fax deleted successfully!'), 'status');
   } else {
-    drupal_set_message(t('Cannot delete specified fax! or you have not proper permissions!'), 'error');
+    drupal_set_message(t('Cannot delete specified fax! fax does not exist or you have not proper permissions!'), 'error');
   }
   drupal_goto('ictfax/outbox');
 }
-
-function ictfax_inbox_delete($fax) {
-  $sql = 'DELETE FROM {fax_inbox} WHERE fax_inbox_id = :fax_inbox_id';
-  if(db_query($sql, array(':fax_inbox_id'=>$fax['fax_inbox_id']))) {
-    $path = variable_get('fax_directory_inbox', '/usr/ictfax/sites/default/files/ictfax/inbox');
-    $filepath = "$path/$fax[fax_inbox_id].tif";
-    exec("rm -rf '$filepath'");
-    drupal_set_message(t('Fax deleted successfully!'), 'status');
-  } else {
-    drupal_set_message(t('Cannot delete specified fax! or you have not proper permissions!'), 'error');
-  }
-  drupal_goto('ictfax/inbox');
-}
-
-function ictfax_getaccount() {
-  global $user;
-  $result = db_query("SELECT * FROM astaccount WHERE uid = :uid", array(':uid'=>$user->uid));
-  $rows = array();
-  while ($account = $result->fetchAssoc()) {
-    $row_id = $account['accountcode'];
-    $rows[$row_id] = check_plain($account['accountname']);
-  }
-  if (!isset($rows)) {
-    return FALSE;
-  }
-  return $rows;
-  
-}
-
-function ictfax_array_push(&$array,$object,$key=null){
-   $keys = array_keys($array);
-   rsort($keys);
-   $newkey = ($key==null)?$keys[0]+1:$key;
-   $array[$newkey] = $object;
-   return $newkey;
-}
-
-
-function ictfax_sendfax($uid, $fax) {
-
-  $sendFrom = $fax['send_from'];
-  //$sendTo = ltrim($fax['send_to'], '00');
-  $sendTo = $fax['send_to'];
-  $tiffFile = $fax['file_path'];
-  $recordId = $fax['cid'];
-  $description = $fax['text'];
-  $retries = $fax['try_max'];
-  
-  //Create dial string
-  $trunk = get_trunk_active();
-  // select first active trunk
-  if(isset($trunk['name']) && $trunk['name'] != NULL) {
-    $dial_string = "sofia/gateway/$trunk[name]/";
-    echo exec("echo active trunk selected >> /tmp/mytest.txt");
-  } else {
-  // set default trunk
-    $dial_string = "user/";
-    echo exec("echo default trunk selected >> /tmp/mytest.txt");
-  }
-  if($trunk['prefix'] != NULL) {
-    $dial_string = $dial_string . $trunk['prefix'];
-  }
-  echo exec("echo trunk=$dial_string >> /tmp/mytest.txt");
-  // Call Dial settings for plivo
-  $application_root = variable_get('ictfax_drupal_root', 'http://127.0.0.1/ictfax/index.php');
-  $plivo_server     = variable_get('ictfax_plivo_server', '127.0.0.1');
-  $plivo_port       = variable_get('ictfax_plivo_port', '8088');
-  $plivo_AccountSid = variable_get('ictfax_plivo_accountid', 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX');
-  $plivo_AuthToken  = variable_get('ictfax_plivo_authenticationtoken', 'YYYYYYYYYYYYYYYYYYYYYYYYYYYYYYYY');
-  $REST_API_URL = "http://$plivo_server:$plivo_port";
-  $ApiVersion = 'v0.1';
-  $extra_dial_string = "bridge_early_media=true,hangup_after_bridge=false";
-
-  $client = new PlivoRestClient($REST_API_URL, $plivo_AccountSid, $plivo_AuthToken, $ApiVersion);
-  $call_params = array(
-      'From' => $sendFrom, # Caller Id
-      'To' => $sendTo, # User Number to Call
-      //'Gateways' => "sofia/gateway/mycomtn-outbound/00", 
-      'Gateways' => $dial_string, # Gateway string to try dialing our separated by comma. First in list will be tried first
-      'GatewayCodecs' => "'PCMA,PCMU'", # Codec string as needed by FS for each gateway separated by comma
-      'GatewayTimeouts' => "60",      # Seconds to timeout in string for each gateway separated by comma
-      'GatewayRetries' => "1", # Retry String for Gateways separated by comma, on how many times each gateway should be retried
-//      'ExtraDialString' => $extra_dial_string,
-      'AnswerUrl' => "$application_root?q=ictfax/send_fax/$fax[cid]",
-      'HangupUrl' => "$application_root?q=ictfax/send_fax_hangup/$fax[cid]",
-      'RingUrl' => "$application_root/ringing/"    
-  );
-  try {
-      $response = $client->call($call_params);
-      // increase try_done  count
-      db_query('UPDATE {fax_outbox} SET try_done=try_done+1, try_recent=UNIX_TIMESTAMP() 
-                WHERE cid = :cid', array(':cid'=>$fax['cid']));
-
-      watchdog("Plivo", "Success: Call sent to $sendTo" , array(), WATCHDOG_INFO);
-      watchdog("Plivo", "rec_id: $fax[cid]" , array(), WATCHDOG_INFO);
-      drupal_set_message(t('Fax sent successfully!'), 'status');
-  } catch (Exception $e) {
-      watchdog("Plivo", "Error trace: " .$e , array(), WATCHDOG_ERROR);
-      drupal_set_message(t('Unable to connect to Plivo/Freeswitch!'), 'error');
-      return FALSE;
-  }//end try-catch
-  return TRUE;
-}
-
-// Send Fax through Plivo
-function ictfax_send_fax($cid) {
-  $fax = db_query("SELECT * FROM fax_outbox WHERE cid=:cid", array(':cid'=>$cid))->fetchAssoc();
-  
-  // billing and cdr
-  $estimated_cost = module_invoke_all('reserve_balance', $fax);
-  if(is_array($estimated_cost) && isset($estimated_cost[0])) {
-    $estimated_cost = $estimated_cost[0];
-  }
-  module_invoke_all('write_cdr', $fax, $estimated_cost);
-  
-  // Prepare fax to send
-  echo exec("echo '".print_r($_REQUEST, true)."' >> /tmp/mytest.txt");
-  watchdog("Send Fax", "cid: $cid" , array(), WATCHDOG_INFO);
-  $path = variable_get('fax_directory_outbox', '/usr/ictfax/sites/default/files/ictfax/webfax');
-  $filepath = "$path/$cid.tif";
-  // Update fax status 'in queue' to 'sent'
-  $sql    = "SELECT * FROM {fax_outbox} WHERE cid = :cid";
-  $fax = db_query($sql, array(':cid' => $cid))->fetchAssoc();
-  $fax['status_string'] = 'sent';
-  drupal_write_record('fax_outbox', $fax, 'cid');
-  $response = '<?xml version="1.0" encoding="UTF-8"?>
-          <Response>
-          <SendFax>'.$filepath.'</SendFax>
-          <Hangup />
-          </Response>';
-  echo $response;
-}
-
-/**
-*
-* Performs post fax send actions
-*
-*/
-function ictfax_send_fax_hangup($fax_id) {
-  $fax = db_query("SELECT * FROM fax_outbox WHERE cid=:cid", array(':cid'=>$fax_id))->fetchAssoc();
-  $user = db_query("SELECT * FROM ictpbx_user WHERE uid=:uid", array(':uid'=>$fax['uid']))->fetchAssoc();
-  module_invoke_all('outgoing_billing', $fax);  
-  
-  echo exec("echo submitted_from=$fax[submitted_from] >> /tmp/mytest.txt");
-  // Send success email report if submitted from email
-  if($fax['submitted_from']=='email') {
-    $emailData['submitted_from']= $user['mail'];
-    $emailData['send_to']      = $fax['send_to'];
-    $emailData['subject']      = '';
-    $emailData['pages']        = $fax['pages'];
-    echo exec("echo sending email >> /tmp/mytest.txt");
-    ictfax_sendmail_success($user['name'], $emailData);
-  }
-}
-
-// Receive Fax through Plivo
-function ictfax_receive_fax() {
-  global $user;
-  echo exec("echo $_REQUEST[To] > /tmp/mytest.txt");
-  $to = $_REQUEST['To'];
-  // Get whether DID called has been assigned to a user
-  $sql    = "SELECT * FROM {ictpbx_did} WHERE did = :ictpbx_did_id";
-  $did = db_query($sql, array(':ictpbx_did_id' => $to))->fetchAssoc();
-  echo exec("echo ictpbx_id $did[assigned_to] >> /tmp/mytest.txt");
-
-  if ($did['assigned_to'] != null && $did['forwarded_to'] != null) {
-    echo exec("echo if condition success $did[forwarded_to] >> /tmp/mytest.txt");
-    // Get the uid of the called user
-    $sql    = "SELECT * FROM {ictpbx_user} WHERE ictpbx_user_id = :ictpbx_user_id";
-    $ictpbx_user = db_query($sql, array(':ictpbx_user_id' => $did['assigned_to']))->fetchAssoc();
-    // Now check available credit for this user
-    if(module_exists('ictpbx_billing')) {
-      if(($ictpbx_user['free_bundle'] - $ictpbx_user['reserve_free_bundle']) > 0) {
-        echo exec("echo Not enough credits to receive fax. Exiting! >> /tmp/mytest.txt");
-        exit();
-      }
-    }
-    // reserve fax credit
-    $ictpbx_user['reserve_free_bundle'] = $ictpbx_user['reserve_free_bundle'] + 1;
-    drupal_write_record('ictpbx_user', $ictpbx_user, 'ictpbx_user_id');
-    
-    $inbox['send_to'] = $to;
-    $inbox['send_from'] = $_REQUEST['From'];
-    $inbox['status_string'] = 'receiving';
-    $inbox['pages'] = 0;
-    $inbox['created'] = time();
-    $inbox['uid'] = $ictpbx_user['uid'];
-    $inbox['call_uuid'] = $_REQUEST['CallUUID'];
-    drupal_write_record('fax_inbox', $inbox);
-    
-    $path = variable_get('fax_directory_inbox', '/usr/ictfax/sites/default/files/ictfax/inbox');
-    file_prepare_directory($path, FILE_CREATE_DIRECTORY);
-    $file_path = "$path/$inbox[fax_inbox_id].tif";
-
-    echo exec("echo $file_path >> /tmp/mytest.txt");
-
-    $application_root = variable_get('ictfax_drupal_root', 'http://127.0.0.1/ictfax/index.php');
-    $send_email = "ictfax/send_email/$inbox[fax_inbox_id]";
-    $url_action = "$application_root?q=$send_email";
-    $response = '<?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-        <ReceiveFax>'.$file_path.'</ReceiveFax>
-        <Redirect>'.$url_action.'</Redirect>
-        </Response>';
-    echo $response;
-    echo exec("echo after fax application run >> /tmp/mytest.txt");  
-  } else {
-    $response = '<?xml version="1.0" encoding="UTF-8"?>
-        <Response>
-        <Hangup />
-        </Response>';
-    echo $response;
-  }
-}
-// After receiving a fax, send an email to user
-function ictfax_send_email($fax_id = 'post') {
-    if (empty($fax_id) || $fax_id == 'post') {
-      $sql = "SELECT * FROM {fax_inbox} WHERE call_uuid = :call_uuid";
-      $fax = db_query($sql, array(':call_uuid' => $_REQUEST['CallUUID']))->fetchAssoc();
-      if (empty($fax['fax_inbox_id'])) {
-        return false; // not a incoming fax request, don't proceed
-      }
-      $fax_id = $fax['fax_inbox_id'];
-    }
-
-    echo exec("echo ictfax_send_email called >> /tmp/mytest.txt");
-    $path = variable_get('fax_directory_inbox', '/usr/ictfax/sites/default/files/ictfax/inbox');
-    $tifFile = "$path/$fax_id.tif";
-    // convert tiff to pdf
-    $pdfFilePath = str_replace('.tif', '.pdf', $tifFile);
-    $cmd = ictfax_which('tiff2pdf', '/usr/bin') . " -o $pdfFilePath -z $tifFile";
-    exec($cmd);
-    //$cmd = "rm -rf $tifFile";
-    //exec($cmd);
-    // get total page count of pdf
-    $cmd = ictfax_which('pdfinfo', '/usr/bin') . " '$pdfFilePath' | sed -n 's#^Pages:[^0-9]*\\([0-9.]*\)$#\\1#p'";
-    exec($cmd, $pages);
-    echo exec("echo 'Pages=".print_r($pages, true)."' >> /tmp/mytest.txt"); 
-
-    // load inbox fax
-    $sql    = "SELECT * FROM {fax_inbox} WHERE fax_inbox_id = :fax_inbox_id";
-    $fax = db_query($sql, array(':fax_inbox_id' => $fax_id))->fetchAssoc();
-
-    if (isset($pages[0]) && $pages[0] >= 1) {
-      // update fax status
-      $fax['status_string'] = 'received';
-      $fax['pages'] = $pages[0];
-      drupal_write_record('fax_inbox', $fax, 'fax_inbox_id');
-
-      // get user name
-      $sql    = "SELECT name FROM {ictpbx_user} WHERE uid = :uid";
-      $user = db_query($sql, array(':uid' => $fax['uid']))->fetchAssoc();
-      // get email to forward
-      $sql    = "SELECT forwarded_to FROM {ictpbx_did} WHERE did = :did";
-      $did = db_query($sql, array(':did' => $fax['send_to']))->fetchAssoc();
-
-      // Send email now
-      $fax['file_path'] = "$path/$fax[fax_inbox_id].pdf";
-      $fax['mail_to'] = $did['forwarded_to'];
-
-      echo exec("echo fax_id=$fax_id >> /tmp/mytest.txt"); 
-      echo exec("echo did=$fax[send_to] >> /tmp/mytest.txt"); 
-      echo exec("echo user_name=$user[name] >> /tmp/mytest.txt"); 
-      echo exec("echo mail_to=$fax[mail_to] >> /tmp/mytest.txt"); 
-
-      ictfax_sendmail_received($user['name'], $fax);
-    } else {
-      // update fax status
-      $fax['status_string'] = 'failed';
-      $fax['pages'] = '0';
-      drupal_write_record('fax_inbox', $fax, 'fax_inbox_id');
-
-      // Make a note of the fax failing in the mytest.txt file for debug purposes
-      exec("echo ictfax_send_email called - Fax Failed - NO FAX Received >> /tmp/mytest.txt");
-    }
-
-    // responed to plivo server
-    $response = '<?xml version="1.0" encoding="UTF-8"?>
-    <Response>
-      <Hangup />
-    </Response>';
-    echo $response;
-} 
 
 function ictfax_getPhoneNo($item, $key)
 {
@@ -1088,286 +666,26 @@ function FaxStatus()
 }
 
 function ictfax_getfaxstatus() {
-    global $user;
-    $aCid = $_SESSION['fax_cid'];
-    $output = '';
-    foreach ($aCid as $key => $cid) {
-        $faxQuery = db_query("SELECT send_to, status, status_string FROM ictfax_outbox WHERE ictfax_outbox_id = :cid AND uid = :uid", array(':cid'=> $cid, ':uid'=>$user->uid));
-        $fax = $faxQuery->fetchObject();
-        if ($fax->status > 100) {
-            $color = "ff0000";
-        } elseif ($fax->status == 20) {
-            $color = "00ff00";
-        } else {
-            $color = "0000ff";
-        }
-        if ($output == '') {
-            $output = '<font color="#000">Sending FAX to '.$fax->send_to.' stutus is:&nbsp;</font><font color="#'.$color.'">'.$fax->status_string.'</font>';
-        } else {
-            $output .= '<br /><font color="#000">Sending FAX to '.$fax->send_to.' stutus is:&nbsp;</font><font color="#'.$color.'">'.$fax->status_string.'</font>';
-        }
+  global $user;
+  $aCid = $_SESSION['fax_cid'];
+  $output = '';
+  foreach ($aCid as $key => $transmission_id) {
+    $query  = "SELECT contact_id, status, response FROM transmission 
+               WHERE transmission_id = :transmission_id AND created_by = :created_by";
+    $tranRs = CoreDB::db_query($query, array(':transmission_id' => $transmission_id, ':created_by' => $user->uid));
+    $transmission = $tranRs->fetchObject();
+    if ($transmission->status == 'failed') {
+      $color = "ff0000"; // red
+    } elseif ($transmission->status == 'completed') {
+      $color = "00ff00"; // green
+    } else { // in queue, initiated etc ...
+      $color = "0000ff"; // blue
     }
-    return $output;
-}
-
-//Email Part
-function ictfax_sendmail_received($user, $fax) {
-    echo exec("echo Executing ictfax_sendmail_received >> /tmp/mytest.txt"); 
-    $company_name  = variable_get('site_name', 'ICTFAX');
-    $company_email = variable_get('site_mail', 'noreply@ictfax.org');
-    $fax_did       = $fax['send_to'];
-    $caller_id     = $fax['send_from'];
-    $fax_pages     = $fax['pages'];
-    $fax_date      = date('Y-m-d H:i:s', $fax['created']);
-    //$fax['file_path'] = '/usr/ictfax/sites/default/files/logo.gif'; // Remove: for testing only
-
-    $attachment = chunk_split(base64_encode(file_get_contents($fax['file_path'])));
-
-    // prepare to send an email
-    $random_hash = md5(uniqid(time()));
-    $subject = "You have received a fax from $caller_id";
-
-    ob_start();
-    include(dirname(__FILE__).'/fax_email.txt.php');
-    $txt_message = ob_get_clean();
-
-    ob_start();
-    include(dirname(__FILE__).'/fax_email.tpl.php');
-    $html_message = ob_get_clean();
-
-    if ((variable_get('smtp_library', '') && file_exists(variable_get('smtp_library', '')))) {
-      include_once variable_get('smtp_library', '');
-      echo exec("echo SMTP library success >> /tmp/mytest.txt"); 
-      $header  = "From: $company_name <$company_email>\n";
-      $header .= "Reply-To: $company_email\n";
-
-      $attachment = array(
-        'name' => 'fax.pdf',
-        'path' => $fax['file_path'],
-        'type' => 'application/pdf'
-      );
-
-      $mail_success = user_mail_wrapper($fax['mail_to'], $subject, $html_message, $header, array($attachment), $txt_message);
-    
-    } else { 
-
-      $header  = "From: $company_name <$company_email>\r\n";
-      $header .= "Reply-To: $company_email\r\n";
-      $header .= "MIME-Version: 1.0\r\n";
-      $header .= "Content-Type: multipart/mixed; boundary=\"mixed$random_hash\"\r\n\r\n";
-      $header .= "This is a multi-part message in MIME format.\r\n";
-      $header .= "--mixed$random_hash\r\n";
-
-      $header .= "Content-Type: multipart/alternative; boundary=\"alt$random_hash\"\r\n\r\n";
-      $header .= "--alt$random_hash\r\n";
-      $header .= "Content-type:text/plain; charset=iso-8859-1\r\n";
-      $header .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-      $header .= $txt_message."\r\n\r\n";
-      $header .= "--alt$random_hash\r\n";
-      $header .= "Content-type:text/html; charset=iso-8859-1\r\n";
-      $header .= "Content-Transfer-Encoding: 7bit\r\n\r\n";
-      $header .= $html_message."\r\n\r\n";
-      $header .= "--alt$random_hash--\r\n\r\n";
-
-      $header .= "--mixed$random_hash\r\n";
-      $header .= "Content-Type: application/pdf; name=\"fax.pdf\"\r\n";
-      $header .= "Content-Transfer-Encoding: base64\r\n";
-      $header .= "Content-Disposition: attachment; filename=\"fax.pdf\"\r\n\r\n";
-      $header .= $attachment."\r\n\r\n";
-      $header .= "--mixed$random_hash--";
-  
-      $mail_success = mail($fax['mail_to'], $subject, '', $header);
-      echo exec("echo Executing simple mail function >> /tmp/mytest.txt"); 
-    }
-
-    if (!$mail_success) {
-      watchdog('ictfax', t('Error mailing to %name at %email.', array('%name' => theme('placeholder', $user->name), '%email' => theme('placeholder', $fax['mail_to']))), WATCHDOG_ERROR);
-    }
-}
-
-/**
- * Sends out the email.
- *
- * @param $to
- *   string email address to send to.
- * @param $subject
- *   string subject of email.
- * @param $message
- *   string body of message.
- * @param $header
- *   string of header lines seperated by "\n".
- */
-function user_mail_wrapper($to, $subject, $message, $header, $attachments = false, $alt_message = '') {
-	$mail = new phpmailer(); //Create a new phpmailer object.
-
-	//Set the correct protocol prefix to append to the smtp host.
-	switch(variable_get('smtp_protocol', 'standard')){
-	  case "ssl":
-	    $mail->Protocol = 'ssl://';
-	    break;
-	  case "tls":
-	    $mail->Protocol = 'tls://';
-	    break;
-	  case "standard":
-	    $mail->Protocol = '';
-	}
-
-	$username = variable_get('smtp_username', '');
-	$password = variable_get('smtp_password', '');
-	//Figure out what name the email should be from.
-	if (variable_get('smtp_fromname', '') != '') {
-	  $from_name = variable_get('smtp_fromname', '');
-	} else {
-	  $from_name = variable_get('site_name', 'Drupal powered site');
-	}
-	//Decide whether to use SMTP Authorization. Do so if username and password are given.
-	if ($username != '' and $password != '') {
-	  $auth = TRUE;
-	} else {
-	  $auth = FALSE;
-	}
-	//Deal with the headers and extract the From address.
-	$header_array = explode("\n", $header); //Adds each line of the header as an array element.
-	foreach ($header_array as $header_line) {
-	  $mail->AddCustomHeader($header_line);
-	  if (strstr($header_line, 'From: ')) { //If the header line is the "From: " line then set the $from address.
-	    $from = str_replace('From: ', '', $header_line);
-	  }
-	}
-//	AddAttachment($path, $name = "", $encoding = "base64", 
-//                           $type = "application/octet-stream")
-                           
-	$mail->Host = variable_get('smtp_host', '') . ';' . variable_get('smtp_hostbackup', '');
-	$mail->Port = variable_get('smtp_port', '25');
-	$mail->Mailer = "smtp";
-	$mail->SMTPAuth = $auth;
-	$mail->Username = $username;
-	$mail->Password = $password;
-	
-	$mail->From = $from;
-	$mail->FromName = $from_name;
-	$mail->AddAddress($to);
-	$mail->Subject = $subject;
-	$mail->Body = $message;
-
-  if (!empty($alt_message)) {
-    $mail->IsHTML(true);
-    $mail->AltBody = $alt_message;
+    $output  = '<font color="#000">Sending FAX to '.$transmission->contact_id.' stutus is:&nbsp;</font>';
+    $output .= '<font color="#'.$color.'">'.$transmission->status.'</font>';
   }
-
-  if ($attachments) {
-      foreach ($attachments as $attachment) {
-          $mail->AddAttachment($attachment['path'], $attachment['name'], "base64", 
-                              $attachment['type']);
-      }
-  }
-
-	if(!$mail->Send()) {
-		watchdog("error", "Error sending email: " . $mail->ErrorInfo . " From: $from To: $to");
-		return false;
-	}
-	
-	$mail->SmtpClose();
-	return true;
-}
-
-function ictfax_sendmail_error($user, $fax, $errors) {
-  $from = variable_get('site_mail', ini_get('sendmail_from'));
-  $error_message = $errors;
-  //foreach ($errors as $error_text) {
-  //    $error_message .= $error_text."\n";
-  //}
-  
-  // Mail Information:
-  $variables = array('@username' => $user, '@send_to' => $fax['send_to'], '@mailto' => $fax['submitted_from'], '@error_message' => $error_message, '@date' => format_date(time()), '@site' => variable_get('site_name', 'email2fax'));
-
-  //$subject = _ictfax_mail_text('failure_subject', $variables);
-  //$body = _ictfax_mail_text('failure_body', $variables);
-
-  $subject = t('FAX to @send_to failed', $variables);
-  $body = t("Hi @username,\n\nWe just received an email from you for fax.\nat: @date \n\nBut unfortunatly FAX has been failed due to.\n\n@error_message\n\n\n Please correct above erros and try again. \n\n--  @site team", $variables);
-
-  $headers = "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from";
-  
-  $mail_success = mail($fax['submitted_from'], $subject, $body, $headers);
-  //$mail_success = mail($fax['submitted_to'], 'fax send failure', $errors, array());
-  if (!$mail_success) {
-    watchdog('ictfax', "Error mailing to $user at $fax[submitted_from].", array(), WATCHDOG_ERROR);
-  }
-}
-
-function ictfax_sendmail_success($user, $fax) {
-
-    $from = variable_get('site_mail', ini_get('sendmail_from'));
-
-    // Mail Information:
-    $variables = array('@username' => $user, '@send_to' => $fax['send_to'], '@mailto' => $fax['submitted_from'], '@pages' => $fax['pages'], '@date' => format_date(time()), '@site' => variable_get('site_name', 'email2fax'));
-
-    //$subject = _ictfax_mail_text('success_subject', $variables);
-    //$body = _ictfax_mail_text('success_body', $variables);
-
-    $subject = t('Your fax delivered to @send_to successfully', $variables);
-    $body = t("Hi @username,\n\nWe just successfully delivered an fax to @send_to.\nat: @date \nTotal Pages: @pages \n\n--  @site team", $variables);
-
-    $headers = "From: $from\nReply-to: $from\nX-Mailer: Drupal\nReturn-path: $from\nErrors-to: $from";
-
-    $mail_success = mail($fax['submitted_from'], $subject, $body, $headers);
-
-    if (!$mail_success) {
-      watchdog('ictfax', "Error mailing to $user at $fax[submitted_from].", array(), WATCHDOG_ERROR);
-  }
-}
-
-function ictfax_settings() {
-  // User e-mail settings.
-  $group = form_textfield(t('Subject of success report'), 'fax_mail_success_subject', _ictfax_mail_text('success_subject'), 60, 180, t('This subject is used with email when a report of successful fax sent to customer.'));
-  $group .= form_textarea(t('Body of success report'), 'fax_mail_success_body', _ictfax_mail_text('success_body'), 70, 10, t('This body is used with email when a report of successful fax sent to customer.'));
-  $group .= form_textfield(t('Subject of failure report'), 'fax_mail_failure_subject', _ictfax_mail_text('failure_subject'), 60, 180, t('This subject is used with email when a report of failed fax sent to customer.'));
-  $group .= form_textarea(t('Body of failure report'), 'fax_mail_failure_body', _ictfax_mail_text('failure_body'), 70, 10, t('This body is used with email when a report of failed fax sent to customer.'));
-  $output .= form_group(t('FAX email settings'), $group, t('Customize the subject and body of above emails').' '. t('Available variables are:') .' %username, %send_to, %mailto, %error_message, %date, %site.');
-
   return $output;
 }
-
-function _ictfax_mail_text($messageid, $variables = array()) {
-  // Check if an admin setting overrides the default string.
-  if ($admin_setting = variable_get('fax_mail_' . $messageid, FALSE)) {
-    return strtr($admin_setting, $variables);
-  }
-  // No override, return with default strings.
-  else {
-    switch ($messageid) {
-      case 'success_subject':
-        return t('Your fax delivered to %send_to successfully', $variables);
-      case 'success_body':
-      return t("Hi %username,\n\nWe just successfully delivered an fax to %send_to.\nat: %date \nTotal Pages: %pages \n\n--  %site team", $variables);
-      case 'failure_subject':
-        return t('FAX to %send_to failed', $variables);
-      case 'failure_body':
-        return t("Hi %username,\n\nWe just received an email from you for fax.\nat: %date \n\nBut unfortunatly FAX has been failed due to.\n\n%error_message\n\n\n Please correct above erros and try again. \n\n--  %site team", $variables);
-    }
-  }
-}
-
-function ictfax_which($cmd, $search_path=NULL) {
-  global $_ENV;
-  $scpath = is_null($search_path) ? $_ENV['PATH'] : $search_path;
-
-  foreach(explode(':', $scpath) as $path) {
-    if(is_executable("$path/$cmd")) {
-      return "$path/$cmd";
-    }
-  }
-
-  if(is_null($search_path)) {
-    $possible_path  = '/bin:/sbin:/usr/bin:/usr/sbin:/usr/local/bin:/usr/local/sbin:/usr/X11R6/bin:/usr/local/apache/bin:/usr/local/mysql/bin';
-    $possible_path .= ':' . real_name(dirname(__FILE__));
-    return ictfax_which($cmd, $all_path);
-  }
-
-  return false;
-}
-
 
 function ictfax_popup() {
 
@@ -1403,25 +721,21 @@ function ictfax_popup() {
 
 function ictfax_list_contacts($form, &$form_state, $edit = array()) {
   $edit += array(
-    'table' => '',
+    'table'      => '',
     'phone_list' => '',
   );
   global $user;
   
   $header = array(
-    'first_name' => t('First Name'),
-    'last_name' => t('Last Name'),
-    'fax' => t('Fax'),
-    'email' => t('E-Mail'),
+    'first_name'   => t('First Name'),
+    'last_name'    => t('Last Name'),
+    'phone'        => t('phone'),
+    'email'        => t('E-Mail'),
   );
-  
-  $query = db_select('ictcontact', 'co')->extend('PagerDefault');
-  $query->fields('co', array('ictcontact_id', 'first_name','last_name', 'fax', 'email'));
-  //$query->join('ictcontact_link','cl','co.ictcontact_id = cl.ictcontact_id');
-  //$query->join('ictcontact_group','cg','cg.ictcontact_group_id = cl.ictcontact_group_id');
-  //$query->addExpression('co', "CONCAT_WS(' ', last_name, first_name)", 'name');
-  //$query->addField('cg', 'title', 'category');
-  $query->condition('co.created_by', $user->uid,'=');
+
+  $query = CoreDB::db_select('contact', 'c')->extend('PagerDefault');
+  $query->fields('c', array('contact_id', 'first_name','last_name', 'phone', 'email'));
+  $query->condition('c.created_by', $user->uid,'=');
   $result = $query->limit(10)
             ->extend('TableSort')
             ->orderByHeader($header)
@@ -1429,20 +743,18 @@ function ictfax_list_contacts($form, &$form_state, $edit = array()) {
 
   $options = array();
   while ($contact = $result->fetchAssoc()) {
-    $options[$contact['ictcontact_id']] = array(
+    $options[$contact['contact_id']] = array(
       'first_name' => check_plain($contact['first_name']),
-      'last_name' => check_plain($contact['last_name']),
-      'fax' => check_plain($contact['fax']),
-      'email' => check_plain($contact['email']),
+      'last_name'  => check_plain($contact['last_name']),
+      'phone'      => check_plain($contact['phone']),
+      'email'      => check_plain($contact['email']),
     );
-  
   }
-  
-  $form['info']['table'] = array
-  (
-    '#type' => 'tableselect',
-    '#header' => $header,
-    '#options' => $options,
+
+  $form['info']['table'] = array(
+    '#type'     => 'tableselect',
+    '#header'   => $header,
+    '#options'  => $options,
     '#multiple' => FALSE,
 //    '#input'=>true,
     '#empty' => t('No record available'),
@@ -1452,171 +764,35 @@ function ictfax_list_contacts($form, &$form_state, $edit = array()) {
   );
 
   $form['info']['pager'] = array(
-    '#type' => 'item',
+    '#type'   => 'item',
     '#markup' => theme('pager'),
   );
   
   $form['phone_list'] = array(
-      '#type'        => 'hidden',
-//      '#value'       => $edit['phone_list'],
+    '#type' => 'hidden',
+//    '#value' => $edit['phone_list'],
   );
 
-  
-  $form['info']['submit'] = array
-  (
-    '#type' => 'submit',
+  $form['info']['submit'] = array(
+    '#type'  => 'submit',
     '#value' => t('Select'),
   );
 
   return $form;
-   
 }
 
 function ictfax_list_contacts_submit($form, &$form_state) {
-
   $contacts = $form_state['values'];
-
   $phone = array();
   $id = $contacts['table'];
   if($id > 0) {
-      $sql    = "SELECT fax FROM {ictcontact} WHERE ictcontact_id =:ictcontact_id";
-      $result = db_query($sql, array(':ictcontact_id' => $id))->fetchAssoc();
-      //$phone[] = $result['phone'];
-      $phone = $result['fax'];
-    }
+    $sql    = "SELECT phone FROM contact WHERE contact_id =:contact_id";
+    $result = CoreDB::db_query($sql, array(':contact_id' => $id))->fetchAssoc();
+    //$phone[] = $result['phone'];
+    $phone = $result['phone'];
+  }
   //$phone = implode($phone, ',');
   $form_state['values']['phone_list'] = $phone;
-    
   $form_state['complete'] = TRUE; 
 }
-
-
-/*****************************************************************
- * Following hook is implemented from mailhandler_default module *
-/*****************************************************************/
-/**
- * Implements hook_feeds_importer_default().
-**/
-
-/********* Following code has been commited out 
-
-function ictfax_feeds_importer_default() {
-  $export = array();
-
-  $feeds_importer = new stdClass;
-  $feeds_importer->disabled = FALSE; 
-  $feeds_importer->api_version = 1;
-  $feeds_importer->id = 'mailhandler_nodes';
-  $feeds_importer->config = array(
-    'name' => 'Mailhandler nodes',
-    'description' => 'Imports nodes from a Mailhandler mailbox',
-    'fetcher' => array(
-      'plugin_key' => 'MailhandlerFetcher',
-      'config' => array(
-        'filter' => 'MailhandlerFiltersNodes',
-      ),
-    ),
-    'parser' => array(
-      'plugin_key' => 'MailhandlerParser',
-      'config' => array(
-        'default_commands' => 'status: 1',
-        'commands_failed_auth' => 'status: 0',
-        'command_plugin' => array(
-          'MailhandlerCommandsDefault' => 'MailhandlerCommandsDefault',
-          'MailhandlerCommandsHeaders' => 'MailhandlerCommandsHeaders',
-          'MailhandlerCommandsFiles' => 'MailhandlerCommandsFiles',
-        ),
-        'authenticate_plugin' => 'MailhandlerAuthenticateDefault',
-        'available_commands' => 'status',
-      ),
-    ),
-    'processor' => array(
-      'plugin_key' => 'FeedsFaxProcessor',
-      'config' => array(
-        'content_type' => 'fax',
-        'expire' => '-1',
-        'author' => 0,
-        'mappings' => array(
-          0 => array(
-            'source' => 'subject',
-            'target' => 'title',
-            'unique' => FALSE,
-          ),
-          1 => array(
-            'source' => 'authenticated_uid',
-            'target' => 'uid',
-            'unique' => FALSE,
-          ),
-          2 => array(
-            'source' => 'status',
-            'target' => 'status',
-            'unique' => FALSE,
-          ),
-          3 => array(
-            'source' => 'body_text',
-            'target' => 'body',
-            'unique' => FALSE,
-          ),
-          4 => array(
-            'source' => 'message_id',
-            'target' => 'guid',
-            'unique' => 1,
-          ),
-          5 => array(
-            'source' => 'fromaddress',
-            'target' => 'field_from',
-            'unique' => FALSE,
-          ),
-          6 => array(
-            'source' => 'toaddress',
-            'target' => 'field_to',
-            'unique' => FALSE,
-          ),
-          7 => array(
-            'source' => 'attachments',
-            'target' => 'field_file',
-            'unique' => FALSE,
-          ),
-        ),
-        'update_existing' => '0',
-        'input_format' => 'plain_text',
-      ),
-    ),
-    'content_type' => 'mailhandler_source',
-    'update' => 0,
-    'import_period' => '0',
-    'expire_period' => 3600,
-    'import_on_create' => 1,
-    'process_in_background' => 0,
-  );
-  $export['mailhandler_nodes'] = $feeds_importer;
-
-  return $export;
-}
-
-/***************************************************
- * Following hook is implemented from feeds module *
-/***************************************************/
-/**
- * Break out for feeds_feed_plugins().
-
-function ictfax_feeds_plugins() {
-  $path = drupal_get_path('module', 'ictfax');
-
-  $info = array();
-  $info['FeedsFaxProcessor'] = array(
-    'name' => 'Fax processor',
-    'description' => 'Create and update faxes.',
-    'help' => 'Create and update faxes from parsed content.',
-    'handler' => array(
-      'parent' => 'FeedsProcessor',
-      'class' => 'FeedsFaxProcessor',
-      'file' => 'FeedsFaxProcessor.inc',
-      'path' => $path,
-    ),
-  );
-  return $info;
-}
-
-********** end of commited out code */
 ?>

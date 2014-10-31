@@ -119,13 +119,13 @@ function ictcontact_list() {
   $header = array(
     array('data' => t('First Name'), 'field' => 'first_name', 'sort' => 'asc'),
     array('data' => t('Last Name'),  'field' => 'last_name'),
-    array('data' => t('Fax'),        'field' => 'fax'),
+    array('data' => t('Phone'),      'field' => 'phone'),
     array('data' => t('E-Mail'),     'field' => 'email'),
     array('data' => t('Operations')),
   );
 
-  $query = db_select('ictcontact', 'c')->extend('PagerDefault');
-  $query->fields('c', array('ictcontact_id', 'first_name', 'last_name', 'fax', 'email'));
+  $query = CoreDB::db_select('contact', 'c')->extend('PagerDefault');
+  $query->fields('c', array('contact_id', 'first_name', 'last_name', 'phone', 'email'));
   $query = ictcontact_select_filter($query);
   $result = $query->limit(50)         
             ->extend('TableSort')
@@ -133,10 +133,10 @@ function ictcontact_list() {
             ->execute();
 
   while ($contact = $result->fetchAssoc()) {
-    $row_id = $contact['ictcontact_id'];
+    $row_id = $contact['contact_id'];
     $rows[$row_id][] = check_plain($contact['first_name']);
     $rows[$row_id][] = check_plain($contact['last_name']);
-    $rows[$row_id][] = check_plain($contact['fax']);
+    $rows[$row_id][] = check_plain($contact['phone']);
     $rows[$row_id][] = check_plain($contact['email']);
     $rows[$row_id][] = _ictcontact_list_links($contact);
   }
@@ -158,12 +158,12 @@ function ictcontact_list() {
 function _ictcontact_list_links($contact) {
   $links['edit'] = array(
     'title' => t('Edit'),
-    'href' => 'ictcontact/contact/' . $contact['ictcontact_id'] . '/edit',
+    'href' => 'ictcontact/contact/' . $contact['contact_id'] . '/edit',
     'html' => TRUE,
   );
   $links['delete'] = array(
     'title' => t('Delete'),
-    'href' => 'ictcontact/contact/' . $contact['ictcontact_id'] . '/delete',
+    'href' => 'ictcontact/contact/' . $contact['contact_id'] . '/delete',
     'html' => TRUE,
   );
   return theme('links', array('links'=>$links, 'attributes' => array('class' => array('links', 'inline'))));
@@ -179,19 +179,19 @@ function _ictcontact_list_links($contact) {
  * @return
  *   A single contact in array format, or FALSE if none matched the incoming ID.
  */
-function ictcontact_load($ictcontact_id) {
-  $sql    = "SELECT * FROM {ictcontact} WHERE ictcontact_id = :ictcontact_id";
-  $sql    = ictcontact_db_filter($sql);
-  $result = db_query($sql, array(':ictcontact_id'=>$ictcontact_id));
+function ictcontact_load($contact_id) {
+  $sql    = "SELECT * FROM contact WHERE contact_id = :contact_id";
+  $sql    = contact_db_filter($sql);
+  $result = CoreDB::db_query($sql, array(':contact_id'=>$contact_id));
   if ($contact = $result->fetchAssoc()) {
     // every contact may also have some groups assigned to it,
     // so fetch there id into $contact['selected_group'] as arrays
-/*    $sql    = "SELECT ictcontact_group_id FROM {ictcontact_link} WHERE ictcontact_id = :ictcontact_id";
-    $result = db_query($sql, array(':ictcontact_id'=>$ictcontact_id));
+/*    $sql    = "SELECT contact_group_id FROM {contact_link} WHERE contact_id = :contact_id";
+    $result = CoreDB::db_query($sql, array(':contact_id'=>$contact_id));
 
     $contact['selected_group'] = array();
     while ($contact_group = $result->fetchAssoc()) {
-      $contact['selected_group'][] = $contact_group['ictcontact_group_id'];
+      $contact['selected_group'][] = $contact_group['contact_group_id'];
     } */
 
     return $contact;
@@ -214,9 +214,8 @@ function ictcontact_form($form, &$form_state, $contact = array()) {
   $contact += array(
     'first_name'    => '',
     'last_name'     => '',
-    'company'       => '',
     'address'       => '',
-    'fax'         => '',
+    'phone'         => '',
     'email'         => '',
     'description'   => '',
 //    'selected_group'=> array(''),
@@ -224,10 +223,10 @@ function ictcontact_form($form, &$form_state, $contact = array()) {
 
   // If we're editing an existing contact, we'll add a value field to the form
   // containing the contact's unique ID.
-  if (!empty($contact['ictcontact_id'])) {
-    $form['ictcontact_id'] = array(
+  if (!empty($contact['contact_id'])) {
+    $form['contact_id'] = array(
       '#type'        => 'value',
-      '#value'       => $contact['ictcontact_id'],
+      '#value'       => $contact['contact_id'],
     );
   }
 
@@ -249,12 +248,6 @@ function ictcontact_form($form, &$form_state, $contact = array()) {
     '#default_value' => $contact['last_name'],
   );
 
-  $form['personal']['company'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('Company'),
-    '#default_value' => $contact['company'],
-  );
-
   $form['contact'] = array(
     '#type'          => 'fieldset',
     '#title'         => t('Contact Addresses'),
@@ -266,18 +259,11 @@ function ictcontact_form($form, &$form_state, $contact = array()) {
     '#default_value' => $contact['address'],
   );
 
-  $form['contact']['fax'] = array(
+  $form['contact']['phone'] = array(
     '#type'          => 'textfield',
-    '#title'         => t('fax'),
+    '#title'         => t('Phone'),
     '#required'      => TRUE,
-    '#default_value' => $contact['fax'],
-  );
-
-  $form['contact']['fax'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('Fax'),
-    '#required'      => TRUE,
-    '#default_value' => $contact['fax'],
+    '#default_value' => $contact['phone'],
   );
 
   $form['contact']['email'] = array(
@@ -311,9 +297,9 @@ function ictcontact_form_validate($form, &$form_state) {
   $existing_record = 0;
   $contact         = $form_state['values'];
 
-  if (isset($contact['ictcontact_id'])) {
+  if (isset($contact['contact_id'])) {
     // we are editing an existing record
-    $existing_record = $contact['ictcontact_id'];
+    $existing_record = $contact['contact_id'];
   }
 
   if (!ictcontact_email_validate($contact['email'])) {
@@ -411,17 +397,17 @@ function _ictcontact_fax_validate_helper($pattern_input) {
   return $aPatterns;
 }
 
-/*function ictcontact_check_duplicate($field, $value, $ictcontact_group_id, $ictcontact_id = 0) {
-  if (variable_get('ictcontact_' . $field . '_duplicate_group', 0) != 1) {
+/*function ictcontact_check_duplicate($field, $value, $contact_group_id, $contact_id = 0) {
+  if (variable_get('contact_' . $field . '_duplicate_group', 0) != 1) {
     return TRUE;
   } else {
-    $sql = "SELECT COUNT({ictcontact}.ictcontact_id) AS total
-      FROM {ictcontact} JOIN {ictcontact_link} 
-        ON {ictcontact}.ictcontact_id = {ictcontact_link}.ictcontact_id
-      WHERE {ictcontact}.ictcontact_id != :ictcontact_id
-        AND {ictcontact_link}.ictcontact_group_id = :ictcontact_group_id
-        AND {ictcontact}.$field = :field";
-    $result = db_query($sql, array(':ictcontact_id'=>$ictcontact_id, ':ictcontact_group_id'=>$ictcontact_group_id, ':field'=>$value));
+    $sql = "SELECT COUNT({contact}.contact_id) AS total
+      FROM {contact} JOIN {contact_link} 
+        ON {contact}.contact_id = {contact_link}.contact_id
+      WHERE {contact}.contact_id != :contact_id
+        AND {contact_link}.contact_group_id = :contact_group_id
+        AND {contact}.$field = :field";
+    $result = CoreDB::db_query($sql, array(':contact_id'=>$contact_id, ':contact_group_id'=>$contact_group_id, ':field'=>$value));
     $total  = $result->fetchField();
     if ($total > 0) {
       return FALSE;
@@ -434,7 +420,7 @@ function _ictcontact_fax_validate_helper($pattern_input) {
  * Inserts a new contact, or updates an existing one.
  *
  * @param $contact
- *   A contact to be saved. If $contact['ictcontact_id'] is set, the contact will be updated.
+ *   A contact to be saved. If $contact['contact_id'] is set, the contact will be updated.
  *   Otherwise, a new contact will be inserted into the database.
  * @return
  *   The saved contact, with its ID set.
@@ -442,21 +428,32 @@ function _ictcontact_fax_validate_helper($pattern_input) {
 function ictcontact_form_submit($form, &$form_state) {
   global $user;
 
-  $contact = $form_state['values'];
+  $data = $form_state['values'];
 
-  if (!isset($contact['created'])) {
-    $contact['created'] = time();
+  // save contact for ictcore
+  $contact = array(
+    'first_name'  => $data['first_name'],
+    'last_name'   => $data['last_name'],
+    'address'     => $data['address'],
+    'phone'       => $data['phone'],
+    'email'       => $data['email'],
+    'description' => $data['description']
+  );
+  if (!empty($data['contact_id'])) {
+    $contact['contact_id'] = $data['contact_id'];
   }
-  if (!isset($contact['created_by'])) {
+  if (!isset($data['date_created'])) {
+    $contact['date_created'] = time();
+  }
+  if (!isset($data['created_by'])) {
     $contact['created_by'] = $user->uid;
   }
 
   // save the contact
-  if (isset($contact['ictcontact_id'])) {
-    drupal_write_record('ictcontact', $contact, 'ictcontact_id');
-  }
-  else {
-    drupal_write_record('ictcontact', $contact);
+  if (isset($contact['contact_id'])) {
+    CoreDB::db_update('contact')->fields($contact)->condition('contact_id', $contact['contact_id'], '=')->execute();
+  } else {
+    CoreDB::db_insert('contact')->fields($contact)->execute();
   }
 
   drupal_set_message(t('Contact saved successfully!'), 'status');
@@ -470,17 +467,12 @@ function ictcontact_form_submit($form, &$form_state) {
  *   An array of contact containing the ID of a contact and assigned groups.
  */
 function ictcontact_delete($contact) {
-  $sql = 'DELETE FROM {ictcontact} WHERE ictcontact_id = :ictcontact_id';
-  db_query($sql, array(':ictcontact_id'=>$contact['ictcontact_id']));
+  $sql = 'DELETE FROM contact WHERE contact_id = :contact_id';
+  CoreDB::db_query($sql, array(':contact_id' => $contact['contact_id']));
 
   drupal_set_message(t('Contact deleted successfully!'), 'status');
   drupal_goto('ictcontact/contact/contact');
 }
-
-
-
-
-
 
 /**
  * Build the contact editing form.
@@ -504,8 +496,6 @@ function ictcontact_import($form, &$form_state) {
     '#type'          => 'markup',
     '#markup'        => t("Example File: <a href='$module_path/sample.csv'>sample.csv</a>"),
   );
-
-
 
   $form['submit'] = array(
     '#type'       => 'submit',
@@ -544,20 +534,19 @@ function ictcontact_import_file($input_file) {
     if (count($data) >= 5) {
       $contact['first_name']  = $data[0];
       $contact['last_name']   = $data[1];
-      $contact['company']     = $data[2];
-      $contact['address']     = $data[3];
-      $contact['fax']         = $data[4];
-      $contact['email']       = $data[5];
-      $contact['description'] = $data[6];
+      $contact['address']     = $data[2];
+      $contact['phone']       = $data[3];
+      $contact['email']       = $data[4];
+      $contact['description'] = $data[5];
       $contact['created']     = time();
       $contact['created_by']  = $user->uid;
 
       // first of all test if we have all required fields 
-      if ($contact['first_name'] != '' && $contact['email'] != '' && $contact['fax'] != '') {
+      if ($contact['first_name'] != '' && $contact['email'] != '' && $contact['phone'] != '') {
         // check if user has entered a valid email address
         if (ictcontact_email_validate($contact['email'])) {
           // if all is OK save the contact
-          drupal_write_record('ictcontact', $contact);
+          CoreDB::db_insert('contact')->fields($contact)->execute();
           //ictcontact_import_link($contact, $contact_group);
           $total_rows++;
         } else {
@@ -572,8 +561,8 @@ function ictcontact_import_file($input_file) {
       } else {
         // incomplete contact record
         drupal_set_message(
-          t('incomplete record (name: %name, email: %email, fax: %fax)! cannot save, skipped!', 
-            array('%name' => $contact['first_name'],'%email' => $contact['email'], '%fax' => $contact['fax'])
+          t('incomplete record (name: %name, email: %email, phone: %phone)! cannot save, skipped!', 
+            array('%name' => $contact['first_name'],'%email' => $contact['email'], '%phone' => $contact['phone'])
           ), 
           'warning'
         );
@@ -629,4 +618,3 @@ function ictcontact_access($access) {
   }
   
 }
-

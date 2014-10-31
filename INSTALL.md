@@ -34,7 +34,7 @@ To install above requirements issue following commands at shell prompt
 
 ```bash
 yum -y install httpd mysql-server mysql mysql-devel
-yum -y install php php-common php-cli php-gd php-imap php-curl php-mysql
+yum -y install php php-common php-cli php-gd php-imap php-curl php-mysql php-dom php-mbstring
 yum -y install perl perl-DBD-mysql
 yum -y install ghostscript ImageMagick poppler-utils curl sendmail sendmail-cf
 ```
@@ -69,59 +69,93 @@ service mysqld start
 
 3: Freeswitch Installation
 ==========================
-ICTFax is based on Plivo Framework. 
-So you need to setup and run freeswitch provided by Plivo.org. 
-Instructions on how to install Freeswitch are given 
-at http://www.plivo.org/get-started/ and repeated here for your convenience:
-
-* Download and run the FreeSWITCH installer on your system
-Note: Currently, this installer is tested on CentOS > 6.4 and Debian-based distros.
+Execute following command at linux shell as being root user
 
 ```bash
-wget --no-check-certificate https://github.com/plivo/plivo/raw/master/freeswitch/install.sh
-chmod +x install.sh
-./install.sh
+rpm -Uvh 'http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
+rpm -Uvh 'http://files.freeswitch.org/freeswitch-release-1-0.noarch.rpm'
+
+yum -y install freeswitch freeswitch-lua freeswitch-config-vanilla
+yum -y freeswitch-asrtts-flite freeswitch-codec-mp4v freeswitch-codec-opus freeswitch-format-native-file 
+yum -y install freeswitch-application-conference freeswitch-application-curl freeswitch-application-db freeswitch-application-sms freeswitch-application-voicemail
+yum -y install freeswitch-sounds-en-us-callie-all freeswitch-sounds-music
+```
+
+* Before doing anything disable selinux and to disable it permanently edit /etc/selinux/config file
+```bash
+setenforce 0
 ```
 
 * Run FreeSWITCH 
 
 ```bash
-# Run in Foreground
-./usr/local/freeswitch/bin/freeswitch
-# Run in Background
-./usr/local/freeswitch/bin/freeswitch -nc
+# Run freeswitch and set boot
+chkconfig freeswitch on
+service freeswitch start
 ```
 
+Setup ICTCore
+-------------
 
-Setup and Run Plivo Framework
------------------------------
-Locate the folder __plivo-devel__ in the extracted ICTFax directory.
-
-1. Stop plivo service (if any) and clear /usr/local/plivo
-
-2. Copy and Paste plivo-devel folder in /usr/
-
-3. Go to /usr/plivo-devel and Run plivo_install.sh using following command: 
+1. (if any) clear /usr/ictcore
+2. Download, Copy and Paste ictcore folders in /usr/
+3. issue following commands on linux shell as root
 
 ```bash
-./plivo_install.sh /usr/local/plivo
+groupadd ictcore
+useradd ictcore -g ictcore
+
+chown -R ictcore:ictcore /usr/ictcore
+chmod -R og+rwx /usr/ictcore
+
+ln -sf /usr/ictcore/etc/ictcore.conf /etc/ictcore.conf
+ln -sf /usr/ictcore/etc/odbc.ini /etc/odbc.ini
+ln -sf /usr/ictcore/etc/php/ictcore.conf /etc/httpd/conf.d/ictcore.conf
+ln -sf /usr/ictcore/etc/freeswitch/sip_profiles/ictcore.xml /etc/freeswitch/sip_profiles/ictcore.xml
+ln -sf /usr/ictcore/etc/freeswitch/dialplan/ictcore.xml /etc/freeswitch/dialplan/ictcore.xml
+
+crontab -u ictcore /usr/ictcore/etc/default.cron
+
+service httpd restart
+service freeswitch restart
 ```
 
-5. Go to /usr/local/plivo/bin directory and Run plivo service using the following command:
+ICTCore Configurations:
+-----------------------
+1. To create database in mysql for ictcore issue following commands at mysql prompt
+```bash
+CREATE DATABASE ictfax;
+USE ictfax;
+GRANT ALL PRIVILEGES ON ictfax.* TO ictfaxuser@localhost IDENTIFIED BY 'ictfaxpass';
+FLUSH PRIVILEGES;
+
+SOURCE /usr/ictcore/db/database.sql;
+SOURCE /usr/ictcore/db/voice.sql;
+SOURCE /usr/ictcore/db/email.sql;
+SOURCE /usr/ictcore/db/fax.sql;
+
+```
+
+Setup ICTFax
+------------
+
+1. (if any) clear /usr/ictfax
+2. Download, ictfax folders into temp folder
+3. move ICTFAX wwwroot folder into /usr/ictfax
+4. move ictpbx folder into /usr/ictfax/sites/all/modules
 
 ```bash
-./plivo start
+cp /usr/ictfax/sites/default/default.settings.php /usr/ictfax/sites/default/settings.php
+chown -R ictcore:ictcore /usr/ictfax
+chmod -R og+rwx /usr/ictcore
 ```
 
-NOTE: There may be some errors while starting plivo cache server. But make sure that plivo default server is running.
-
-Plivo Configurations:
-------------------------
-
-1. Go to /usr/local/plivo/etc/plivo/default.conf
-2. Enable EXTRA_FS_VARS by removing # before it. 
-3. Set variable in plivo config as EXTRA_FS_VARS = variable_duration
-4. Set Incoming DEFAULT_ANSWER_URL, DEFAULT_HANGUP_URL
+ICTFAX Configurations:
+----------------------
+1. 
+2. edit following configuration files and update database access info
+/usr/ictcore/etc/ictcore.conf
+/usr/ictcore/etc/odbc.ini
 
 ```conf
 DEFAULT_ANSWER_URL = http://127.0.0.1/ictfax/index.php?q=ictfax/receive_fax
@@ -131,7 +165,13 @@ DEFAULT_HANGUP_URL = http://127.0.0.1/ictfax/index.php?q=ictfax/send_email/post
 Modify above urls according to your installation settings. 
 Don't forget to remove `#` sign before `DEFAULT_HANGUP_URL` and `EXTRA_FS_VARS`. 
 
+3. After installation issue following commands against ictfax database
 
+```sql
+INSERT INTO usr SELECT NULL, NULL, name, pass, NULL, NULL, NULL, NULL, NULL, mail, NULL, NULL, NULL, NULL, NULL, 1, UNIX_TIMESTAMP(), 1, NULL, NULL FROM web_users WHERE uid > 0;
+
+INSERT INTO account SELECT NULL, username, passwd, passwd_pin, first_name, last_name, phone, email, address, active, date_created, usr_id, NULL, NULL FROM usr;
+```
 4: ICT FAX Installation
 =======================
 
@@ -156,14 +196,16 @@ ln -s /usr/ictfax /var/www/html/ictfax
   2. Now visit http://DOMAIN.COM/ictfax 
      and follow the installation instructions for 
      ICTFax (drupal based) front end installation.
-     
+
   3. Once you are done with installation, visit the website 
      and login as site administrator with username and password 
      that you provided during installation.
-     
-  4. Now comback to Web GUI and go to Modules menu and enable all modules in __ICTPBX System__ Package.
-  
-  5. Now you'll see menu item Fax Account, ICTPBX System and others in your Navigation Menu.
+
+  4. Now comback to Web GUI and go to Modules menu and enable all modules in __ICTCore System__ Package.
+
+  5. And also enable __Chaos tools__ Package.
+
+  6. Now you'll see menu item Fax Account, ICTPBX System and others in your Navigation Menu.
 
 
 5: Email to FAX / FAX to Email service (optional)
@@ -193,7 +235,8 @@ m4 /etc/mail/sendmail.mc > /etc/mail/sendmail.cf
 6. Add freeswitch to list of trusted user 
 
 ```bash
-echo "freeswitch" >> /etc/mail/trusted-users
+echo "ictcore" >> /etc/mail/trusted-users
+echo "apache" >> /etc/mail/trusted-users
 ```
 
 7. Add your domain name in allowed local domain list to let sendmail receive mails for that domain
@@ -202,57 +245,43 @@ echo "freeswitch" >> /etc/mail/trusted-users
 echo "FAX_DOMAIN.COM" >> /etc/mail/local-host-names
 ```
 
- 8. route all mails for none-existing addresses into freeswitch mailbox so we can receive emails for addresses like `xyz_number@FAX_DOMAIN.COM`
+8. route all mails for none-existing addresses into freeswitch mailbox so we can receive emails for addresses like `xyz_number@FAX_DOMAIN.COM`
 
 ```bash
-echo '@FAX_DOMAIN.COM freeswitch' >> /etc/mail/virtusertable
-makemap hash /etc/mail/virtusertable < /etc/mail/virtusertable
+echo '@FAX_DOMAIN.COM ictcore' >> /etc/mail/virtusertable
+makemap hash /etc/mail/virtusertable < /etc/mail/virtusertable # >
+
+/etc/mail/make
 ```
 
-9. grant proper permission to apache user on mail folder 
+9. grant proper permission to ictcore user on mail folder 
 
 ```bash
+gpasswd -a ictcore mail
+gpasswd -a apache ictcore
 chmod +t /var/spool/mail 
 ```
 
 10. restart sendmail service so changes can take affect
 
 ```bash
+chkconfig sendmail on
 service sendmail restart
 ```
 
-11. login at ictfax web interface as admin (ictfax)
-12. goto administrator => mailhandler => Add Mailbox and set following fields
+11. edit /usr/ictcore/etc/ictcore.conf and update __mailbox__ section like following
+```ini
+folder = /var/spool/email/ictcore
+```
 
-  * E-mail address: fax@FAX_DOMAIN.COM 
-  * Folder: /var/spool/mail/freeswitch 
-  * POP3 or IMAP Mailbox: IMAP 
-  * Mailbox domain: *** must be empty *** 
-  * Security: Require password (leave empty if you haven't set already)
-  * Delete messages after they are processed?: TICK / Yes
-
-13. setup cronjob so incoming email can be processed after every 5 minutes
+NOTE: make sure that `/etc/hosts.allow` is properly configured for accepting mails, and smtp `port (25)` is not blocked by firewall. if so execute following line to allow smtp port in firewall: 
 
 ```bash
-echo 'MAILTO=""' > /tmp/freeswitch_cron.txt
-echo "*/5 * * * * wget -O /dev/null 'http://FAX_DOMAIN.COM/cron.php?cron_key=your_key' 2>/dev/null" >> /tmp/freeswitch_cron.txt
-crontab -l >> /tmp/freeswitch_cron.txt
-crontab /tmp/freeswitch_cron.txt
+/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 25 -j ACCEPT    # smtp
+/etc/init.d/iptables save
 ```
 
-14. You can find your cron url by logging in at your web interface as admin. Go to Reports -> Status Reports. Copy your Cron URL and paste at the above URL and then run above lines at the command prompt.
-
-NOTE: make sure that `/etc/hosts.allow` is properly configured for accepting mails, and smtp `port (25)` is not blocked by firewall. if so Add following line to `/etc/sysconfig/iptables` above the last reject/drop rule: 
-
-```conf
--A INPUT -m state --state NEW -m tcp -p tcp --dport 25 -j ACCEPT
-```
-
-NOTE: Also DO NOT enable CLEAN URLS, because plivo has been configured to use default URLS.
-
-15. Create a __content type__ (don't confise it with create content) __fax__ with three additional fields "to" of type text, "from" of type text" and "file" of type file. Go to Admin => Structure => Feeds Importer => Mailhandler nodes. Click Override and then in Processor field make sure Fax Processor is selected. Click Mapping in fax processor. Make sure that your to, from and file fields are correctly mapped to toaddress, fromaddress and attachments respectively.
-
-16. Now you are ready to send faxes through your email. See Admin/User Guide for further details.
+12. Now you are ready to send faxes through your email. See Admin/User Guide for further details.
 
 
 6: First FAX
@@ -261,18 +290,15 @@ NOTE: Also DO NOT enable CLEAN URLS, because plivo has been configured to use de
 6.1: Sending First FAX
 ----------------------
 1. Login as admin
-2. Add gateway / trunk for outgoing fax at "ICTPBX System" => "Provider Trunks"
-3. Currently, in ICTFAX2.0 only one gateway/trunk will be used for calling. 
-  So routing is not supported in new version of ICTFAX.
-4. Update rate list for "FAX" rate plan at "ICTPBX System" => "Rates".
-5. Register (Sign up) a new user by registering from http://DOMAIN.COM/ictfax/?q=user/register. Directly adding user from admin=>people is not supported. Once user is registered, it is blocked by default. Login in as admin and Activate it from admin=>People. (Sign up process can be changed from admin => configuration => Account settings. 
-6. Create VoIP account for newly created user at "ICTPBX System" => "Account Management". This will also enable the user and sets some default package.
-7. Add some balance in newly created VoIP account via "AstBill Admin" => "Payments" => "Create New Payments"
-8. Logout
-9. Login as newly created user
-10. Send new fax via "FAX Account" => "Fax Outbox" => ""Create New FAX"
+2. Add gateway / trunk for outgoing fax at "ICTCore System" => "Provider Trunks"
+3. Currently, in ICTFAX3.0 only one gateway/trunk will be used for calling. Currently routing is not supported.
+4. Register (Sign up) a new user by registering from http://DOMAIN.COM/ictfax/?q=user/register. Directly adding user from admin=>people is not supported. Once user is registered, it is blocked by default. Login in as admin and Activate it from admin=>People. (Sign up process can be changed from admin => configuration => Account settings. 
+5. Create VoIP account for newly created user at "ICTPBX System" => "Account Management". This will also enable the user.
+6. Logout
+7. Login as newly created user
+8. Send new fax via "FAX Account" => "Fax Outbox" => ""Create New FAX"
 or via email2fax
-11. From user registration email address send an email with following values
+9. From user registration email address send an email with following values
 
 * To: faxnumber@FAX_DOMAIN.COM
 * Subject: Anything

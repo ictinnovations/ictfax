@@ -21,45 +21,7 @@ function ictfax_install() {
  * Implementation of hook_schema().
  */
 function ictfax_schema() {
-  $schema['fax_outbox'] = array(
-    'fields' => array(
-      'cid'             => array('type' => 'serial',  'not null' => TRUE,  'unsigned' => TRUE),
-      'uid'             => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
-      'created'         => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
-      'changed'         => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
-      'try_max'         => array('type' => 'int',     'not null' => TRUE,  'default'  => 1),
-      'try_done'        => array('type' => 'int',     'not null' => TRUE,  'default'  => 0),
-      'try_recent'      => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
-      'send_to'         => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
-      'send_from'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
-      'file_name'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
-      'file_type'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 250),
-      'text'            => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255),
-      'accountcode'     => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 50),
-      'uniqueid'        => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 50),
-      'status'          => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 50),
-      'status_string'   => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 250),
-      'pages'           => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 10),
-      'submitted_from'  => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 128),
-    ),
-    'primary key' => array('cid'),
-  ); 
-
-  $schema['fax_inbox'] = array(
-    'fields' => array(
-      'fax_inbox_id'    => array('type' => 'serial',  'not null' => TRUE),
-      'send_to'         => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 255),
-      'send_from'       => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255),
-      'pages'           => array('type' => 'int',     'not null' => FALSE),
-      'status_string'   => array('type' => 'varchar', 'not null' => FALSE, 'length'   => 255),
-      'created'         => array('type' => 'int',     'not null' => FALSE, 'unsigned' => TRUE),
-      'uid'             => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
-      'call_uuid'       => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 255),      
-    ),
-    'primary key' => array('fax_inbox_id'),
-  ); 
-   
-  return $schema;
+  // nothing to do
 }
 
 /**
@@ -73,20 +35,6 @@ function ictfax_uninstall() {
  * implement recent updates.
  */
 function ictfax_update_7101() {
-  db_change_field('fax_outbox', 'rating', 'try_max', array(
-    'type'     => 'int',
-    'not null' => TRUE,
-    'default'  => 1,
-  ));
-  db_add_field('fax_outbox', 'try_done', array(
-    'type'     => 'int', 
-    'not null' => TRUE, 
-    'default'  => 0
-  ));
-  db_add_field('fax_outbox', 'try_recent', array(
-    'type'     => 'int', 
-    'not null' => TRUE, 
-    'unsigned' => TRUE
-  ));
+  // nothing to do
 }
 

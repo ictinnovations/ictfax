@@ -21,21 +21,7 @@ function ictpbx_did_install() {
  * Implementation of hook_schema().
  */
 function ictpbx_did_schema() {
-  $schema['ictpbx_did'] = array(
-    'fields' => array(
-      'ictpbx_did_id'   => array('type' => 'serial',  'not null' => TRUE,  'unsigned' => TRUE),
-      'did'             => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 32),
-      'description'     => array('type' => 'varchar', 'not null' => TRUE,  'length'   => 255),
-      'assigned_to'     => array('type' => 'int',     'not null' => FALSE),
-      'forwarded_to'    => array('type' => 'varchar', 'not null' => FALSE,  'length'   => 255),
-      'trunk_id'        => array('type' => 'int',     'not null' => FALSE),
-      'created'         => array('type' => 'int',     'not null' => FALSE, 'unsigned' => TRUE),
-      'created_by'      => array('type' => 'int',     'not null' => TRUE,  'unsigned' => TRUE),
-    ),
-    'primary key' => array('ictpbx_did_id'),
-  );
-
-  return $schema;
+ // nothing to do
 }
 
 /**

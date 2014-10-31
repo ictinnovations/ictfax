@@ -10,5 +10,5 @@
 ; $Id: ictcontact.info,v 1.0 2012/03/05 18:08:59 ictinnovations Exp $
 name = "Contact Management"
 description = "Provides Contacts and groups management in ICTPBX system"
-package = "ICTPBX System"
+package = "ICTCore System"
 core = "7.x"
