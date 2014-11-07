@@ -91,16 +91,17 @@ function ictcore_access($access) {
  * Loader function for individual ictregistrations using UID.
  *
  */
-function ictcore_user_load($uid) {
-  $sql    = "SELECT * FROM usr WHERE usr_id = :usr_id";
-  $result = db_query($sql, array(':usr_id' => $uid));
-  if ($ictcore_user = $result->fetchAssoc()) {
-    return $ictcore_user;
+function ictcore_user_load($users) {
+  $sql    = "SELECT * FROM usr WHERE usr_id IN (:usr_id_list)";
+  $result = CoreDB::db_query($sql, array(':usr_id_list' => array_keys($users)));
+  foreach ($result as $record) {
+    foreach ($record as $key => $value) {
+      if (empty($users[$record->usr_id]->{$key})) {
+        $users[$record->usr_id]->{$key} = $value;
+      }
+    }
   }
-  else {
-    drupal_set_message(t('Specified ICTCore User does not exist! or you have not proper permissions!'), 'error');
-    return FALSE;
-  }
+  return $users;
 }
 
 /**
@@ -171,7 +172,8 @@ function ictcore_form_submit($form, &$form_state) {
   global $user;
   $data = $form_state['values'];
 
-    // for ictcore
+  // for ictcore
+  require_once 'includes/password.inc';
   $ictcore_user = array(
     'username'     => $data['name'],
     'passwd'       => user_hash_password($data['pass']),
@@ -206,7 +208,9 @@ function ictcore_form_submit($form, &$form_state) {
 function ictcore_form_user_profile_form_alter(&$form, $form_state)
 {
   $uid  = $form_state['user']->uid;  
-  $edit = ictcore_user_load($uid);
+  $user = array($uid => $form_state['user']);
+  $aUsr = ictcore_user_load($user); // it may return a list of users
+  $edit = $aUsr[$uid];
 
   $form['personal'] = array(
     '#type'          => 'fieldset',
@@ -215,10 +219,10 @@ function ictcore_form_user_profile_form_alter(&$form, $form_state)
 
   // If we're editing an existing user, we'll add a value field to the form
   // containing the user's unique ID.
-  if (!empty($edit['usr_id'])) {
+  if (!empty($edit->usr_id)) {
     $form['personal']['usr_id'] = array(
       '#type'        => 'value',
-      '#value'       => $edit['usr_id'],
+      '#value'       => $edit->usr_id,
     );
   }
 
@@ -226,14 +230,14 @@ function ictcore_form_user_profile_form_alter(&$form, $form_state)
     '#type'          => 'textfield',
     '#title'         => t('First Name'),
     '#required'      => TRUE,
-    '#default_value' => $edit['first_name'],
+    '#default_value' => $edit->first_name,
   );
 
   $form['personal']['last_name'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Last Name'),
     '#required'      => TRUE,
-    '#default_value' => $edit['last_name'],
+    '#default_value' => $edit->last_name,
   );
 
   $form['contact'] = array(
@@ -245,20 +249,20 @@ function ictcore_form_user_profile_form_alter(&$form, $form_state)
     '#type'          => 'textfield',
     '#title'         => t('Phone'),
     '#required'      => TRUE,
-    '#default_value' => $edit['phone'],
+    '#default_value' => $edit->phone,
   );
 
   $form['contact']['address'] = array(
     '#type'          => 'textarea',
     '#title'         => t('Address'),
     '#required'      => TRUE,
-    '#default_value' => $edit['address'],
+    '#default_value' => $edit->address,
   );
 
   $form['contact']['company'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Company'),
-    '#default_value' => $edit['company'],
+    '#default_value' => $edit->company,
   );
 
   $form['#validate'][] = 'ictcore_form_validate';
@@ -365,7 +369,7 @@ if (is_file($confSource)) {
 $aICTCoreDB = array();
 if (!empty($aICTConf['db']['name'])) $aICTCoreDB['database'] = $aICTConf['db']['name'];
 if (!empty($aICTConf['db']['user'])) $aICTCoreDB['username'] = $aICTConf['db']['user'];
-if (!empty($aICTConf['db']['pass'])) $aICTCoreDB['password'] = $aICTConf['db']['pass'];
+if (isset($aICTConf['db']['pass']))  $aICTCoreDB['password'] = $aICTConf['db']['pass']; // isset, to allow empty pass
 if (!empty($aICTConf['db']['host'])) $aICTCoreDB['host']     = $aICTConf['db']['host'];
 if (!empty($aICTConf['db']['port'])) $aICTCoreDB['port']     = $aICTConf['db']['port'];
 if (!empty($aICTConf['db']['type'])) $aICTCoreDB['driver']   = $aICTConf['db']['type'];
