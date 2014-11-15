@@ -329,12 +329,12 @@ function ictcore_gateway_option() {
  */
 
 function ictcore_user_option() {
-  $sql    = "SELECT usr_id, name FROM usr WHERE active = 1;";
+  $sql    = "SELECT usr_id, username FROM usr WHERE active = 1;";
   $result = CoreDB::db_query($sql);
   $rows   = array();
   while ($user = $result->fetchAssoc()) {
     $row_id = $user['usr_id'];
-    $rows[$row_id] = check_plain($user['name']);
+    $rows[$row_id] = check_plain($user['username']);
   } 
   if (!isset($rows)) {
     return FALSE;

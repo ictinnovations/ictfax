@@ -493,11 +493,11 @@ function ictpbx_did_import_submit($form, &$form_state) {
   // set source file path
   //$file = file_save_upload('file_upload');
   $validators = array(
-    'file_validate_extensions' => array('csv', 'xls'),
+    'file_validate_extensions' => array('csv xls'),
   );
   if($file = file_save_upload('file_upload', $validators)) {
     $orgFile = '/tmp/'.$file->filename;
-    if (strtolower($ext) == 'xls') {
+    if (file_validate_extensions($file, 'xml')) {
       $file_name = tempnam('', 'did-list-');
       $command = sys_which('xlhtml') . " -csv -xp:0 ". $orgFile ." > $file_name";
       exec($command);
@@ -566,7 +566,7 @@ function ictpbx_did_assign($form, &$form_state, $edit = array()) {
   $form['setting']['created_by'] = array(
     '#type'          => 'select',
     '#title'         => t('Assign to User'),
-    '#options'       => array(0 => 'None') + ictpbx_user_option(),
+    '#options'       => array(0 => 'None') + ictcore_user_option(),
     '#default_value' => $edit['created_by'],
   );
 
@@ -645,7 +645,7 @@ function ictpbx_user_did_list() {
   $query = CoreDB::db_select('account', 'a')->extend('PagerDefault');
   $query->fields('a', array('account_id', 'phone', 'first_name', 'email'));
   $query->leftjoin('usr','u','u.usr_id = a.email');
-  $query->condition('usr.usr_id', $user->uid , '=');
+  $query->condition('u.usr_id', $user->uid , '=');
 
   $result = $query->limit(50)         
             ->extend('TableSort')
@@ -696,8 +696,8 @@ function ictpbx_did_forward($form, &$form_state, $edit = array()) {
     // containing the DID's unique ID.
   if (!empty($edit['account_id'])) {
     $form['info']['account_id'] = array(
-      '#type'          => 'value',
-      '#value'         => $edit['account_id'],
+      '#type'        => 'value',
+      '#value'       => $edit['account_id'],
     );
   }
 
@@ -752,6 +752,6 @@ function ictpbx_did_forward_submit($form, &$form_state) {
     CoreDB::db_update('account')->fields($did)->condition('account_id', $did['account_id'], '=')->execute();
   }
   drupal_set_message(t('DID assigned successfully!'), 'status');
-//  save_conf_did();
+  //  save_conf_did();
   $form_state['redirect'] = 'setting/did/list';
 }
