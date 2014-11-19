@@ -552,10 +552,16 @@ function ictpbx_did_assign($form, &$form_state, $edit = array()) {
     );
   }
 
-  $form['info']['phone'] = array(
-    '#type'          => 'item',
+ $form['info']['phone'] = array(
+    '#type'          => 'textfield',
     '#title'         => t('DID Number'),
-    '#markup'        => $edit['phone'],
+    '#default_value' => $edit['phone'],
+  );
+
+ $form['info']['first_name'] = array(
+    '#type'          => 'textfield',
+    '#title'         => t('First_Name'),
+    '#default_value' => $edit['first_name'],
   );
 
   $form['setting'] = array(
@@ -601,7 +607,8 @@ function ictpbx_did_assign_submit($form, &$form_state) {
   $did = array(
     'phone'          => $data['phone'],
     'first_name'     => $data['first_name'],
-    'email'          => $data['email']
+    'email'          => $data['email'],
+    'created_by'     => $data['created_by'] 
   );
   if (!empty($data['account_id'])) {
     $did['account_id'] = $data['account_id'];
