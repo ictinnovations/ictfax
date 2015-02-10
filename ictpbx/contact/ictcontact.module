@@ -181,7 +181,7 @@ function _ictcontact_list_links($contact) {
  */
 function ictcontact_load($contact_id) {
   $sql    = "SELECT * FROM contact WHERE contact_id = :contact_id";
-  $sql    = contact_db_filter($sql);
+  $sql    = ictcontact_db_filter($sql);
   $result = CoreDB::db_query($sql, array(':contact_id'=>$contact_id));
   if ($contact = $result->fetchAssoc()) {
     // every contact may also have some groups assigned to it,
