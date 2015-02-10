@@ -7,6 +7,7 @@ ICTFAX can be used in following faxing scenarios
 * Email to fax / web to fax / fax to email
 * G.711 based Fax Origination / Termination / Gateway
 * T.38 based Fax Origination / Termination
+* PSTN/SS7 based Fax Origination / Termination
 
 For more information please visit [ICTFAX Website][official]
 
@@ -26,7 +27,7 @@ For further help, support and queries please visit [ICTFAX Forum][forum]
 
 Demo
 ====
-Visit <a rel="nofollow" href="http://demo.ictfax.org/">ICTFAX Demo</a> site and use following credential to login
+Visit [ICTFAX Demo][demo] site and use following credential to login
 
 #### Admin Account
 * username: admin
@@ -43,8 +44,9 @@ ICTFAX is developed by [ICT Innovations][developer]
 
 [official]: http://ictfax.org/ "ICTFAX Open Source Online FAX & Email to FAX Solution"
 [gpl3]: http://www.gnu.org/licenses/gpl-3.0.html "GNU GPL V.3 License"
-[install]: http://ictfax.org/content/ictfax-20-installation-guide "ICTFAX Installation Guide"
-[admin]: http://ictfax.org/content/ictfax-20-admin-guide "ICTFAX Administration Guide"
-[user]: http://ictfax.org/content/ictfax-20-user-guide "ICTFAX User Guide"
-[forum]: http://www.ictinnovations.com/ "ICT Innovations's official website"
+[install]: http://ictfax.org/content/ictfax-installation-guide-centos-fedora "ICTFAX Installation Guide"
+[admin]: http://ictfax.org/content/ictfax-admin-guide "ICTFAX Administration Guide"
+[user]: http://ictfax.org/content/ictfax-user-guide "ICTFAX User Guide"
+[forum]: http://forum.ictfax.org/ "ICTFAX Discussion Forum"
+[demo]: http://demo.ictfax.org/ "ICTFAX Demo"
 [developer]: http://www.ictinnovations.com/ "ICT Innovations's official website"
