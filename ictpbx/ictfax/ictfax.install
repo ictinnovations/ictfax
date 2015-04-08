@@ -15,8 +15,18 @@
  */
 function ictfax_install() {
 
+  fax_program_compile();
 }
 
+function fax_program_compile() {
+  global $user;
+  include_once '/usr/ictcore/core/core.php';
+
+  $App = new Faxtoemail(null, array());
+  $App->save();
+  $App->compile();
+
+}
 /**
  * Implementation of hook_schema().
  */

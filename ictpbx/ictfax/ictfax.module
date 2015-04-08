@@ -234,7 +234,6 @@ function ictfax_outbox_list() {
   $service_flag = 2; // SERVICE_FAX
   $header = array(
     array('data' => t('Job ID'),    'field' => 'transmission_id', 'sort' => 'desc'),
-    array('data' => t('File Name'), 'field' => 'message_id'),
     array('data' => t('Fax From'),  'field' => 'account_id'),
     array('data' => t('Fax To'),    'field' => 'contact_id'),
     array('data' => t('Status'),    'field' => 'status'),
@@ -242,7 +241,7 @@ function ictfax_outbox_list() {
   );
 
   $query = CoreDB::db_select('transmission', 't')->extend('PagerDefault');
-  $query->fields('t', array('transmission_id', 'message_id', 'account_id', 'contact_id', 'status'));
+  $query->fields('t', array('transmission_id', 'account_id', 'contact_id', 'status'));
   $query->condition('t.direction', 'outbound', '=');
   $query->condition('t.service_flag', $service_flag, '=');
   $result = $query->limit(50)         
@@ -252,7 +251,6 @@ function ictfax_outbox_list() {
   while ($transmission = $result->fetchAssoc()) {
     $row_id = $transmission['transmission_id']; 
     $rows[$row_id][] = check_plain($transmission['transmission_id']);
-    $rows[$row_id][] = check_plain(ictfax_get_message_filename($transmission['message_id']));
     $rows[$row_id][] = check_plain(ictfax_get_account_name($transmission['account_id']));  // to 
     $rows[$row_id][] = check_plain(ictfax_get_contact_name($transmission['contact_id']));  // from
     $rows[$row_id][] = check_plain($transmission['status']);
@@ -294,7 +292,6 @@ function ictfax_inbox_list() {
   $service_flag = 2; // SERVICE_FAX
   $header = array(
     array('data' => t('Job ID'),    'field' => 'transmission_id', 'sort' => 'desc'),
-    array('data' => t('File Name'), 'field' => 'message_id'),
     array('data' => t('Fax From'),  'field' => 'contact_id'),
     array('data' => t('Fax To'),    'field' => 'account_id'),
     array('data' => t('Status'),    'field' => 'status'),
@@ -302,7 +299,7 @@ function ictfax_inbox_list() {
   );
 
   $query = CoreDB::db_select('transmission', 't')->extend('PagerDefault');
-  $query->fields('t', array('transmission_id', 'message_id', 'contact_id', 'account_id', 'status'));
+  $query->fields('t', array('transmission_id', 'contact_id', 'account_id', 'status'));
   $query->condition('t.direction', 'inbound','=');
   $query->condition('t.service_flag', $service_flag,'=');
   $result = $query->limit(50)         
@@ -312,7 +309,6 @@ function ictfax_inbox_list() {
   while ($transmission = $result->fetchAssoc()) {
     $row_id = $transmission['transmission_id']; 
     $rows[$row_id][] = check_plain($transmission['transmission_id']); 
-    $rows[$row_id][] = check_plain(ictfax_get_message_filename($transmission['message_id']));
     $rows[$row_id][] = check_plain(ictfax_get_contact_name($transmission['contact_id']));
     $rows[$row_id][] = check_plain(ictfax_get_account_name($transmission['account_id']));
     $rows[$row_id][] = check_plain($transmission['status']);
@@ -558,25 +554,32 @@ function ictfax_form_submit($form, &$form_state) {
   do_login($user->uid);
   $data = $form_state['values'];
 
+  $oDocument = new Document();
+  $oDocument->set('name', 'random');
+  if (!empty($data['file_name']->uri)) {
+    $oDocument->set('file_name', drupal_realpath($data['file_name']->uri));
+  } else {
+    $oDocument->set('text', $data['text']);
+  }
+  $oDocument->save();
+
+  $pData = array('document' => $oDocument->document_id);
+  $oSendfax = new Sendfax(NULL, $pData);
+  $oSendfax->save();
+  $oSendfax->compile();
+
   // prepare new transmission
   $oTransmission = new Transmission();
-  $oTransmission->set('service_flag',  2); // SERVICE_FAX
+  $oTransmission->set('service_flag',  SERVICE_FAX); // SERVICE_FAX
   $oTransmission->set('origin', 'web');
   $oTransmission->set('direction', 'outbound');
   $oTransmission->set('account_id', ACCOUNT_DEFAULT); // send from default account / source
   $oTransmission->set('try_allowed', $data['try_max']);
+  $oTransmission->set('program_id', $oSendfax->program_id);
 
   $oTransmission->set('contact_id', NULL);
   $oTransmission->oContact->set('phone', $data['send_to']);
   $oTransmission->oContact->save();
-
-  $oTransmission->set('message_id', NULL);
-  if (!empty($data['file_name']->uri)) {
-    $oTransmission->oMessage->set('file_name', drupal_realpath($data['file_name']->uri));
-  } else if (!empty($text)) {
-    $oTransmission->oMessage->set('text', $data['text']);
-  }
-  $oTransmission->oMessage->save();
 
   $result = $oTransmission->send();
 

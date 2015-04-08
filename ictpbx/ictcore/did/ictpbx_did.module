@@ -536,7 +536,7 @@ function ictpbx_did_assign($form, &$form_state, $edit = array()) {
   $edit += array(
     'phone'      => '',
     'first_name' => '',
-    'email'      => '',
+    'service'    => '',
   );
 
   $form['info'] = array(
@@ -553,33 +553,29 @@ function ictpbx_did_assign($form, &$form_state, $edit = array()) {
   }
 
  $form['info']['phone'] = array(
-    '#type'          => 'textfield',
+    '#type'          => 'item',
     '#title'         => t('DID Number'),
-    '#default_value' => $edit['phone'],
-  );
-
- $form['info']['first_name'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('First_Name'),
-    '#default_value' => $edit['first_name'],
+    '#markup'        => $edit['phone']
   );
 
   $form['setting'] = array(
     '#type'  => 'fieldset',
     '#title' => t('User Information'),
   );
-
   $form['setting']['created_by'] = array(
     '#type'          => 'select',
     '#title'         => t('Assign to User'),
-    '#options'       => array(0 => 'None') + ictcore_user_option(),
+    '#required'      => TRUE,
+    '#options'       => ictcore_user_option(),
     '#default_value' => $edit['created_by'],
   );
-
-  $form['setting']['email'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('E-mail to Forward DID'),
-    '#default_value' => $edit['email'],
+  $form['setting']['service'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Select Service'),
+    '#required'      => TRUE,
+    '#options'       => array(
+      'faxtoemail' => 'Fax to Email'
+    ),
   );
 
   $form['buttons']['submit'] = array(
@@ -605,20 +601,30 @@ function ictpbx_did_assign_submit($form, &$form_state) {
   $data = $form_state['values'];
   // save did for ictcore
   $did = array(
-    'phone'          => $data['phone'],
-    'first_name'     => $data['first_name'],
-    'email'          => $data['email'],
-    'created_by'     => $data['created_by'] 
+    'service'      => $data['service'],
+    'created_by'   => $data['created_by'] 
   );
   if (!empty($data['account_id'])) {
-    $did['account_id'] = $data['account_id'];
+    $did['account_id']  = $data['account_id'];
   }
   if (isset($did['created_by']) && !empty($did['created_by'])) {
-    $did['created_by'] = $data['created_by'];
+    $did['created_by']  = $data['created_by'];
   } else {
-    $did['created_by'] = 0;
-    $did['email']      = '';  
+    $did['created_by']  = 0;
+    $did['application'] = '';  
   }
+
+  // Compile the service
+  switch ($did['service']) {
+    case 'faxtoemail':
+      include_once "/usr/ictcore/core/core.php";
+      $App = new Faxtoemail(null, array('account' => $did['account_id']));
+      $App->save();
+      $App->compile();
+      break;
+    default:
+  }
+  unset($did['service']);
 
   // save the did assignment
   if (isset($did['account_id'])) {
@@ -721,7 +727,7 @@ function ictpbx_did_forward($form, &$form_state, $edit = array()) {
   
   $form['setting']['email'] = array(
     '#type'          => 'textfield',
-    '#title'         => t('E-mail to Forward DID'),
+    '#title'         => t('Forward DID'),
     '#default_value' => $edit['email'],
   );
 
