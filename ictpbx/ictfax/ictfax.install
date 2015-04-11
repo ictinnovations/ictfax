@@ -22,7 +22,7 @@ function fax_program_compile() {
   global $user;
   include_once '/usr/ictcore/core/core.php';
 
-  $App = new Faxtoemail(null, array());
+  $App = new Emailtofax(null, array());
   $App->save();
   $App->compile();
 

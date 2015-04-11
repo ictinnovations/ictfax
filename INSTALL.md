@@ -39,7 +39,7 @@ setenforce 0
 ICTCore is main dependency of ICTFAX, if you have proper repositories pre installed (see above) then all other dependencies will be installed along with ICTCore. so we just need to issue following command
 
 ```bash
-yum -y install ictcore ictcore-fax ictcore-email
+yum -y install ictcore ictcore-voice ictcore-fax ictcore-email
 ```
 
 ### 3.1 Setup ICTCore database
@@ -75,11 +75,12 @@ chown -R apache:apache /usr/ictfax
 
 ### 4.1 Frontend / Web GUI
 1. Now visit http://DOMAIN.COM/ and follow the installation instructions for ICTFax (drupal based) front end installation.
-2. When asked for database please provide access info to recently created database ( in ictcore section ) and enter `web_` as database prefix
+2. When asked for database please provide access info to recently created database ( in ictcore section ) and enter `web_` as table prefix
 2. Once you are done with installation, visit the website and login as site administrator with username and password that you provided during installation.
 4. Now comeback to Web GUI and go to Modules menu and enable all modules in __ICTCore System__ Package.
 5. And also enable __Chaos tools__ Package.
 6. Now you'll see menu item Fax Account, ICTPBX System and others in your Navigation Menu.
+7. After all please make sure that "Authenticated User" has permission over "Can use ICTFAX" from module permissions
 
 ### 4.2 User Synchronization
 After installation issue following command against ictfax database, to synchronize ICTFAX users with ICTCore
@@ -144,12 +145,11 @@ Now you are ready to send faxes through your email. See Admin/User Guide for fur
 2. Add gateway / trunk for outgoing fax at "ICTCore System" => "Provider Trunks"
 3. Currently, in ICTFAX3.0 only one gateway/trunk will be used for calling. Currently routing is not supported.
 4. Register (Sign up) a new user by registering from http://DOMAIN.COM/ictfax/?q=user/register. Directly adding user from admin=>people is not supported. Once user is registered, it is blocked by default. Login in as admin and Activate it from admin=>People. (Sign up process can be changed from admin => configuration => Account settings. 
-5. Create VoIP account for newly created user at "ICTPBX System" => "Account Management". This will also enable the user.
-6. Logout
-7. Login as newly created user
-8. Send new fax via "FAX Account" => "Fax Outbox" => ""Create New FAX"
+5. Logout
+6. Login as newly created user
+7. Send new fax via "FAX Account" => "Fax Outbox" => ""Create New FAX"
 or via email2fax
-9. From user registration email address send an email with following values
+8. From user registration email address send an email with following values
 
 * To: faxnumber@FAX_DOMAIN.COM
 * Subject: Anything

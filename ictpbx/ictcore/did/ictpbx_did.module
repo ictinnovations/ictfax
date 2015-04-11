@@ -148,7 +148,7 @@ function ictpbx_did_list($admin_links = false) {
   $query->leftjoin('usr','u','u.usr_id = a.created_by');
   $query->addfield('u', 'username', 'username');
   //$query->addExpression('u', "CONCAT_WS(' ', last_name, first_name)", 'user_name');
-  
+  $query->condition('a.last_name', NULL, 'IS');
   //$query->condition('t.uid', $user->uid,'='); 
   $result = $query->limit(50)         
             ->extend('TableSort')
@@ -256,10 +256,12 @@ function ictpbx_did_form($form, &$form_state, $edit = array()) {
  */
 function ictpbx_did_form_validate($form, &$form_state) {
   $did = $form_state['values'];
-  $query  = "SELECT account_id FROM account WHERE phone = :phone";
-  $result = CoreDB::db_query($query, array(':phone'=>$did['phone']));
-  if ($res = $result->fetchAssoc()) {
-    form_set_error('phone', t('DID already exist!'));
+  if (!isset($did['account_id'])) {
+    $query  = "SELECT account_id FROM account WHERE phone = :phone";
+    $result = CoreDB::db_query($query, array(':phone'=>$did['phone']));
+    if ($res = $result->fetchAssoc()) {
+      form_set_error('phone', t('DID already exists!'));
+    }
   }
 }
 
