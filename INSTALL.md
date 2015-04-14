@@ -78,14 +78,14 @@ chown -R apache:apache /usr/ictfax
 2. When asked for database please provide access info to recently created database ( in ictcore section ) and enter `web_` as table prefix
 2. Once you are done with installation, visit the website and login as site administrator with username and password that you provided during installation.
 4. Now comeback to Web GUI and go to Modules menu and enable all modules in __ICTCore System__ Package.
-5. And also enable __Chaos tools__ Package.
-6. Now you'll see menu item Fax Account, ICTPBX System and others in your Navigation Menu.
-7. After all please make sure that "Authenticated User" has permission over "Can use ICTFAX" from module permissions
+5. Now you'll see menu item Fax Account, ICTCore System and others in your Navigation Menu.
+6. After all please make sure that "Authenticated User" has permission over "Can use ICTFAX" from module permissions
 
 ### 4.2 User Synchronization
 After installation issue following command against ictfax database, to synchronize ICTFAX users with ICTCore
 
 ```sql
+USE ictfax;
 INSERT INTO usr SELECT NULL, NULL, name, pass, NULL, NULL, NULL, NULL, NULL, mail, NULL, NULL, NULL, NULL, NULL, 1, UNIX_TIMESTAMP(), 1, NULL, NULL FROM web_users WHERE uid > 0;
 ```
 

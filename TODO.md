@@ -1,3 +1,11 @@
+1. remove dialstring
+2. pattren support in prefix
+3. Permission issue for "Can use fax"
+4. Remove ctool depedency or include it in info files
+5. Download message link for fax
+6. View message link for fax
+7. create first usr and account during installation
+
 ictcore.module
   db connection
   User Synchronization
@@ -36,11 +44,3 @@ trunk.mdoule
 contact.module
   Add contact
   Delete contact
-  
-  
-Remove ctool depedency or include it in info files
-Download message link for fax
-View message link for fax
-create first usr and account during installation
-create usr
-create account
