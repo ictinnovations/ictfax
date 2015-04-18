@@ -62,9 +62,15 @@ Now update /usr/ictcore/etc/ictcore.conf and /usr/ictcore/etc/odbc.ini files as 
 4: ICTFax Installation
 ======================
 1. (if any) delete /usr/ictfax
-2. Download, ictfax folders into temp folder
-3. move ICTFAX wwwroot folder into /usr/ictfax
-4. move ictpbx folder into /usr/ictfax/sites/all/modules
+2. Download, ictfax source from github and extract it into some temp folder
+3. from ictfax source move wwwroot folder as /usr/ictfax
+```bash
+mv /tmp/ictfax/wwwroot /usr/ictfax
+```
+4. again from ictfax source move ictpbx folder into /usr/ictfax/sites/all/modules
+```bash
+mv /tmp/ictfax/ictpbx /usr/ictfax/sites/all/modules
+```
 5. issue following command to create website configuration file
 ```bash
 cp /usr/ictfax/sites/default/default.settings.php /usr/ictfax/sites/default/settings.php
