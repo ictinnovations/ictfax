@@ -623,6 +623,10 @@ function ictpbx_did_assign_submit($form, &$form_state) {
       $App = new Faxtoemail(null, array('account' => $did['account_id']));
       $App->save();
       $App->compile();
+
+      $query  = "UPDATE account a JOIN usr u ON a.created_by=u.usr_id SET a.email=u.email
+                 WHERE a.account_id = :account_id";
+      $tranRs = CoreDB::db_query($query, array(':account_id' => $did['account_id']));
       break;
     default:
   }
