@@ -620,6 +620,22 @@ function ictpbx_did_assign_submit($form, &$form_state) {
   switch ($did['service']) {
     case 'faxtoemail':
       include_once "/usr/ictcore/core/core.php";
+
+      // 1st search and delete old entries of faxtoemail if exist any for current account
+      $aFilter   = array(
+        'account_id'   => $did['created_by'], 
+        'service_flag' => SERVICE_EMAIL
+      );
+      $aServices = Email::search($aFilter);
+      foreach ($aServices as $aService) {
+        $oApplication = Application::load($aService['application_id']);
+        $oProgram     = Program::load($oApplication->program_id);
+        if ($oProgram->name == 'faxtoemail') {  // delete only if program is faxtoemail
+          $oProgram->delete();
+        }
+      }
+
+      // Create new program entry
       $App = new Faxtoemail(null, array('account' => $did['account_id']));
       $App->save();
       $App->compile();
@@ -663,7 +679,7 @@ function ictpbx_user_did_list() {
   
   $query = CoreDB::db_select('account', 'a')->extend('PagerDefault');
   $query->fields('a', array('account_id', 'phone', 'first_name', 'email'));
-  $query->leftjoin('usr','u','u.usr_id = a.email');
+  $query->leftjoin('usr','u','u.usr_id = a.created_by');
   $query->condition('u.usr_id', $user->uid , '=');
 
   $result = $query->limit(50)         

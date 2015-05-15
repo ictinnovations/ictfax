@@ -11,4 +11,5 @@
 name = "Trunk module"
 description = "Manages Trunks for All destinations"
 package = "ICTCore System"
+dependencies[] = ictcore
 core = "7.x"

@@ -11,4 +11,5 @@
 name = "DID module"
 description = "Manages DIDs for All destinations"
 package = "ICTCore System"
+dependencies[] = ictcore
 core = "7.x"
