@@ -323,7 +323,7 @@ function ictfax_inbox_list() {
   if (!isset($_SESSION['fax_status']) || $_SESSION['fax_status'] == 'in_queue') {
     $output .= ictfax_getJaveScript();
   }
- 
+
   return $output;
 }
 
@@ -335,17 +335,19 @@ function ictfax_get_message_filename($message_id){
 }
 
 function ictfax_get_account_name($account_id){
-  $query    = 'SELECT CONCAT(first_name, last_name) AS name FROM account WHERE account_id = :account_id';
+  //$query    = 'SELECT CONCAT(first_name, last_name) AS name FROM account WHERE account_id = :account_id';
+  $query    = 'SELECT phone FROM account WHERE account_id = :account_id';
   $query_rs = CoreDB::db_query($query, array(':account_id' => $account_id));
-  $account  = $query_rs->fetchAssoc(); 
-  return $account['name'];
+  $account  = $query_rs->fetchAssoc();
+  return $account['phone'];
 } 
 
 function ictfax_get_contact_name($contact_id){
-  $query    = 'SELECT CONCAT(first_name, last_name) AS name FROM contact WHERE contact_id = :contact_id';
+  //$query    = 'SELECT CONCAT(first_name, last_name) AS name FROM contact WHERE contact_id = :contact_id';
+  $query    = 'SELECT phone FROM contact WHERE contact_id = :contact_id';
   $query_rs = CoreDB::db_query($query, array(':contact_id' => $contact_id));
   $contact  = $query_rs->fetchAssoc(); 
-  return $contact['name'];
+  return $contact['phone'];
 } 
 
 function _ictfax_list_incoming_links($transmission) {
