@@ -148,7 +148,7 @@ function ictpbx_did_list($admin_links = false) {
   $query->leftjoin('usr','u','u.usr_id = a.created_by');
   $query->addfield('u', 'username', 'username');
   //$query->addExpression('u', "CONCAT_WS(' ', last_name, first_name)", 'user_name');
-  $query->condition('a.last_name', NULL, 'IS');
+  //$query->condition('a.last_name', NULL, 'IS');
   //$query->condition('t.uid', $user->uid,'='); 
   $result = $query->limit(50)         
             ->extend('TableSort')
@@ -547,12 +547,10 @@ function ictpbx_did_assign($form, &$form_state, $edit = array()) {
   );
 
   // containing the DID's unique ID.
-  if (!empty($edit['account_id'])) {
-    $form['info']['account_id'] = array(
-      '#type'          => 'value',
-      '#value'         => $edit['account_id'],
-    );
-  }
+  $form['info']['account_id'] = array(
+    '#type'          => 'value',
+    '#value'         => $edit['account_id'],
+  );
 
  $form['info']['phone'] = array(
     '#type'          => 'item',
@@ -589,6 +587,17 @@ function ictpbx_did_assign($form, &$form_state, $edit = array()) {
 }
 
 /**
+ * Validate assign form
+ *
+ */
+function ictpbx_did_assign_validate($form, &$form_state) {
+  $did = $form_state['values'];
+  if (!isset($did['account_id'])) {
+    form_set_error('account_id', t('Invalid reference to existing account!'));
+  }
+}
+
+/**
  * Inserts a new did, or updates an existing one.
  *
  * @param $did
@@ -603,48 +612,41 @@ function ictpbx_did_assign_submit($form, &$form_state) {
   $data = $form_state['values'];
   // save did for ictcore
   $did = array(
-    'service'      => $data['service'],
-    'created_by'   => $data['created_by'] 
+    'account_id' => $data['account_id'],
+    'service'    => $data['service'],
   );
-  if (!empty($data['account_id'])) {
-    $did['account_id']  = $data['account_id'];
-  }
+
   if (isset($did['created_by']) && !empty($did['created_by'])) {
-    $did['created_by']  = $data['created_by'];
+    $did['created_by'] = $data['created_by'];
   } else {
-    $did['created_by']  = 0;
-    $did['application'] = '';  
+    $did['created_by'] = 0;
+    $did['service']    = '';
   }
 
-  // Compile the service
+  include_once "/usr/ictcore/core/core.php";
+
+  // Now compile newly selected service
+  $oProgram = new Program(); // unknown program
   switch ($did['service']) {
     case 'faxtoemail':
-      include_once "/usr/ictcore/core/core.php";
-
-      // 1st search and delete old entries of faxtoemail if exist any for current account
-      $aFilter   = array(
-        'account_id'   => $did['created_by'], 
-        'service_flag' => SERVICE_EMAIL
-      );
-      $aServices = Email::search($aFilter);
-      foreach ($aServices as $aService) {
-        $oApplication = Application::load($aService['application_id']);
-        $oProgram     = Program::load($oApplication->program_id);
-        if ($oProgram->name == 'faxtoemail') {  // delete only if program is faxtoemail
-          $oProgram->delete();
-        }
-      }
-
       // Create new program entry
-      $App = new Faxtoemail(null, array('account' => $did['account_id']));
-      $App->save();
-      $App->compile();
-
-      $query  = "UPDATE account a JOIN usr u ON a.created_by=u.usr_id SET a.email=u.email
-                 WHERE a.account_id = :account_id";
-      $tranRs = CoreDB::db_query($query, array(':account_id' => $did['account_id']));
+      $oProgram = new Faxtoemail();
       break;
     default:
+      // do nothing, in future we can add new applications here
+      break;
+  }
+
+  $oAccount = new Account($did['account_id']); // open current account
+  $oAccount->dissociate();                     // dissociate current account from existing user and also remove all programs
+  $oAccount->associate($did['created_by']);    // re-assign to newly selected user
+  $oAccount->install_program($oProgram);       // attach / install above selected Program with current account
+  
+  // A little hack for faxtoemail
+  if ($did['service'] == 'faxtoemail') {
+    $query  = "UPDATE account a JOIN usr u ON a.created_by=u.usr_id SET a.email=u.email
+               WHERE a.account_id = :account_id";
+    $tranRs = CoreDB::db_query($query, array(':account_id' => $did['account_id']));
   }
   unset($did['service']);
 

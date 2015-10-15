@@ -237,11 +237,15 @@ function ictfax_outbox_list() {
     array('data' => t('Fax From'),  'field' => 'account_id'),
     array('data' => t('Fax To'),    'field' => 'contact_id'),
     array('data' => t('Status'),    'field' => 'status'),
+    array('data' => t('Result'),    'field' => ''),
     array('data' => t('Action'),    'field' => ''),
   );
 
   $query = CoreDB::db_select('transmission', 't')->extend('PagerDefault');
   $query->fields('t', array('transmission_id', 'account_id', 'contact_id', 'status'));
+  $query->leftjoin('account','a','a.account_id = t.account_id');
+  $query->leftjoin('usr','u','u.usr_id = a.created_by');
+  $query->condition('u.usr_id', $user->uid , '=');
   $query->condition('t.direction', 'outbound', '=');
   $query->condition('t.service_flag', $service_flag, '=');
   $result = $query->limit(50)         
@@ -249,11 +253,13 @@ function ictfax_outbox_list() {
             ->orderByHeader($header)
             ->execute();
   while ($transmission = $result->fetchAssoc()) {
-    $row_id = $transmission['transmission_id']; 
+    $row_id   = $transmission['transmission_id'];
+    $spool_id = ictfax_get_spool_id($transmission['transmission_id']);
     $rows[$row_id][] = check_plain($transmission['transmission_id']);
-    $rows[$row_id][] = check_plain(ictfax_get_account_name($transmission['account_id']));  // to 
-    $rows[$row_id][] = check_plain(ictfax_get_contact_name($transmission['contact_id']));  // from
+    $rows[$row_id][] = check_plain(ictfax_get_account_name($transmission['account_id']));  // from 
+    $rows[$row_id][] = check_plain(ictfax_get_contact_name($transmission['contact_id']));  // to
     $rows[$row_id][] = check_plain($transmission['status']);
+    $rows[$row_id][] = check_plain(ictfax_get_fax_result($spool_id));    // fax result
     $rows[$row_id][] = _ictfax_list_links($transmission);
   }
   if (!isset($rows)) {
@@ -295,11 +301,15 @@ function ictfax_inbox_list() {
     array('data' => t('Fax From'),  'field' => 'contact_id'),
     array('data' => t('Fax To'),    'field' => 'account_id'),
     array('data' => t('Status'),    'field' => 'status'),
+    array('data' => t('Result'),    'field' => ''),
     array('data' => t('Action'),    'field' => ''),
   );
 
   $query = CoreDB::db_select('transmission', 't')->extend('PagerDefault');
   $query->fields('t', array('transmission_id', 'contact_id', 'account_id', 'status'));
+  $query->leftjoin('account','a','a.account_id = t.account_id');
+  $query->leftjoin('usr','u','u.usr_id = a.created_by');
+  $query->condition('u.usr_id', $user->uid , '=');
   $query->condition('t.direction', 'inbound','=');
   $query->condition('t.service_flag', $service_flag,'=');
   $result = $query->limit(50)         
@@ -307,11 +317,13 @@ function ictfax_inbox_list() {
             ->orderByHeader($header)
             ->execute();
   while ($transmission = $result->fetchAssoc()) {
-    $row_id = $transmission['transmission_id']; 
-    $rows[$row_id][] = check_plain($transmission['transmission_id']); 
+    $row_id   = $transmission['transmission_id']; 
+    $spool_id = ictfax_get_spool_id($transmission['transmission_id']);
+    $rows[$row_id][] = check_plain($transmission['transmission_id']);
     $rows[$row_id][] = check_plain(ictfax_get_contact_name($transmission['contact_id']));
     $rows[$row_id][] = check_plain(ictfax_get_account_name($transmission['account_id']));
     $rows[$row_id][] = check_plain($transmission['status']);
+    $rows[$row_id][] = check_plain(ictfax_get_fax_result($spool_id));    // fax result
     $rows[$row_id][] = _ictfax_list_links($transmission);
   }
   if (!isset($rows)) {
@@ -327,11 +339,26 @@ function ictfax_inbox_list() {
   return $output;
 }
 
-function ictfax_get_message_filename($message_id){
-  $query    = 'SELECT file_name FROM document WHERE document_id = :document_id';
-  $query_rs = CoreDB::db_query($query, array(':document_id' => $message_id));
-  $document = $query_rs->fetchAssoc();
-  return $document['file_name'];
+function ictfax_get_spool_id($transmission_id) {
+  $query    = "SELECT s.spool_id FROM spool s WHERE s.transmission_id = :transmission_id ORDER BY s.spool_id DESC LIMIT 1";
+  $query_rs = CoreDB::db_query($query, array(':transmission_id' => $transmission_id));
+  $spool    = $query_rs->fetchAssoc();
+  return $spool['spool_id'];
+}
+
+function ictfax_get_fax_result($spool_id) {
+  $query    = "SELECT sr.data FROM spool_result sr WHERE sr.name IN ('fax_send','fax_receive') AND sr.spool_id = :spool_id";
+  $query_rs = CoreDB::db_query($query, array(':spool_id' => $spool_id));
+  $result   = $query_rs->fetchAssoc();
+  return !empty($result['data']) ? $result['data'] : '-';
+}
+
+function ictfax_get_message_filename($spool_id){
+  $query    = "SELECT sr.data FROM spool_result sr WHERE sr.type = 'document' AND sr.spool_id = :spool_id";
+  $query_rs = CoreDB::db_query($query, array(':spool_id' => $spool_id));
+  $result   = $query_rs->fetchAssoc();
+  $oDocument= new Document($result['data']);
+  return $oDocument->file_name;
 }
 
 function ictfax_get_account_name($account_id){
