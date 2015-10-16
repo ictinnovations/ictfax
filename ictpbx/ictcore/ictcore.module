@@ -94,7 +94,7 @@ function ictcore_access($access) {
 function ictcore_user_load($users) {
   $sql    = "SELECT * FROM usr WHERE usr_id IN (:usr_id_list)";
   $result = CoreDB::db_query($sql, array(':usr_id_list' => array_keys($users)));
-  foreach ($result as $record) {
+  foreach ($record = $result->fetchObject()) {
     foreach ($record as $key => $value) {
       if (empty($users[$record->usr_id]->{$key})) {
         $users[$record->usr_id]->{$key} = $value;
@@ -198,6 +198,7 @@ function ictcore_form_submit($form, &$form_state) {
   if (isset($ictcore_user['usr_id'])) {
     CoreDB::db_update('usr')->fields($ictcore_user)->condition('usr_id', $ictcore_user['usr_id'], '=')->execute();
   } else {
+    $ictcore_user['usr_id'] = $data['uid']; // make sure that IDs should be same in both tables usr and drupal's users
     CoreDB::db_insert('usr')->fields($ictcore_user)->execute();
   }  
 }
