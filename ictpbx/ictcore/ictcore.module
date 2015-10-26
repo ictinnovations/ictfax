@@ -94,7 +94,7 @@ function ictcore_access($access) {
 function ictcore_user_load($users) {
   $sql    = "SELECT * FROM usr WHERE usr_id IN (:usr_id_list)";
   $result = CoreDB::db_query($sql, array(':usr_id_list' => array_keys($users)));
-  foreach ($record = $result->fetchObject()) {
+  while ($record = $result->fetchObject()) {
     foreach ($record as $key => $value) {
       if (empty($users[$record->usr_id]->{$key})) {
         $users[$record->usr_id]->{$key} = $value;
