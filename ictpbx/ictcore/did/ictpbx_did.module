@@ -108,6 +108,15 @@ function ictpbx_did_menu() {
     'type'             => MENU_NORMAL_ITEM,
     'weight'           => 16,
   );
+  $items['setting/did/%ictpbx_did/forward'] = array(
+    'title'            => t('Forward DID'),
+    'description'      => 'Forward DID',
+    'page callback'    => 'drupal_get_form',
+    'page arguments'   => array('ictpbx_did_forward', 2),
+    'access callback'  => 'ictcore_access',
+    'access arguments' => array('can use ictfax'),
+    'type'             => MENU_CALLBACK,
+  );
 
   return $items;
 }
@@ -311,8 +320,15 @@ function ictpbx_did_form_submit($form, &$form_state) {
  * Loader function for individual dids.
  */
 function ictpbx_did_load($did_id) {
-  $sql    = "SELECT * FROM account WHERE account_id = :account_id";
-  $result = CoreDB::db_query($sql, array(':account_id' => $did_id));
+  global $user;
+
+  if (ictcore_access('ictpbx did admin')) {
+    $sql    = "SELECT * FROM account WHERE account_id = :account_id";
+    $result = CoreDB::db_query($sql, array(':account_id' => $did_id));
+  } else {
+    $sql    = "SELECT * FROM account WHERE account_id = :account_id AND created_by = :created_by";
+    $result = CoreDB::db_query($sql, array(':account_id' => $did_id, ':created_by' => $user->uid));
+  }
   if ($did = $result->fetchAssoc()) {
     return $did;
   } else {
@@ -573,9 +589,7 @@ function ictpbx_did_assign($form, &$form_state, $edit = array()) {
     '#type'          => 'select',
     '#title'         => t('Select Service'),
     '#required'      => TRUE,
-    '#options'       => array(
-      'faxtoemail' => 'Fax to Email'
-    ),
+    '#options'       => ictpbx_did_service_list(),
   );
 
   $form['buttons']['submit'] = array(
@@ -618,29 +632,19 @@ function ictpbx_did_assign_submit($form, &$form_state) {
 
   include_once "/usr/ictcore/core/core.php";
 
-  // Now compile newly selected service
-  $oProgram = new Program(); // unknown program
-  switch ($did['service']) {
-    case 'faxtoemail':
-      // Create new program entry
-      $oProgram = new Faxtoemail();
-      break;
-    default:
-      // do nothing, in future we can add new applications here
-      break;
-  }
-
   $oAccount = new Account($did['account_id']); // open current account
   $oAccount->dissociate();                     // dissociate current account from existing user and also remove all programs
   $oAccount->associate($did['created_by']);    // re-assign to newly selected user
-  $oAccount->install_program($oProgram);       // attach / install above selected Program with current account
 
   // A little hack for faxtoemail
   if ($did['service'] == 'faxtoemail') {
-    $query  = "UPDATE account a JOIN usr u ON a.created_by=u.usr_id SET a.email=u.email
+    $query  = "UPDATE account a JOIN usr u ON a.created_by=u.usr_id 
+               SET a.first_name = u.first_name, a.last_name = u.last_name, a.email=u.email
                WHERE a.account_id = :account_id";
     $tranRs = CoreDB::db_query($query, array(':account_id' => $did['account_id']));
   }
+
+  ictpbx_did_service_install($did['account_id'], $did['service']);
 
   drupal_set_message(t('DID assigned successfully!'), 'status');
   $form_state['redirect'] = 'ictcore/did/list';
@@ -708,7 +712,7 @@ function _ictpbx_user_did_list_links($did) {
 }
 
 /**
- * Build the did form.
+ * Build the did forwarding form for user.
  */
 function ictpbx_did_forward($form, &$form_state, $edit = array()) {
 
@@ -716,30 +720,27 @@ function ictpbx_did_forward($form, &$form_state, $edit = array()) {
     '#type'  => 'fieldset',
     '#title' => t('DID Information'),
   );
-  
-    // containing the DID's unique ID.
-  if (!empty($edit['account_id'])) {
-    $form['info']['account_id'] = array(
-      '#type'        => 'value',
-      '#value'       => $edit['account_id'],
-    );
-  }
-
+  // containing the DID's unique ID.
+  $form['info']['account_id'] = array(
+    '#type'        => 'value',
+    '#value'       => $edit['account_id'],
+  );
   $form['info']['phone'] = array(
     '#type'          => 'textfield',
     '#title'         => t('DID Number'),
     '#value'         => $edit['phone'],
+    '#disabled'      => TRUE,
   );
-  
+
   $form['setting'] = array(
     '#type'  => 'fieldset',
     '#title' => t('User Information'),
   );
-  
-  $form['setting']['email'] = array(
-    '#type'          => 'textfield',
-    '#title'         => t('Forward DID'),
-    '#default_value' => $edit['email'],
+  $form['setting']['service'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Select Service'),
+    '#required'      => TRUE,
+    '#options'       => ictpbx_did_service_list(),
   );
 
   $form['buttons']['submit'] = array(
@@ -750,32 +751,48 @@ function ictpbx_did_forward($form, &$form_state, $edit = array()) {
   return $form;
 }
 
+function ictpbx_did_forward_validate($form, &$form_state) {
+  $did = $form_state['values'];
+  if (!isset($did['account_id'])) {
+    form_set_error('account_id', t('Invalid reference to existing account!'));
+  }
+}
+
 /**
- * Inserts a new did, or updates an existing one.
- * 
- * @param $did
- *   A did to be saved. If $did['did_id'] is set, the did will be updated.
- *   Otherwise, a new did will be inserted into the database.
- * @return
- *   The saved did, with its ID set.
+ * Forward a did to selected service / program.
  */
 function ictpbx_did_forward_submit($form, &$form_state) {
   $did = $form_state['values'];
-  
-  $data = $form_state['values'];
-  // save did for ictcore
-  $did = array(
-    'email'          => $data['email']
-  );
-  if (!empty($data['account_id'])) {
-    $did['account_id'] = $data['account_id'];
-  }
 
-  // save the did assignment
-  if (isset($did['account_id'])) {
-    CoreDB::db_update('account')->fields($did)->condition('account_id', $did['account_id'], '=')->execute();
-  }
+  ictpbx_did_service_install($did['account_id'], $did['service']);
+
   drupal_set_message(t('DID assigned successfully!'), 'status');
   //  save_conf_did();
   $form_state['redirect'] = 'setting/did/list';
+}
+
+function ictpbx_did_service_list() {
+  return array(
+    'faxtoemail' => 'Fax to Email'
+  );
+}
+
+function ictpbx_did_service_install($account_id, $service_name) {
+  include_once "/usr/ictcore/core/core.php";
+
+  // Now compile newly selected service
+  $oAccount = new Account($account_id);
+  $oProgram = new Program(); // start with unknown program
+  switch ($did['service']) {
+    case 'faxtoemail':
+      // Create new program entry
+      $oProgram = new Faxtoemail();
+      break;
+    default:
+      // do nothing, in future we can add new applications here
+      break;
+  }
+
+  // attach / install above selected Program with current account
+  return $oAccount->install_program($oProgram);
 }
