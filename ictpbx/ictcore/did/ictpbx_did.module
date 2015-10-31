@@ -783,7 +783,7 @@ function ictpbx_did_service_install($account_id, $service_name) {
   // Now compile newly selected service
   $oAccount = new Account($account_id);
   $oProgram = new Program(); // start with unknown program
-  switch ($did['service']) {
+  switch ($service_name) {
     case 'faxtoemail':
       // Create new program entry
       $oProgram = new Faxtoemail();
