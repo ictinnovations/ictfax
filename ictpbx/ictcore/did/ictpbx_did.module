@@ -307,12 +307,16 @@ function ictpbx_did_form_submit($form, &$form_state) {
 
   // save the did
   if (isset($did['account_id'])) {
+    if ($did['phone'] != $form['info']['phone']['#default_value']) {
+      drupal_set_message(t('DID number changed! Please remember to re-asign DID to user!'), 'warning');
+    }
     CoreDB::db_update('account')->fields($did)->condition('account_id', $did['account_id'], '=')->execute();
     drupal_set_message(t('DID updated successfully!'), 'status');
   } else {
     CoreDB::db_insert('account')->fields($did)->execute();
     drupal_set_message(t('DID created successfully!'), 'status');
   }
+  
   $form_state['redirect'] = 'ictcore/did/list';
 }
 
@@ -363,8 +367,11 @@ function ictpbx_did_option() {
  *   An array of did containing the ID of a did.
  */
 function ictpbx_did_delete($did) {
-  $sql = 'DELETE FROM account WHERE account_id = :account_id';
-  CoreDB::db_query($sql, array(':account_id'=>$did['account_id']));
+  include_once "/usr/ictcore/core/core.php";
+
+  $oAccount = new Account($did['account_id']); // open current account
+  $oAccount->delete();                         // and delete it
+
   drupal_set_message(t('DID deleted successfully!'), 'status');
   drupal_goto('ictcore/did/list');
 }
