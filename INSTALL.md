@@ -32,6 +32,20 @@ Before proceeding further please disable selinux and to disable it permanently e
 
 ```bash
 setenforce 0
+
+/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT    # ssh
+/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 25 -j ACCEPT    # smtp / email
+/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT    # web
+/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT   # ssl web
+/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 5060 -j ACCEPT  # sip tcp
+/sbin/iptables -I INPUT -p udp -m state --state NEW -m udp --dport 5060 -j ACCEPT  # sip
+/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 5070 -j ACCEPT  # sip tcp
+/sbin/iptables -I INPUT -p udp -m state --state NEW -m udp --dport 5070 -j ACCEPT  # sip
+/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 5071 -j ACCEPT  # sip tcp
+/sbin/iptables -I INPUT -p udp -m state --state NEW -m udp --dport 5071 -j ACCEPT  # sip
+/sbin/iptables -I INPUT -p udp --dport 10000:20000 -j ACCEPT
+
+/etc/init.d/iptables save
 ```
 
 3: ICTCore Installation

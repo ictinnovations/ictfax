@@ -326,7 +326,7 @@ function ictcore_gateway_option() {
 }
 
 /**
- * Loader function for all trunks.
+ * Loader function for all users.
  */
 
 function ictcore_user_option() {

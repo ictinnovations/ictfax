@@ -580,7 +580,9 @@ function ictfax_form_submit($form, &$form_state) {
   include_once "/usr/ictcore/core/core.php";
 
   // first of all load user in ict framework
-  do_login($user->uid);
+  $oUser = new User($user->uid);
+  do_login($oUser);
+
   $data = $form_state['values'];
 
   $oDocument = new Document();
@@ -592,19 +594,18 @@ function ictfax_form_submit($form, &$form_state) {
   }
   $oDocument->save();
 
-  $pData = array('document' => $oDocument->document_id);
+  $pData = array(
+    'account_id' => ACCOUNT_DEFAULT,        // send from default account / source
+    'document'   => $oDocument->document_id
+  );
   $oSendfax = new Sendfax(NULL, $pData);
   $oSendfax->save();
   $oSendfax->compile();
 
   // prepare new transmission
-  $oTransmission = new Transmission();
-  $oTransmission->set('service_flag',  SERVICE_FAX); // SERVICE_FAX
+  $oTransmission = $oSendfax->create_transmission();
   $oTransmission->set('origin', 'web');
-  $oTransmission->set('direction', 'outbound');
-  $oTransmission->set('account_id', ACCOUNT_DEFAULT); // send from default account / source
   $oTransmission->set('try_allowed', $data['try_max']);
-  $oTransmission->set('program_id', $oSendfax->program_id);
 
   $oTransmission->set('contact_id', NULL);
   $oTransmission->oContact->set('phone', $data['send_to']);

@@ -25,7 +25,6 @@ function fax_program_compile() {
   $App = new Emailtofax(null, array());
   $App->save();
   $App->compile();
-
 }
 /**
  * Implementation of hook_schema().
