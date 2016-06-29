@@ -231,6 +231,15 @@ function ictfax_access($access) {
  */
 function ictfax_outbox_list() {
   global $user;
+
+  include_once "/usr/ictcore/core/core.php";
+
+  // first of all load user in ict framework
+  /*$listUser = User::search(array('created_by' => $user->uid));
+  $aUser    = array_shift($listUser);
+  do_login($aUser['user_id']); */
+  do_login($user->uid);
+
   $service_flag = 2; // SERVICE_FAX
   $header = array(
     array('data' => t('Job ID'),    'field' => 'transmission_id', 'sort' => 'desc'),
@@ -580,8 +589,10 @@ function ictfax_form_submit($form, &$form_state) {
   include_once "/usr/ictcore/core/core.php";
 
   // first of all load user in ict framework
-  $oUser = new User($user->uid);
-  do_login($oUser);
+  /*$listUser = User::search(array('created_by' => $user->uid));
+  $aUser    = array_shift($listUser);
+  do_login($aUser['user_id']); */
+  do_login($user->uid);
 
   $data = $form_state['values'];
 
@@ -605,6 +616,7 @@ function ictfax_form_submit($form, &$form_state) {
   // prepare new transmission
   $oTransmission = $oSendfax->create_transmission();
   $oTransmission->set('origin', 'web');
+  $oTransmission->set('direction', 'outbound');
   $oTransmission->set('try_allowed', $data['try_max']);
 
   $oTransmission->set('contact_id', NULL);

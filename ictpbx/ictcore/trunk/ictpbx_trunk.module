@@ -289,6 +289,10 @@ function ictpbx_trunk_form_submit($form, &$form_state) {
 
   include_once "/usr/ictcore/core/core.php";
 
+  // first of all load user in ict framework
+  /*$listUser = User::search(array('created_by' => $user->uid));
+  $aUser    = array_shift($listUser);
+  do_login($aUser['user_id']); */
   do_login($user->uid);
 
   $trunk = $form_state['values'];
