@@ -787,13 +787,16 @@ function ictpbx_did_service_list() {
 function ictpbx_did_service_install($account_id, $service_name) {
   include_once "/usr/ictcore/core/core.php";
 
-  // Now compile newly selected service
-  $oAccount = new Account($account_id);
-  $oProgram = new Program(); // start with unknown program
   switch ($service_name) {
     case 'faxtoemail':
+      // Prepare program data
+      $programData = array(
+        'account_id' => $account_id
+      );
       // Create new program entry
-      $oProgram = new Faxtoemail();
+      $oProgram = new Faxtoemail(null, $programData);
+      $oProgram->save();
+      $oProgram->deploy();
       break;
     default:
       // do nothing, in future we can add new applications here
@@ -801,5 +804,5 @@ function ictpbx_did_service_install($account_id, $service_name) {
   }
 
   // attach / install above selected Program with current account
-  return $oAccount->install_program($oProgram);
+  return true;
 }

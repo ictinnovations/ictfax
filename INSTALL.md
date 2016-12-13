@@ -106,7 +106,7 @@ After installation issue following command against ictfax database, to synchroni
 
 ```sql
 USE ictfax;
-INSERT INTO usr SELECT NULL, NULL, name, pass, NULL, NULL, NULL, NULL, NULL, mail, NULL, NULL, NULL, NULL, NULL, 1, UNIX_TIMESTAMP(), 1, NULL, NULL FROM web_users WHERE uid > 0;
+INSERT INTO usr (username, passwd, email, active, date_created, created_by) SELECT name, pass, mail, 1, UNIX_TIMESTAMP(), 1 FROM web_users WHERE uid > 0;
 ```
 
 5: Email to FAX / FAX to Email service (optional)

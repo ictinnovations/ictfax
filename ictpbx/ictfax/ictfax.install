@@ -22,9 +22,9 @@ function fax_program_compile() {
   global $user;
   include_once '/usr/ictcore/core/core.php';
 
-  $App = new Emailtofax(null, array());
-  $App->save();
-  $App->compile();
+  $oProgram = new Emailtofax(null, array());
+  $oProgram->save();
+  $oProgram->deploy();
 }
 /**
  * Implementation of hook_schema().

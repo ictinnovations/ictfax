@@ -302,18 +302,18 @@ function ictpbx_trunk_form_submit($form, &$form_state) {
   } else {
     $provider = new Provider();
   }
-  $provider->set('name',          $trunk['name']);
-  $provider->set('username',      $trunk['username']);
-  $provider->set('password',      $trunk['password']);
-  $provider->set('description',   $trunk['description']);
-  $provider->set('host',          $trunk['host']);
-  $provider->set('port',          $trunk['port']);
-  $provider->set('technology_id', $trunk['technology_id']);
-  $provider->set('dialstring',    $trunk['dialstring']);
-  $provider->set('prefix',        $trunk['prefix']);
-  $provider->set('register',      $trunk['register']);
-  $provider->set('active',        $trunk['active']);
-  $provider->set('service_flag',  SERVICE_FAX);
+  $provider->name =          $trunk['name'];
+  $provider->username =      $trunk['username'];
+  $provider->password =      $trunk['password'];
+  $provider->description =   $trunk['description'];
+  $provider->host =          $trunk['host'];
+  $provider->port =          $trunk['port'];
+  $provider->technology_id = $trunk['technology_id'];
+  $provider->dialstring =    $trunk['dialstring'];
+  $provider->prefix =        $trunk['prefix'];
+  $provider->register =      $trunk['register'];
+  $provider->active =        $trunk['active'];
+  $provider->service_flag =  Fax::SERVICE_FLAG;
 
   $provider->save();
   drupal_set_message(t('Provider Trunk saved successfully!'), 'status');

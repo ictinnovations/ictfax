@@ -240,7 +240,7 @@ function ictfax_outbox_list() {
   do_login($aUser['user_id']); */
   do_login($user->uid);
 
-  $service_flag = 2; // SERVICE_FAX
+  $service_flag = Fax::SERVICE_FLAG;
   $header = array(
     array('data' => t('Job ID'),    'field' => 'transmission_id', 'sort' => 'desc'),
     array('data' => t('Fax From'),  'field' => 'account_id'),
@@ -304,7 +304,7 @@ function _ictfax_list_links($transmission) {
 function ictfax_inbox_list() {
   global $user;
 
-  $service_flag = 2; // SERVICE_FAX
+  $service_flag = 2; // Fax::SERVICE_FLAG
   $header = array(
     array('data' => t('Job ID'),    'field' => 'transmission_id', 'sort' => 'desc'),
     array('data' => t('Fax From'),  'field' => 'contact_id'),
@@ -597,38 +597,29 @@ function ictfax_form_submit($form, &$form_state) {
   $data = $form_state['values'];
 
   $oDocument = new Document();
-  $oDocument->set('name', 'random');
+  $oDocument->name = random;
   if (!empty($data['file_name']->uri)) {
-    $oDocument->set('file_name', drupal_realpath($data['file_name']->uri));
+    $oDocument->file_name = drupal_realpath($data['file_name']->uri);
   } else {
-    $oDocument->set('text', $data['text']);
+    $oDocument->text = $data['text'];
   }
   $oDocument->save();
 
-  $pData = array(
-    'account_id' => ACCOUNT_DEFAULT,        // send from default account / source
-    'document'   => $oDocument->document_id
+  // prepare program data
+  $programData = array(
+    'data' => array(
+      'document_id' => $oDocument->document_id
+    )
   );
-  $oSendfax = new Sendfax(NULL, $pData);
-  $oSendfax->save();
-  $oSendfax->compile();
+  // prepare transmission data
+  $transmissionData = array(
+    'phone'       => $data['send_to'],
+    'try_allowed' => $data['try_max'],
+    'origin'      => 'web'
+  );
+  $faxTransmission = Sendfax::transmission_instant($programData, $transmissionData);
+  $faxTransmission->send();
 
-  // prepare new transmission
-  $oTransmission = $oSendfax->create_transmission();
-  $oTransmission->set('origin', 'web');
-  $oTransmission->set('direction', 'outbound');
-  $oTransmission->set('try_allowed', $data['try_max']);
-
-  $oTransmission->set('contact_id', NULL);
-  $oTransmission->oContact->set('phone', $data['send_to']);
-  $oTransmission->oContact->save();
-
-  $result = $oTransmission->send();
-
-  if (!$result) {
-      drupal_set_message(t('Unable to send fax, error occured!'), 'error');
-      return false;
-  }
   drupal_set_message(t('FAX uploaded successfully!'), 'info');
   $form_state['redirect'] = 'ictfax/outbox/list';
   return true;
