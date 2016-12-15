@@ -7,6 +7,13 @@
 * Website : http://www.ictinnovations.com/                        *
 * Mail : info@ictinnovations.com                                  *
 ******************************************************************/
+
+use ICT\Core\User;
+use ICT\Core\Service\Fax;
+use ICT\Core\Transmission;
+use ICT\Core\Message\Document;
+use ICT\Core\Program\Sendfax;
+
 /**
 * Sending FAX Module
 * Conversion to Drupal 7x
@@ -232,13 +239,13 @@ function ictfax_access($access) {
 function ictfax_outbox_list() {
   global $user;
 
-  include_once "/usr/ictcore/core/core.php";
+  include_once "/usr/ictcore/core/Core.php";
 
   // first of all load user in ict framework
   /*$listUser = User::search(array('created_by' => $user->uid));
   $aUser    = array_shift($listUser);
-  do_login($aUser['user_id']); */
-  do_login($user->uid);
+  \ICT\Core\do_login($aUser['user_id']); */
+  \ICT\Core\do_login($user->uid);
 
   $service_flag = Fax::SERVICE_FLAG;
   $header = array(
@@ -586,18 +593,14 @@ function ictfax_form($form, &$form_state, $edit = array()) {
 function ictfax_form_submit($form, &$form_state) {
   global $user;
 
-  include_once "/usr/ictcore/core/core.php";
+  include_once "/usr/ictcore/core/Core.php";
 
-  // first of all load user in ict framework
-  /*$listUser = User::search(array('created_by' => $user->uid));
-  $aUser    = array_shift($listUser);
-  do_login($aUser['user_id']); */
-  do_login($user->uid);
+  \ICT\Core\do_login($user->uid);
 
   $data = $form_state['values'];
 
   $oDocument = new Document();
-  $oDocument->name = random;
+  $oDocument->name = $data['file_name']->filename;
   if (!empty($data['file_name']->uri)) {
     $oDocument->file_name = drupal_realpath($data['file_name']->uri);
   } else {
@@ -620,7 +623,7 @@ function ictfax_form_submit($form, &$form_state) {
   $faxTransmission = Sendfax::transmission_instant($programData, $transmissionData);
   $faxTransmission->send();
 
-  drupal_set_message(t('FAX uploaded successfully!'), 'info');
+  drupal_set_message(t('FAX uploaded successfully!'), 'status');
   $form_state['redirect'] = 'ictfax/outbox/list';
   return true;
 }
@@ -632,7 +635,11 @@ function ictfax_form_submit($form, &$form_state) {
  *   An array of recording containing the ID of a recording
  */
 function ictfax_delete($transmission) {
-  include_once "/usr/ictcore/core/core.php";
+  global $user;
+
+  include_once "/usr/ictcore/core/Core.php";
+
+  \ICT\Core\do_login($user->uid);
 
   $oTransmission = new Transmission($transmission['transmission_id']);
   if ($oTransmission->delete()) {

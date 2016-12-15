@@ -292,23 +292,6 @@ function ictcore_service_option() {
 }
 
 /**
- * Loader function for all technologies.
- */
-function ictcore_technology_option() {
-  $sql = "SELECT technology_id, technology_name FROM technology";
-  $result = CoreDB::db_query($sql);
-  $rows = array();
-  while ($technology = $result->fetchAssoc()) {
-    $row_id = $technology['technology_id'];
-    $rows[$row_id] = check_plain($technology['technology_name']);
-  }
-  if (!isset($rows)) {
-    return FALSE;
-  }
-  return $rows;
-}
-
-/**
  * Loader function for all gateways.
  */
 function ictcore_gateway_option() {

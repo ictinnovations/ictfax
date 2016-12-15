@@ -11,6 +11,7 @@
 name = "ICTFax Module"
 description = "Provides Fax2Email and Email2Fax Functionality"
 package = "ICTCore System"
+dependencies[] = ctools
 dependencies[] = ictcore
 dependencies[] = ictpbx_trunk
 dependencies[] = ictpbx_did

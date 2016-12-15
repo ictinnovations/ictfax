@@ -10,6 +10,9 @@
 
 // $Id: ictpbx_did.module,v 1.0 2012/02/29 10:42:58 ictinnovations Exp $
 
+use ICT\Core\Account;
+use ICT\Core\Program\Faxtoemail;
+
 /**
  * @file
  * Provides support to buy did through web portal.
@@ -367,7 +370,7 @@ function ictpbx_did_option() {
  *   An array of did containing the ID of a did.
  */
 function ictpbx_did_delete($did) {
-  include_once "/usr/ictcore/core/core.php";
+  include_once "/usr/ictcore/core/Core.php";
 
   $oAccount = new Account($did['account_id']); // open current account
   $oAccount->delete();                         // and delete it
@@ -637,7 +640,7 @@ function ictpbx_did_assign_submit($form, &$form_state) {
     $did['service']    = '';
   }
 
-  include_once "/usr/ictcore/core/core.php";
+  include_once "/usr/ictcore/core/Core.php";
 
   $oAccount = new Account($did['account_id']); // open current account
   $oAccount->dissociate();                     // dissociate current account from existing user and also remove all programs
@@ -785,7 +788,7 @@ function ictpbx_did_service_list() {
 }
 
 function ictpbx_did_service_install($account_id, $service_name) {
-  include_once "/usr/ictcore/core/core.php";
+  include_once "/usr/ictcore/core/Core.php";
 
   switch ($service_name) {
     case 'faxtoemail':

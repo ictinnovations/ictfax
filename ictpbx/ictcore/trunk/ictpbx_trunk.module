@@ -10,6 +10,13 @@
 
 // $Id: ictpbx_trunk.module,v 1.0 2012/02/29 10:42:58 ictinnovations Exp $
 
+use ICT\Core\User;
+use ICT\Core\Service\Fax;
+use ICT\Core\Service\Email;
+use ICT\Core\Provider;
+use ICT\Core\Provider\Sip;
+use ICT\Core\Provider\Smtp;
+
 /**
  * @file
  * Provides support to buy trunk through web portal.
@@ -103,15 +110,13 @@ function ictpbx_trunk_list($admin_links = false) {
 
   $header = array(
     array('data' => t('Name'),          'field' => 'name',  'sort' => 'asc'),
-    array('data' => t('Tech/Type'),     'field' => 'technology_name'),
+    array('data' => t('Tech/Type'),     'field' => 'type'),
     array('data' => t('Status'),        'field' => 'active'),
     array('data' => t('Operations')),
   );
   
   $query = CoreDB::db_select('provider', 'p')->extend('PagerDefault');
   $query->fields('p', array('provider_id', 'name', 'type', 'active', 'date_created'));
-  $query->leftjoin('technology','t','t.technology_id = p.technology_id');
-  $query->addfield('t', 'technology_name');
   $query->orderBy('date_created', 'DESC');
   //$query->condition('t.uid', $user->uid,'='); 
 
@@ -123,7 +128,7 @@ function ictpbx_trunk_list($admin_links = false) {
   while ($trunk = $result->fetchAssoc()) {
     $row_id = $trunk['provider_id'];
     $rows[$row_id][] = check_plain($trunk['name']);
-    $rows[$row_id][] = check_plain($trunk['technology_name']); 
+    $rows[$row_id][] = check_plain(ucfirst($trunk['type']));
     $rows[$row_id][] = check_plain($trunk['active'] ? 'Active' : 'Blocked');
     $rows[$row_id][] = _ictpbx_trunk_list_links($trunk);
   }
@@ -162,7 +167,7 @@ function _ictpbx_trunk_list_links($trunk) {
 function ictpbx_trunk_form($form, &$form_state, $edit = array()) {
   // It's safe to use on both an empty array, and an incoming array with full or partial data.
   $edit += array(
-    'technology_id'   => '',
+    'type'            => '',
     'name'            => '',
     'description'     => '',
     'username'        => '',
@@ -191,19 +196,23 @@ function ictpbx_trunk_form($form, &$form_state, $edit = array()) {
     '#title' => t('Trunk Information'),
   );
 
-  $form['info']['technology_id'] = array(
+  $form['info']['type'] = array(
     '#type'          => 'select',
     '#title'         => t('Choose Provider Trunk Type'),
-    '#options'       => ictcore_technology_option(),
-    '#default_value' => $edit['technology_id'],
+    '#options'       => array('sip' => t('SIP Gateway for Fax'), 'smtp' => t('SMTP Gateway for Email')),
+    '#default_value' => $edit['type'],
   );
+  // disabled type selection for existing records
+  if (!empty($edit['provider_id'])) {
+    $from['info']['type']['#disabled'] = TRUE;
+  }
 
   $form['info']['name'] = array(
     '#type'          => 'textfield',
     '#title'         => t('Trunk Name'),
     '#required'      => TRUE,
     '#default_value' => $edit['name'],
-    '#description' => t('Trunk name must match with gateway name that you created in freeswitch.'),
+    '#description'   => t('Trunk name must match with gateway name that you created in freeswitch.'),
   );
 
   $form['info']['description'] = array(
@@ -217,7 +226,7 @@ function ictpbx_trunk_form($form, &$form_state, $edit = array()) {
     '#title'         => t('Choose Status'),
     '#options'       => array(0 => 'Blocked', 1 => 'Active'),
     '#default_value' => $edit['active'],
-    '#description' => t('Trunk name must match with gateway name that you created in freeswitch.'),
+    '#description'   => t('Trunk name must match with gateway name that you created in freeswitch.'),
 );
   
   $form['setting'] = array(
@@ -287,33 +296,41 @@ function ictpbx_trunk_form($form, &$form_state, $edit = array()) {
 function ictpbx_trunk_form_submit($form, &$form_state) {
   global $user;
 
-  include_once "/usr/ictcore/core/core.php";
+  include_once "/usr/ictcore/core/Core.php";
 
   // first of all load user in ict framework
   /*$listUser = User::search(array('created_by' => $user->uid));
   $aUser    = array_shift($listUser);
-  do_login($aUser['user_id']); */
-  do_login($user->uid);
+  \ICT\Core\do_login($aUser['user_id']); */
+  \ICT\Core\do_login($user->uid);
 
   $trunk = $form_state['values'];
 
   if (!empty($trunk['provider_id'])) {
-    $provider = new Provider($trunk['provider_id']);
+    $provider = Provider::load($trunk['provider_id']);
   } else {
-    $provider = new Provider();
+    switch($trunk['type']) {
+      case 'smtp':
+        $provider = new Smtp();
+        $provider->service_flag = Email::SERVICE_FLAG;
+        break;
+      case 'sip':
+      default:
+        $provider = new Sip();
+        $provider->service_flag = Fax::SERVICE_FLAG;
+    }
   }
+
   $provider->name =          $trunk['name'];
   $provider->username =      $trunk['username'];
   $provider->password =      $trunk['password'];
   $provider->description =   $trunk['description'];
   $provider->host =          $trunk['host'];
   $provider->port =          $trunk['port'];
-  $provider->technology_id = $trunk['technology_id'];
   $provider->dialstring =    $trunk['dialstring'];
   $provider->prefix =        $trunk['prefix'];
   $provider->register =      $trunk['register'];
   $provider->active =        $trunk['active'];
-  $provider->service_flag =  Fax::SERVICE_FLAG;
 
   $provider->save();
   drupal_set_message(t('Provider Trunk saved successfully!'), 'status');

@@ -10,6 +10,8 @@
 
 // $Id: ictfax.install,v 1.0 2012/02/23 13:34:59 diggersf Exp $
 
+use \ICT\Core\Program\Emailtofax;
+
 /**
  * Implementation of hook_install().
  */
@@ -20,7 +22,7 @@ function ictfax_install() {
 
 function fax_program_compile() {
   global $user;
-  include_once '/usr/ictcore/core/core.php';
+  include_once '/usr/ictcore/core/Core.php';
 
   $oProgram = new Emailtofax(null, array());
   $oProgram->save();
