@@ -790,6 +790,13 @@ function ictpbx_did_service_list() {
 function ictpbx_did_service_install($account_id, $service_name) {
   include_once "/usr/ictcore/core/Core.php";
 
+  // first remove all existing dependencies for this account / did
+  $listProgram = Program::search_resource('account_id', $account_id);
+  foreach ($listProgram as $program_id => $aProgram) {
+    $oProgram = Program::load($aProgram['program_id']);
+    $oProgram->delete();
+  }
+
   switch ($service_name) {
     case 'faxtoemail':
       // Prepare program data
