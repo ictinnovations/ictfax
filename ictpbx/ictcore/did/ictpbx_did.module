@@ -11,6 +11,7 @@
 // $Id: ictpbx_did.module,v 1.0 2012/02/29 10:42:58 ictinnovations Exp $
 
 use ICT\Core\Account;
+use ICT\Core\Program;
 use ICT\Core\Program\Faxtoemail;
 
 /**
