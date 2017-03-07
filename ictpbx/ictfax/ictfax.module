@@ -610,9 +610,7 @@ function ictfax_form_submit($form, &$form_state) {
 
   // prepare program data
   $programData = array(
-    'data' => array(
-      'document_id' => $oDocument->document_id
-    )
+    'document_id' => $oDocument->document_id
   );
   // prepare transmission data
   $transmissionData = array(

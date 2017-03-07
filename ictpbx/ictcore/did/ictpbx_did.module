@@ -792,7 +792,7 @@ function ictpbx_did_service_install($account_id, $service_name) {
   include_once "/usr/ictcore/core/Core.php";
 
   // first remove all existing dependencies for this account / did
-  $listProgram = Program::search_resource('account_id', $account_id);
+  $listProgram = Program::resource_search('account', $account_id);
   foreach ($listProgram as $program_id => $aProgram) {
     $oProgram = Program::load($aProgram['program_id']);
     $oProgram->delete();
