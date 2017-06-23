@@ -23,6 +23,8 @@ function page_manager_schema_1() {
       'identifier' => 'handler',
       'bulk export' => TRUE,
       'export callback' => 'page_manager_export_task_handler',
+      'load callback' => 'page_manager_export_task_handler_load',
+      'delete callback' => 'page_manager_delete_task_handler',
       'primary key' => 'did',
       'api' => array(
         'owner' => 'page_manager',

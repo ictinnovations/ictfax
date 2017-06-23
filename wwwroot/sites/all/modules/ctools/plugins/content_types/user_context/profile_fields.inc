@@ -1,6 +1,6 @@
 <?php
 
-if (module_exists('profile') && !is_null(profile_user_categories())) {
+if (module_exists('profile') && !(defined('MAINTENANCE_MODE') && MAINTENANCE_MODE == 'update') && !is_null(profile_user_categories())) {
   /**
    * Plugins are described by creating a $plugin array which will be used
    * by the system that includes this file.
@@ -21,7 +21,7 @@ if (module_exists('profile') && !is_null(profile_user_categories())) {
  * 'Render' callback for the 'profile fields' content type.
  */
 function ctools_profile_fields_content_type_render($subtype, $conf, $panel_args, $context) {
-  $account = isset($context->data) ? clone($context->data) : NULL;
+  $account = isset($context->data) ? clone $context->data : NULL;
   $block = new stdClass();
   $block->module = 'profile fields';
 

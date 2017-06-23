@@ -53,7 +53,7 @@ kbd,
 samp,
 var {
   padding: 0 0.4em;
-  font-size: 0.77em;
+  font-size: 0.857em;
   font-family: Menlo, Consolas, "Andale Mono", "Lucida Console", "Nimbus Mono L", "DejaVu Sans Mono", monospace, "Courier New";
 }
 code {
@@ -704,7 +704,6 @@ ul.links {
 }
 .comment .submitted .comment-permalink {
   font-size: 0.786em;
-  text-transform: lowercase;
 }
 .comment .content {
   font-size: 0.929em;
@@ -1326,14 +1325,6 @@ input.form-button-disabled:active,
   color: #717171;
 }
 
-/* Animated throbber */
-html.js input.form-autocomplete {
-  background-position: 100% 4px; /* LTR */
-}
-html.js input.throbbing {
-  background-position: 100% -16px; /* LTR */
-}
-
 /* Comment form */
 .comment-form label {
   float: left; /* LTR */
@@ -1488,7 +1479,7 @@ ol.search-results {
 }
 .search-results li:last-child {
   border-bottom: none;
-  padding-bottom: none;
+  padding-bottom: 0;
   margin-bottom: 1em;
 }
 .search-results .search-snippet-info {

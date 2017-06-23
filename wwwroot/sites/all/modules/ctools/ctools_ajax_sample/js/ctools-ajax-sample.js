@@ -2,7 +2,7 @@
 * Provide the HTML to create the modal dialog.
 */
 Drupal.theme.prototype.CToolsSampleModal = function () {
-  var html = ''
+  var html = '';
 
   html += '<div id="ctools-modal" class="popups-box">';
   html += '  <div class="ctools-modal-content ctools-sample-modal-content">';

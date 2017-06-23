@@ -1,12 +1,13 @@
 name = Chaos Tools (CTools) AJAX Example
 description = Shows how to use the power of Chaos AJAX.
 package = Chaos tool suite
+version = CTOOLS_MODULE_VERSION
 dependencies[] = ctools
 core = 7.x
 
-; Information added by drupal.org packaging script on 2011-07-28
-version = "7.x-1.0-rc1"
+; Information added by Drupal.org packaging script on 2016-11-22
+version = "7.x-1.12"
 core = "7.x"
 project = "ctools"
-datestamp = "1311894415"
+datestamp = "1479787162"
 

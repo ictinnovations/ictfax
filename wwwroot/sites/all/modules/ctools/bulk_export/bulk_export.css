@@ -1,24 +1,18 @@
-
-div.export-container {
+.export-container {
   width: 48%;
   float: left;
-  padding: .5em;
+  padding: 5px 1% 0;
 }
-
-div.export-container table {
+.export-container table {
   width: 100%;
 }
-
-div.export-container table input,
-div.export-container table th,
-div.export-container table td {
-  padding: 0 0 2px .5em;
+.export-container table input,
+.export-container table th,
+.export-container table td {
+  padding: 0 0 .2em .5em;
   margin: 0;
-  border-right: none;
-  border-left: none;
-  vertical-align: center;
+  vertical-align: middle;
 }
-
-div.export-container .select-all {
+.export-container .select-all {
   width: 1.5em;
 }

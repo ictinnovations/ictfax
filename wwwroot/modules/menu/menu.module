@@ -25,7 +25,7 @@ function menu_help($path, $arg) {
     case 'admin/help#menu':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The Menu module provides an interface for managing menus. A menu is a hierarchical collection of links, which can be within or external to the site, generally used for navigation. Each menu is rendered in a block that can be enabled and positioned through the <a href="@blocks">Blocks administration page</a>. You can view and manage menus on the <a href="@menus">Menus administration page</a>. For more information, see the online handbook entry for the <a href="@menu">Menu module</a>.', array('@blocks' => url('admin/structure/block'), '@menus' => url('admin/structure/menu'), '@menu' => 'http://drupal.org/handbook/modules/menu/')) . '</p>';
+      $output .= '<p>' . t('The Menu module provides an interface for managing menus. A menu is a hierarchical collection of links, which can be within or external to the site, generally used for navigation. Each menu is rendered in a block that can be enabled and positioned through the <a href="@blocks">Blocks administration page</a>. You can view and manage menus on the <a href="@menus">Menus administration page</a>. For more information, see the online handbook entry for the <a href="@menu">Menu module</a>.', array('@blocks' => url('admin/structure/block'), '@menus' => url('admin/structure/menu'), '@menu' => 'http://drupal.org/documentation/modules/menu/')) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Managing menus') . '</dt>';
@@ -69,7 +69,7 @@ function menu_menu() {
     'title' => 'Parent menu items',
     'page callback' => 'menu_parent_options_js',
     'type' => MENU_CALLBACK,
-    'access arguments' => array(TRUE),
+    'access arguments' => array('administer menu'),
   );
   $items['admin/structure/menu/list'] = array(
     'title' => 'List menus',
@@ -268,6 +268,15 @@ function menu_save($menu) {
 
   switch ($status) {
     case SAVED_NEW:
+      // Make sure the menu is present in the active menus variable so that its
+      // items may appear in the menu active trail.
+      // @see menu_set_active_menu_names()
+      $active_menus = variable_get('menu_default_active_menus', array_keys(menu_get_menus()));
+      if (!in_array($menu['menu_name'], $active_menus)) {
+        $active_menus[] = $menu['menu_name'];
+        variable_set('menu_default_active_menus', $active_menus);
+      }
+
       module_invoke_all('menu_insert', $menu);
       break;
 
@@ -304,6 +313,15 @@ function menu_save($menu) {
 function menu_delete($menu) {
   // Delete all links from the menu.
   menu_delete_links($menu['menu_name']);
+
+  // Remove menu from active menus variable.
+  $active_menus = variable_get('menu_default_active_menus', array_keys(menu_get_menus()));
+  foreach ($active_menus as $i => $menu_name) {
+    if ($menu['menu_name'] == $menu_name) {
+      unset($active_menus[$i]);
+      variable_set('menu_default_active_menus', $active_menus);
+    }
+  }
 
   // Delete the custom menu.
   db_delete('menu_custom')
@@ -452,7 +470,6 @@ function menu_block_info() {
 
   $blocks = array();
   foreach ($menus as $name => $title) {
-    // Default "Navigation" block is handled by user.module.
     $blocks[$name]['info'] = check_plain($title);
     // Menu blocks can't be cached because each menu item can have
     // a custom access callback. menu.inc manages its own caching.
@@ -614,7 +631,7 @@ function menu_form_node_form_alter(&$form, $form_state) {
   // menu_parent_options() is goofy and can actually handle either a menu link
   // or a node type both as second argument. Pick based on whether there is
   // a link already (menu_node_prepare() sets mlid default to 0).
-  $options = menu_parent_options(menu_get_menus(), $link['mlid'] ? $link : $type);
+  $options = menu_parent_options(menu_get_menus(), $link['mlid'] ? $link : $type, $type);
   // If no possible parent menu items were found, there is nothing to display.
   if (empty($options)) {
     return;
@@ -657,6 +674,7 @@ function menu_form_node_form_alter(&$form, $form_state) {
   $form['menu']['link']['link_title'] = array(
     '#type' => 'textfield',
     '#title' => t('Menu link title'),
+    '#maxlength' => 255,
     '#default_value' => $link['link_title'],
   );
 

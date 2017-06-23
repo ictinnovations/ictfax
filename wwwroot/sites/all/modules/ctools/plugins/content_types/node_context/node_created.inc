@@ -42,15 +42,15 @@ function ctools_node_created_content_type_render($subtype, $conf, $panel_args, $
  */
 function ctools_node_created_content_type_edit_form($form, &$form_state) {
   $conf = $form_state['conf'];
+  $date_types = array();
 
+  foreach (system_get_date_types() as $date_type => $definition) {
+    $date_types[$date_type] = format_date(REQUEST_TIME, $date_type);
+  }
   $form['format'] = array(
     '#title' => t('Date format'),
     '#type' => 'select',
-    '#options' => array(
-      'small' => format_date(REQUEST_TIME, 'small'),
-      'medium' => format_date(REQUEST_TIME, 'medium'),
-      'large' => format_date(REQUEST_TIME, 'large'),
-    ),
+    '#options' => $date_types,
     '#default_value' => $conf['format'],
   );
   return $form;

@@ -1,6 +1,11 @@
 <?php
 
 /**
+* @file
+* API functions for installing modules and themes.
+*/
+
+/**
  * Indicates that a module has not been installed yet.
  */
 define('SCHEMA_UNINSTALLED', -1);
@@ -71,7 +76,7 @@ define('FILE_NOT_WRITABLE', 64);
 define('FILE_NOT_EXECUTABLE', 128);
 
 /**
- * Initialize the update system by loading all installed module's .install files.
+ * Loads .install files for installed modules to initialize the update system.
  */
 function drupal_load_updates() {
   foreach (drupal_get_installed_schema_version(NULL, FALSE, TRUE) as $module => $schema_version) {
@@ -180,11 +185,11 @@ function drupal_set_installed_schema_version($module, $version) {
 }
 
 /**
- * Loads the install profile, extracting its defined distribution name.
+ * Loads the installation profile, extracting its defined distribution name.
  *
  * @return
  *   The distribution name defined in the profile's .info file. Defaults to
- *   "Drupal" if none is explicitly provided by the install profile.
+ *   "Drupal" if none is explicitly provided by the installation profile.
  *
  * @see install_profile_info()
  */
@@ -204,11 +209,12 @@ function drupal_install_profile_distribution_name() {
 }
 
 /**
- * Auto detect the base_url with PHP predefined variables.
+ * Detects the base URL using the PHP $_SERVER variables.
  *
  * @param $file
  *   The name of the file calling this function so we can strip it out of
  *   the URI when generating the base_url.
+ *
  * @return
  *   The auto-detected $base_url that should be configured in settings.php
  */
@@ -223,7 +229,7 @@ function drupal_detect_baseurl($file = 'install.php') {
 }
 
 /**
- * Detect all supported databases that are compiled into PHP.
+ * Detects all supported databases that are compiled into PHP.
  *
  * @return
  *  An array of database types compiled into PHP.
@@ -239,7 +245,7 @@ function drupal_detect_database_types() {
 }
 
 /**
- * Return all supported database installer objects that are compiled into PHP.
+ * Returns all supported database installer objects that are compiled into PHP.
  *
  * @return
  *  An array of database installer objects compiled into PHP.
@@ -414,7 +420,7 @@ abstract class DatabaseTasks {
       }
     }
     if (!empty($message)) {
-      $message = '<p>In order for Drupal to work, and to continue with the installation process, you must resolve all issues reported below. For more help with configuring your database server, see the <a href="http://drupal.org/getting-started/install">installation handbook</a>. If you are unsure what any of this means you should probably contact your hosting provider.</p>' . $message;
+      $message = 'Resolve all issues below to continue the installation. For help configuring your database server, see the <a href="http://drupal.org/getting-started/install">installation handbook</a>, or contact your hosting provider.' . $message;
       throw new DatabaseTaskException($message);
     }
   }
@@ -576,7 +582,7 @@ class DatabaseTaskException extends Exception {
 }
 
 /**
- * Replace values in settings.php with values in the submitted array.
+ * Replaces values in settings.php with values in the submitted array.
  *
  * @param $settings
  *   An array of settings that need to be updated.
@@ -647,6 +653,13 @@ function drupal_rewrite_settings($settings = array(), $prefix = '') {
     if ($fp && fwrite($fp, $buffer) === FALSE) {
       throw new Exception(st('Failed to modify %settings. Verify the file permissions.', array('%settings' => $settings_file)));
     }
+    else {
+      // The existing settings.php file might have been included already. In
+      // case an opcode cache is enabled, the rewritten contents of the file
+      // will not be reflected in this process. Ensure to invalidate the file
+      // in case an opcode cache is enabled.
+      drupal_clear_opcode_cache(DRUPAL_ROOT . '/' . $settings_file);
+    }
   }
   else {
     throw new Exception(st('Failed to open %settings. Verify the file permissions.', array('%settings' => $default_settings)));
@@ -654,10 +667,11 @@ function drupal_rewrite_settings($settings = array(), $prefix = '') {
 }
 
 /**
- * Verify an install profile for installation.
+ * Verifies an installation profile for installation.
  *
  * @param $install_state
  *   An array of information about the current installation state.
+ *
  * @return
  *   The list of modules to install.
  */
@@ -681,8 +695,8 @@ function drupal_verify_profile($install_state) {
     $present_modules[] = $present_module->name;
   }
 
-  // The install profile is also a module, which needs to be installed after all the other dependencies
-  // have been installed.
+  // The installation profile is also a module, which needs to be installed
+  // after all the other dependencies have been installed.
   $present_modules[] = drupal_get_profile();
 
   // Verify that all of the profile's required modules are present.
@@ -706,7 +720,7 @@ function drupal_verify_profile($install_state) {
 }
 
 /**
- * Callback to install the system module.
+ * Installs the system module.
  *
  * Separated from the installation of other modules so core system
  * functions can be made available while other modules are installed.
@@ -734,20 +748,28 @@ function drupal_install_system() {
 }
 
 /**
- * Uninstalls a given list of modules.
+ * Uninstalls a given list of disabled modules.
  *
- * @param $module_list
- *   The modules to uninstall.
- * @param $uninstall_dependents
- *   If TRUE, the function will check that all modules which depend on the
- *   passed-in module list either are already uninstalled or contained in the
- *   list, and it will ensure that the modules are uninstalled in the correct
- *   order. This incurs a significant performance cost, so use FALSE if you
- *   know $module_list is already complete and in the correct order.
+ * @param string[] $module_list
+ *   The modules to uninstall. It is the caller's responsibility to ensure that
+ *   all modules in this list have already been disabled before this function
+ *   is called.
+ * @param bool $uninstall_dependents
+ *   (optional) If TRUE, the function will check that all modules which depend
+ *   on the passed-in module list either are already uninstalled or contained in
+ *   the list, and it will ensure that the modules are uninstalled in the
+ *   correct order. This incurs a significant performance cost, so use FALSE if
+ *   you know $module_list is already complete and in the correct order.
+ *   Defaults to TRUE.
  *
- * @return
- *   FALSE if one or more dependent modules are missing from the list, TRUE
- *   otherwise.
+ * @return bool
+ *   Returns TRUE if the operation succeeds or FALSE if it aborts due to an
+ *   unsafe condition, namely, $uninstall_dependents is TRUE and a module in
+ *   $module_list has dependents which are not already uninstalled and not also
+ *   included in $module_list).
+ *
+ * @see module_disable()
+ * @see module_enable()
  */
 function drupal_uninstall_modules($module_list = array(), $uninstall_dependents = TRUE) {
   if ($uninstall_dependents) {
@@ -759,7 +781,7 @@ function drupal_uninstall_modules($module_list = array(), $uninstall_dependents 
     $profile = drupal_get_profile();
     while (list($module) = each($module_list)) {
       if (!isset($module_data[$module]) || drupal_get_installed_schema_version($module) == SCHEMA_UNINSTALLED) {
-        // This module doesn't exist or is already uninstalled, skip it.
+        // This module doesn't exist or is already uninstalled. Skip it.
         unset($module_list[$module]);
         continue;
       }
@@ -792,7 +814,7 @@ function drupal_uninstall_modules($module_list = array(), $uninstall_dependents 
   }
 
   if (!empty($module_list)) {
-    // Call hook_module_uninstall to let other modules act
+    // Let other modules react.
     module_invoke_all('modules_uninstalled', $module_list);
   }
 
@@ -800,7 +822,7 @@ function drupal_uninstall_modules($module_list = array(), $uninstall_dependents 
 }
 
 /**
- * Verify the state of the specified file.
+ * Verifies the state of the specified file.
  *
  * @param $file
  *   The file to check for.
@@ -808,6 +830,7 @@ function drupal_uninstall_modules($module_list = array(), $uninstall_dependents 
  *   An optional bitmask created from various FILE_* constants.
  * @param $type
  *   The type of file. Can be file (default), dir, or link.
+ *
  * @return
  *   TRUE on success or FALSE on failure. A message is set for the latter.
  */
@@ -879,7 +902,7 @@ function drupal_verify_install_file($file, $mask = NULL, $type = 'file') {
 }
 
 /**
- * Create a directory with specified permissions.
+ * Creates a directory with the specified permissions.
  *
  * @param $file
  *  The name of the directory to create;
@@ -887,6 +910,7 @@ function drupal_verify_install_file($file, $mask = NULL, $type = 'file') {
  *  The permissions of the directory to create.
  * @param $message
  *  (optional) Whether to output messages. Defaults to TRUE.
+ *
  * @return
  *  TRUE/FALSE whether or not the directory was successfully created.
  */
@@ -918,7 +942,7 @@ function drupal_install_mkdir($file, $mask, $message = TRUE) {
 }
 
 /**
- * Attempt to fix file permissions.
+ * Attempts to fix file permissions.
  *
  * The general approach here is that, because we do not know the security
  * setup of the webserver, we apply our permission changes to all three
@@ -935,6 +959,7 @@ function drupal_install_mkdir($file, $mask, $message = TRUE) {
  *  The desired permissions for the file.
  * @param $message
  *  (optional) Whether to output messages. Defaults to TRUE.
+ *
  * @return
  *  TRUE/FALSE whether or not we were able to fix the file's permissions.
  */
@@ -1000,7 +1025,7 @@ function drupal_install_fix_file($file, $mask, $message = TRUE) {
 }
 
 /**
- * Send the user to a different installer page.
+ * Sends the user to a different installer page.
  *
  * This issues an on-site HTTP redirect. Messages (and errors) are erased.
  *
@@ -1078,7 +1103,7 @@ function drupal_requirements_url($severity) {
 }
 
 /**
- * Functional equivalent of t(), used when some systems are not available.
+ * Translates a string when some systems are not available.
  *
  * Used during the install process, when database, theme, and localization
  * system is possibly not yet available.
@@ -1117,7 +1142,6 @@ function st($string, array $args = array(), array $options = array()) {
     }
   }
 
-  require_once DRUPAL_ROOT . '/includes/theme.inc';
   // Transform arguments before inserting them
   foreach ($args as $key => $value) {
     switch ($key[0]) {
@@ -1138,12 +1162,12 @@ function st($string, array $args = array(), array $options = array()) {
 }
 
 /**
- * Check an install profile's requirements.
+ * Checks an installation profile's requirements.
  *
  * @param $profile
- *   Name of install profile to check.
+ *   Name of installation profile to check.
  * @return
- *   Array of the install profile's requirements.
+ *   Array of the installation profile's requirements.
  */
 function drupal_check_profile($profile) {
   include_once DRUPAL_ROOT . '/includes/file.inc';
@@ -1169,11 +1193,12 @@ function drupal_check_profile($profile) {
 }
 
 /**
- * Extract highest severity from requirements array.
+ * Extracts the highest severity from the requirements array.
  *
  * @param $requirements
  *   An array of requirements, in the same format as is returned by
  *   hook_requirements().
+ *
  * @return
  *   The highest severity in the array.
  */
@@ -1188,12 +1213,13 @@ function drupal_requirements_severity(&$requirements) {
 }
 
 /**
- * Check a module's requirements.
+ * Checks a module's requirements.
  *
  * @param $module
  *   Machine name of module to check.
+ *
  * @return
- *   TRUE/FALSE depending on the requirements are in place.
+ *   TRUE or FALSE, depending on whether the requirements are met.
  */
 function drupal_check_module($module) {
   module_load_install($module);
@@ -1218,19 +1244,26 @@ function drupal_check_module($module) {
 }
 
 /**
- * Retrieve info about an install profile from its .info file.
+ * Retrieves information about an installation profile from its .info file.
  *
  * The information stored in a profile .info file is similar to that stored in
  * a normal Drupal module .info file. For example:
- * - name: The real name of the install profile for display purposes.
+ * - name: The real name of the installation profile for display purposes.
  * - description: A brief description of the profile.
- * - dependencies: An array of shortnames of other modules this install profile requires.
+ * - dependencies: An array of shortnames of other modules that this install
+ *   profile requires.
  *
  * Additional, less commonly-used information that can appear in a profile.info
  * file but not in a normal Drupal module .info file includes:
  * - distribution_name: The name of the Drupal distribution that is being
  *   installed, to be shown throughout the installation process. Defaults to
  *   'Drupal'.
+ * - exclusive: If the install profile is intended to be the only eligible
+ *   choice in a distribution, setting exclusive = TRUE will auto-select it
+ *   during installation, and the install profile selection screen will be
+ *   skipped. If more than one profile is found where exclusive = TRUE then
+ *   this property will have no effect and the profile selection screen will
+ *   be shown as normal with all available profiles shown.
  *
  * Note that this function does an expensive file system scan to get info file
  * information for dependencies. If you only need information from the info

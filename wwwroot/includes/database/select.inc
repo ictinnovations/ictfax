@@ -1,7 +1,7 @@
 <?php
 
 /**
- * @ingroup database
+ * @addtogroup database
  * @{
  */
 
@@ -377,7 +377,8 @@ interface SelectQueryInterface extends QueryConditionInterface, QueryAlterableIn
    * @param $field
    *   The field on which to order.
    * @param $direction
-   *   The direction to sort. Legal values are "ASC" and "DESC".
+   *   The direction to sort. Legal values are "ASC" and "DESC". Any other value
+   *   will be converted to "ASC".
    * @return SelectQueryInterface
    *   The called object.
    */
@@ -590,11 +591,13 @@ class SelectQueryExtender implements SelectQueryInterface {
   }
 
   public function hasAllTags() {
-    return call_user_func_array(array($this->query, 'hasAllTags'), func_get_args());
+    $args = func_get_args();
+    return call_user_func_array(array($this->query, 'hasAllTags'), $args);
   }
 
   public function hasAnyTag() {
-    return call_user_func_array(array($this->query, 'hasAnyTags'), func_get_args());
+    $args = func_get_args();
+    return call_user_func_array(array($this->query, 'hasAnyTag'), $args);
   }
 
   public function addMetaData($key, $object) {
@@ -637,16 +640,16 @@ class SelectQueryExtender implements SelectQueryInterface {
   /* Implementations of QueryConditionInterface for the HAVING clause. */
 
   public function havingCondition($field, $value = NULL, $operator = '=') {
-    $this->query->condition($field, $value, $operator, $num_args);
+    $this->query->havingCondition($field, $value, $operator);
     return $this;
   }
 
   public function &havingConditions() {
-    return $this->having->conditions();
+    return $this->query->havingConditions();
   }
 
   public function havingArguments() {
-    return $this->having->arguments();
+    return $this->query->havingArguments();
   }
 
   public function having($snippet, $args = array()) {
@@ -790,31 +793,7 @@ class SelectQueryExtender implements SelectQueryInterface {
   }
 
   public function countQuery() {
-    // Create our new query object that we will mutate into a count query.
-    $count = clone($this);
-
-    // Zero-out existing fields and expressions.
-    $fields =& $count->getFields();
-    $fields = array();
-    $expressions =& $count->getExpressions();
-    $expressions = array();
-
-    // Also remove 'all_fields' statements, which are expanded into tablename.*
-    // when the query is executed.
-    $tables = &$count->getTables();
-    foreach ($tables as $alias => &$table) {
-      unset($table['all_fields']);
-    }
-
-    // Ordering a count query is a waste of cycles, and breaks on some
-    // databases anyway.
-    $orders = &$count->getOrderBy();
-    $orders = array();
-
-    // COUNT() is an expression, so we add that back in.
-    $count->addExpression('COUNT(*)');
-
-    return $count;
+    return $this->query->countQuery();
   }
 
   function isNull($field) {
@@ -836,7 +815,7 @@ class SelectQueryExtender implements SelectQueryInterface {
     $this->query->notExists($select);
     return $this;
   }
-  
+
   public function __toString() {
     return (string) $this->query;
   }
@@ -1005,11 +984,13 @@ class SelectQuery extends Query implements SelectQueryInterface {
   }
 
   public function hasAllTags() {
-    return !(boolean)array_diff(func_get_args(), array_keys($this->alterTags));
+    $args = func_get_args();
+    return !(boolean)array_diff($args, array_keys($this->alterTags));
   }
 
   public function hasAnyTag() {
-    return (boolean)array_intersect(func_get_args(), array_keys($this->alterTags));
+    $args = func_get_args();
+    return (boolean)array_intersect($args, array_keys($this->alterTags));
   }
 
   public function addMetaData($key, $object) {
@@ -1088,7 +1069,7 @@ class SelectQuery extends Query implements SelectQueryInterface {
     $this->where->notExists($select);
     return $this;
   }
-  
+
   public function compile(DatabaseConnection $connection, QueryPlaceholderInterface $queryPlaceholder) {
     $this->where->compile($connection, $queryPlaceholder);
     $this->having->compile($connection, $queryPlaceholder);
@@ -1172,17 +1153,17 @@ class SelectQuery extends Query implements SelectQueryInterface {
     $this->having->isNotNull($field);
     return $this;
   }
-  
+
   public function havingExists(SelectQueryInterface $select) {
     $this->having->exists($select);
     return $this;
   }
-  
+
   public function havingNotExists(SelectQueryInterface $select) {
     $this->having->notExists($select);
     return $this;
   }
-  
+
   public function forUpdate($set = TRUE) {
     if (isset($set)) {
       $this->forUpdate = $set;
@@ -1250,6 +1231,21 @@ class SelectQuery extends Query implements SelectQueryInterface {
 
     // Modules may alter all queries or only those having a particular tag.
     if (isset($this->alterTags)) {
+      // Many contrib modules assume that query tags used for access-checking
+      // purposes follow the pattern $entity_type . '_access'. But this is
+      // not the case for taxonomy terms, since core used to add term_access
+      // instead of taxonomy_term_access to its queries. Provide backwards
+      // compatibility by adding both tags here instead of attempting to fix
+      // all contrib modules in a coordinated effort.
+      // TODO:
+      // - Extract this mechanism into a hook as part of a public (non-security)
+      //   issue.
+      // - Emit E_USER_DEPRECATED if term_access is used.
+      //   https://www.drupal.org/node/2575081
+      $term_access_tags = array('term_access' => 1, 'taxonomy_term_access' => 1);
+      if (array_intersect_key($this->alterTags, $term_access_tags)) {
+        $this->alterTags += $term_access_tags;
+      }
       $hooks = array('query');
       foreach ($this->alterTags as $tag => $value) {
         $hooks[] = 'query_' . $tag;
@@ -1404,6 +1400,8 @@ class SelectQuery extends Query implements SelectQueryInterface {
   }
 
   public function orderBy($field, $direction = 'ASC') {
+    // Only allow ASC and DESC, default to ASC.
+    $direction = strtoupper($direction) == 'DESC' ? 'DESC' : 'ASC';
     $this->order[$field] = $direction;
     return $this;
   }
@@ -1451,17 +1449,20 @@ class SelectQuery extends Query implements SelectQueryInterface {
     $count = clone($this);
 
     $group_by = $count->getGroupBy();
+    $having = $count->havingConditions();
 
-    if (!$count->distinct) {
+    if (!$count->distinct && !isset($having[0])) {
       // When not executing a distinct query, we can zero-out existing fields
-      // and expressions that are not used by a GROUP BY.  Fields listed in
-      // the GROUP BY clause need to be present in the query.
+      // and expressions that are not used by a GROUP BY or HAVING. Fields
+      // listed in a GROUP BY or HAVING clause need to be present in the
+      // query.
       $fields =& $count->getFields();
       foreach (array_keys($fields) as $field) {
         if (empty($group_by[$field])) {
           unset($fields[$field]);
         }
       }
+
       $expressions =& $count->getExpressions();
       foreach (array_keys($expressions) as $field) {
         if (empty($group_by[$field])) {
@@ -1626,5 +1627,5 @@ class SelectQuery extends Query implements SelectQueryInterface {
 }
 
 /**
- * @} End of "ingroup database".
+ * @} End of "addtogroup database".
  */

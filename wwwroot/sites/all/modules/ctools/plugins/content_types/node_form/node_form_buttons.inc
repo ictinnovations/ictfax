@@ -23,7 +23,7 @@ function ctools_node_form_buttons_content_type_render($subtype, $conf, $panel_ar
   if (isset($context->form)) {
     $block->content = array();
     foreach (array('actions', 'form_token', 'form_build_id', 'form_id') as $element) {
-      $block->content[$element] = $context->form[$element];
+      $block->content[$element] = isset($context->form[$element]) ? $context->form[$element] : NULL;
       unset($context->form[$element]);
     }
   }

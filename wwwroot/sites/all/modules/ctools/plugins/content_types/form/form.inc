@@ -24,6 +24,15 @@ function ctools_form_content_type_render($subtype, $conf, $panel_args, &$context
   $block->module = 'form';
 
   if (isset($context->form)) {
+    if (isset($context->form['#pre_render'])) {
+      foreach ($context->form['#pre_render'] as $function) {
+        if (function_exists($function)) {
+          $context->form = $function($context->form);
+        }
+      }
+      unset($context->form['#pre_render']);
+    }
+
     $block->title = $context->form_title;
     $block->content = array();
     foreach (element_children($context->form) as $element) {

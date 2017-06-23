@@ -347,7 +347,8 @@ function drupal_match_path($path, $patterns) {
  * drupal_bootstrap(DRUPAL_BOOTSTRAP_FULL) makes this function available.
  *
  * @return
- *   The current Drupal URL path.
+ *   The current Drupal URL path. The path is untrusted user input and must be
+ *   treated as such.
  *
  * @see request_path()
  */
@@ -386,7 +387,7 @@ function drupal_path_alias_whitelist_rebuild($source = NULL) {
 }
 
 /**
- * Fetch a specific URL alias from the database.
+ * Fetches a specific URL alias from the database.
  *
  * @param $conditions
  *   A string representing the source, a number representing the pid, or an
@@ -431,21 +432,27 @@ function path_load($conditions) {
  *   - language: (optional) The language of the alias.
  */
 function path_save(&$path) {
-  $path += array('pid' => NULL, 'language' => LANGUAGE_NONE);
+  $path += array('language' => LANGUAGE_NONE);
 
-  // Insert or update the alias.
-  $status = drupal_write_record('url_alias', $path, (!empty($path['pid']) ? 'pid' : array()));
-
-  // Verify that a record was written.
-  if ($status) {
-    if ($status === SAVED_NEW) {
-      module_invoke_all('path_insert', $path);
-    }
-    else {
-      module_invoke_all('path_update', $path);
-    }
-    drupal_clear_path_cache($path['source']);
+  // Load the stored alias, if any.
+  if (!empty($path['pid']) && !isset($path['original'])) {
+    $path['original'] = path_load($path['pid']);
   }
+
+  if (empty($path['pid'])) {
+    drupal_write_record('url_alias', $path);
+    module_invoke_all('path_insert', $path);
+  }
+  else {
+    drupal_write_record('url_alias', $path, array('pid'));
+    module_invoke_all('path_update', $path);
+  }
+
+  // Clear internal properties.
+  unset($path['original']);
+
+  // Clear the static alias cache.
+  drupal_clear_path_cache($path['source']);
 }
 
 /**
@@ -469,11 +476,11 @@ function path_delete($criteria) {
 }
 
 /**
- * Determine whether a path is in the administrative section of the site.
+ * Determines whether a path is in the administrative section of the site.
  *
- * By default, paths are considered to be non-administrative. If a path does not
- * match any of the patterns in path_get_admin_paths(), or if it matches both
- * administrative and non-administrative patterns, it is considered
+ * By default, paths are considered to be non-administrative. If a path does
+ * not match any of the patterns in path_get_admin_paths(), or if it matches
+ * both administrative and non-administrative patterns, it is considered
  * non-administrative.
  *
  * @param $path
@@ -497,7 +504,7 @@ function path_is_admin($path) {
 }
 
 /**
- * Get a list of administrative and non-administrative paths.
+ * Gets a list of administrative and non-administrative paths.
  *
  * @return array
  *   An associative array containing the following keys:
@@ -554,8 +561,8 @@ function drupal_valid_path($path, $dynamic_allowed = FALSE) {
   elseif ($dynamic_allowed && preg_match('/\/\%/', $path)) {
     // Path is dynamic (ie 'user/%'), so check directly against menu_router table.
     if ($item = db_query("SELECT * FROM {menu_router} where path = :path", array(':path' => $path))->fetchAssoc()) {
-      $item['link_path']  = $form_item['link_path'];
-      $item['link_title'] = $form_item['link_title'];
+      $item['link_path']  = $item['path'];
+      $item['link_title'] = $item['title'];
       $item['external']   = FALSE;
       $item['options'] = '';
       _menu_link_translate($item);

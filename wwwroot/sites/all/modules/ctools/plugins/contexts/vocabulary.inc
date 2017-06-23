@@ -21,6 +21,7 @@ $plugin = array(
   // This context is deprecated and should not be usable in the UI.
   'no ui' => TRUE,
   'no required context ui' => TRUE,
+  'superceded by' => 'entity:taxonomy_vocabulary',
 );
 
 /**

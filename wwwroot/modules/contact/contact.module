@@ -13,7 +13,7 @@ function contact_help($path, $arg) {
     case 'admin/help#contact':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The Contact module allows visitors to contact site administrators and other users. Users specify a subject, write their message, and can have a copy of their message sent to their own e-mail address. For more information, see the online handbook entry for <a href="@contact">Contact module</a>.', array('@contact' => 'http://drupal.org/handbook/modules/contact/')) . '</p>';
+      $output .= '<p>' . t('The Contact module allows visitors to contact site administrators and other users. Users specify a subject, write their message, and can have a copy of their message sent to their own e-mail address. For more information, see the online handbook entry for <a href="@contact">Contact module</a>.', array('@contact' => 'http://drupal.org/documentation/modules/contact/')) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('User contact forms') . '</dt>';
@@ -110,10 +110,7 @@ function contact_menu() {
  * Menu access callback for a user's personal contact form.
  *
  * @param $account
- *   A user account object.
- * @return
- *   TRUE if the current user has access to the requested user's contact form,
- *   or FALSE otherwise.
+ *   The user object of the user whose contact form is being requested.
  */
 function _contact_personal_tab_access($account) {
   global $user;
@@ -148,10 +145,11 @@ function _contact_personal_tab_access($account) {
 }
 
 /**
- * Load a contact category.
+ * Loads a contact category.
  *
  * @param $cid
  *   The contact category ID.
+ *
  * @return
  *   An array with the contact category's data.
  */
@@ -211,6 +209,8 @@ function contact_mail($key, &$message, $params) {
  * Implements hook_form_FORM_ID_alter().
  *
  * Add the enable personal contact form to an individual user's account page.
+ *
+ * @see user_profile_form()
  */
 function contact_form_user_profile_form_alter(&$form, &$form_state) {
   if ($form['#user_category'] == 'account') {
@@ -234,13 +234,22 @@ function contact_form_user_profile_form_alter(&$form, &$form_state) {
  * Implements hook_user_presave().
  */
 function contact_user_presave(&$edit, $account, $category) {
-  $edit['data']['contact'] = isset($edit['contact']) ? $edit['contact'] : variable_get('contact_default_status', 1);
+  if (isset($edit['contact'])) {
+    // Set new value.
+    $edit['data']['contact'] = $edit['contact'];
+  }
+  elseif (!isset($account->data['contact'])) {
+    // Use default if none has been set.
+    $edit['data']['contact'] = variable_get('contact_default_status', 1);
+  }
 }
 
 /**
  * Implements hook_form_FORM_ID_alter().
  *
  * Add the default personal contact setting on the user settings page.
+ *
+ * @see user_admin_settings()
  */
 function contact_form_user_admin_settings_alter(&$form, &$form_state) {
   $form['contact'] = array(

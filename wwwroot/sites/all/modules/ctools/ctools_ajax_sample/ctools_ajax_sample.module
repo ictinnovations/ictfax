@@ -371,7 +371,6 @@ function ctools_ajax_sample_animal($js = NULL, $step = NULL) {
     // Add the selected animal to the order so that it shows up properly in the trail.
     $form_info['order'][$object->type] = $animals[$object->type]['config title'];
   }
-  
 
   // Make sure all animals forms are represented so that the next stuff can
   // work correctly:
@@ -390,8 +389,6 @@ function ctools_ajax_sample_animal($js = NULL, $step = NULL) {
   // Send this all off to our form. This is like drupal_get_form only wizardy.
   ctools_include('wizard');
   $form = ctools_wizard_multistep_form($form_info, $step, $form_state);
-  
-
   $output = drupal_render($form);
 
   if ($output === FALSE || !empty($form_state['complete'])) {
@@ -406,7 +403,6 @@ function ctools_ajax_sample_animal($js = NULL, $step = NULL) {
     $commands = array();
     if ($output === FALSE || !empty($form_state['complete'])) {
       // Dismiss the modal.
-      $animal = "testing";
       $commands[] = ajax_command_html('#ctools-sample', $animal);
       $commands[] = ctools_modal_command_dismiss();
     }
@@ -528,7 +524,7 @@ function ctools_ajax_sample_wizard_next(&$form_state) {
 }
 
 /**
- * Handle the 'finish' click on teh add/edit pane form wizard.
+ * Handle the 'finish' click on the add/edit pane form wizard.
  *
  * All we need to do is set a flag so the return can handle adding
  * the pane.

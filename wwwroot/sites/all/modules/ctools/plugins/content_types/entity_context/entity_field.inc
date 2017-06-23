@@ -7,7 +7,7 @@
 
 $plugin = array(
   'title' => t('Entity field'),
-  'defaults' => array('label' => 'title', 'formatter' => ''),
+  'defaults' => array('label' => 'title', 'formatter' => '', 'delta_limit' => 0, 'delta_offset' => '0', 'delta_reversed' => FALSE),
   'content type' => 'ctools_entity_field_content_type_content_type',
 );
 
@@ -29,32 +29,50 @@ function ctools_entity_field_content_type_content_type($subtype) {
  * Return all field content types available.
  */
 function ctools_entity_field_content_type_content_types() {
+  $types = &drupal_static(__FUNCTION__, array());
+  if (!empty($types)) {
+    return $types;
+  }
+
+  $cache_key = 'ctools_entity_field_content_type_content_types';
+  if ($cache = cache_get($cache_key)) {
+    $types = $cache->data;
+    if (!empty($types)) {
+      return $types;
+    }
+  }
+
   // This will hold all the individual field content types.
-  $types = array();
   $context_types = array();
   $entities = entity_get_info();
 
+  $description = t('Field on the referenced entity.');
+  $styles = t('Formatter Styles');
+  $categories = array();
   foreach ($entities as $entity_type => $entity) {
+    $category = t(ucfirst($entity_type));
+    $categories[$entity_type] = $category;
     foreach ($entity['bundles'] as $type => $bundle) {
       foreach (field_info_instances($entity_type, $type) as $field_name => $field) {
         if (!isset($types[$entity_type . ':' . $field_name])) {
+          $label = t($field['label']);
           $types[$entity_type . ':' . $field_name] = array(
-            'category' => t(ucfirst($entity_type)),
+            'category' => $category,
             'icon' => 'icon_field.png',
             'title' => t('Field: @widget_label (@field_name)', array(
-              '@widget_label' => t($field['label']),
+              '@widget_label' => $label,
               '@field_name' => $field_name,
             )),
-            'description' => t('Field on the referenced entity.'),
+            'description' => $description,
             'edit form' => array(
               'ctools_entity_field_content_type_formatter_options' => array(
                 'default' => TRUE,
                 'title' => t('Formatter options for: @widget_label (@field_name)', array(
-                  '@widget_label' => t($field['label']),
+                  '@widget_label' => $label,
                   '@field_name' => $field_name,
                 )),
               ),
-              'ctools_entity_field_content_type_formatter_styles' => t('Formatter Styles'),
+              'ctools_entity_field_content_type_formatter_styles' => $styles,
             ),
           );
         }
@@ -66,11 +84,13 @@ function ctools_entity_field_content_type_content_types() {
   // Create the required context for each field related to the bundle types.
   foreach ($types as $key => $field_content_type) {
     list($entity_type, $field_name) = explode(':', $key, 2);
-    $types[$key]['required context'] = new ctools_context_required(t(ucfirst($entity_type)), $entity_type, array(
+    $types[$key]['required context'] = new ctools_context_required($categories[$entity_type], $entity_type, array(
       'type' => array_keys($context_types[$key]['types']),
     ));
     unset($context_types[$key]['types']);
   }
+
+  cache_set($cache_key, $types);
 
   return $types;
 }
@@ -108,6 +128,8 @@ function ctools_entity_field_content_type_render($subtype, $conf, $panel_args, $
   $field_settings = array(
     'label' => $label,
     'type' => $conf['formatter'],
+    // Pass all entity field panes settings to field display settings.
+    'pane_settings' => $conf,
   );
 
   // Get the field output, and the title.
@@ -115,7 +137,29 @@ function ctools_entity_field_content_type_render($subtype, $conf, $panel_args, $
     $field_settings['settings'] = $conf['formatter_settings'];
   }
 
-  $field_output = field_view_field($entity_type, $entity, $field_name, $field_settings, $language);
+  $clone = clone $entity;
+  $all_values = field_get_items($entity_type, $entity, $field_name, $language);
+
+  if (is_array($all_values)) {
+    // Reverse values.
+    if (isset($conf['delta_reversed']) && $conf['delta_reversed']) {
+      $all_values = array_reverse($all_values, TRUE);
+    }
+
+    if (isset($conf['delta_limit'])) {
+      $offset = intval($conf['delta_offset']);
+      $limit = !empty($conf['delta_limit']) ? $conf['delta_limit'] : NULL;
+      $all_values = array_slice($all_values, $offset, $limit, TRUE);
+    }
+
+    $clone->{$field_name}[$language] = $all_values;
+  }
+
+  $field_output = field_view_field($entity_type, $clone, $field_name, $field_settings, $language);
+
+  if (!empty($field_output) && !empty($conf['override_title'])) {
+    $field_output['#title'] = filter_xss_admin($conf['override_title_text']);
+  }
 
   // Build the content type block.
   $block = new stdClass();
@@ -182,9 +226,10 @@ function ctools_entity_field_content_type_formatter_styles($form, &$form_state) 
   $subtype = $form_state['subtype_name'];
   list($entity_type, $field_name) = explode(':', $subtype, 2);
   $field = field_info_field($field_name);
-  module_load_include('inc', 'field_ui', 'field_ui.admin');
 
-  ctools_include('fields');
+  ctools_form_include($form_state, 'field_ui.admin', 'field_ui', '');
+  ctools_form_include($form_state, 'fields');
+
   $form['ctools_field_list'] = array(
     '#type' => 'value',
     '#value' => array(),
@@ -206,13 +251,27 @@ function ctools_entity_field_content_type_formatter_styles_submit($form, &$form_
       }
     }
   }
+
+  if (isset($form_state['values']['delta_limit'])) {
+    $form_state['conf']['delta_limit'] = $form_state['values']['delta_limit'];
+    $form_state['conf']['delta_offset'] = $form_state['values']['delta_offset'];
+    $form_state['conf']['delta_reversed'] = $form_state['values']['delta_reversed'];
+  }
 }
 
 /**
-* Returns the administrative title for a type.
-*/
+ * Returns the administrative title for a type.
+ */
 function ctools_entity_field_content_type_admin_title($subtype, $conf, $context) {
   list($bundle, $field_name) = explode(':', $subtype);
   ctools_include('fields');
-  return t('"@s" @field', array('@s' => $context->identifier, '@field' => ctools_field_label($field_name)));
+  if (is_object($context) && isset($context->identifier)) {
+    $identifier = $context->identifier;
+  }
+  else {
+    watchdog('ctools_entity_field_content_type_admin_title', 'Context is missing for field: @name', array('@name' => $subtype), WATCHDOG_NOTICE);
+    $identifier = t('Unknown');
+  }
+
+  return t('"@s" @field', array('@s' => $identifier, '@field' => ctools_field_label($field_name)));
 }

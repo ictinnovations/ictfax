@@ -212,6 +212,7 @@
           content.slideToggle(100, afterToggle);
         }
 
+        $container.toggleClass('ctools-collapsed');
         toggle.toggleClass('ctools-toggle-collapsed');
 
         // If we're supposed to remember the state of this class, do so.
@@ -219,6 +220,8 @@
           var state = toggle.hasClass('ctools-toggle-collapsed') ? -1 : 1;
           Drupal.CTools.Collapsible.setState($container.attr('id'), state);
         }
+
+        return false;
       }
 
       // Let both the toggle and the handle be clickable.
@@ -230,11 +233,9 @@
   /**
    * Support Drupal's 'behaviors' system for binding.
    */
-  Drupal.behaviors.CToolsCollapsible = { 
+  Drupal.behaviors.CToolsCollapsible = {
     attach: function(context) {
-      $('.ctools-collapsible-container:not(.ctools-collapsible-processed)', context)
-        .each(Drupal.CTools.bindCollapsible)
-        .addClass('ctools-collapsible-processed');
+      $('.ctools-collapsible-container', context).once('ctools-collapsible', Drupal.CTools.bindCollapsible);
     }
   }
 })(jQuery);

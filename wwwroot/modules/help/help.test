@@ -5,8 +5,18 @@
  * Tests for help.module.
  */
 
+/**
+ * Tests help display and user access for all modules implementing help.
+ */
 class HelpTestCase extends DrupalWebTestCase {
+  /**
+   * The admin user that will be created.
+   */
   protected $big_user;
+
+  /**
+   * The anonymous user that will be created.
+   */
   protected $any_user;
 
   public static function getInfo() {
@@ -17,9 +27,6 @@ class HelpTestCase extends DrupalWebTestCase {
     );
   }
 
-  /**
-   * Enable modules and create users with specific permissions.
-   */
   function setUp() {
     parent::setUp('blog', 'poll');
 
@@ -31,7 +38,7 @@ class HelpTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Login users, create dblog events, and test dblog functionality through the admin and user interfaces.
+   * Logs in users, creates dblog events, and tests dblog functionality.
    */
   function testHelp() {
     // Login the admin user.
@@ -45,24 +52,25 @@ class HelpTestCase extends DrupalWebTestCase {
     // Check for css on admin/help.
     $this->drupalLogin($this->big_user);
     $this->drupalGet('admin/help');
-    $this->assertRaw(drupal_get_path('module', 'help') . '/help.css', t('The help.css file is present in the HTML.'));
+    $this->assertRaw(drupal_get_path('module', 'help') . '/help.css', 'The help.css file is present in the HTML.');
 
     // Verify that introductory help text exists, goes for 100% module coverage.
-    $this->assertRaw(t('For more information, refer to the specific topics listed in the next section or to the <a href="@drupal">online Drupal handbooks</a>.', array('@drupal' => 'http://drupal.org/handbooks')), 'Help intro text correctly appears.');
+    $this->assertRaw(t('For more information, refer to the specific topics listed in the next section or to the <a href="@drupal">online Drupal handbooks</a>.', array('@drupal' => 'http://drupal.org/documentation')), 'Help intro text correctly appears.');
 
     // Verify that help topics text appears.
-    $this->assertRaw('<h2>' . t('Help topics') . '</h2><p>' . t('Help is available on the following items:') . '</p>', t('Help topics text correctly appears.'));
+    $this->assertRaw('<h2>' . t('Help topics') . '</h2><p>' . t('Help is available on the following items:') . '</p>', 'Help topics text correctly appears.');
 
     // Make sure links are properly added for modules implementing hook_help().
     foreach ($this->modules as $module => $name) {
-      $this->assertLink($name, 0, t('Link properly added to @name (admin/help/@module)', array('@module' => $module, '@name' => $name)));
+      $this->assertLink($name, 0, format_string('Link properly added to @name (admin/help/@module)', array('@module' => $module, '@name' => $name)));
     }
   }
 
   /**
-   * Verify the logged in user has the desired access to the various help nodes and the nodes display help.
+   * Verifies the logged in user has access to the various help nodes.
    *
-   * @param integer $response HTTP response code.
+   * @param integer $response
+   *   An HTTP response code.
    */
   protected function verifyHelp($response = 200) {
     foreach ($this->modules as $module => $name) {
@@ -70,16 +78,17 @@ class HelpTestCase extends DrupalWebTestCase {
       $this->drupalGet('admin/help/' . $module);
       $this->assertResponse($response);
       if ($response == 200) {
-        $this->assertTitle($name . ' | Drupal', t('[' . $module . '] Title was displayed'));
-        $this->assertRaw('<h1 class="page-title">' . t($name) . '</h1>', t('[' . $module . '] Heading was displayed'));
+        $this->assertTitle($name . ' | Drupal', format_string('%module title was displayed', array('%module' => $module)));
+        $this->assertRaw('<h1 class="page-title">' . t($name) . '</h1>', format_string('%module heading was displayed', array('%module' => $module)));
        }
     }
   }
 
   /**
-   * Get list of enabled modules that implement hook_help().
+   * Gets the list of enabled modules that implement hook_help().
    *
-   * @return array Enabled modules.
+   * @return array
+   *   A list of enabled modules.
    */
   protected function getModuleList() {
     $this->modules = array();
@@ -94,9 +103,12 @@ class HelpTestCase extends DrupalWebTestCase {
 }
 
 /**
- * Tests module without help to verify it is not listed in help page.
+ * Tests a module without help to verify it is not listed in the help page.
  */
 class NoHelpTestCase extends DrupalWebTestCase {
+  /**
+   * The user who will be created.
+   */
   protected $big_user;
 
   public static function getInfo() {
@@ -114,12 +126,12 @@ class NoHelpTestCase extends DrupalWebTestCase {
   }
 
   /**
-   * Ensure modules not implementing help do not appear on admin/help.
+   * Ensures modules not implementing help do not appear on admin/help.
    */
   function testMainPageNoHelp() {
     $this->drupalLogin($this->big_user);
 
     $this->drupalGet('admin/help');
-    $this->assertNoText('Hook menu tests', t('Making sure the test module menu_test does not display a help link in admin/help'));
+    $this->assertNoText('Hook menu tests', 'Making sure the test module menu_test does not display a help link in admin/help');
   }
 }

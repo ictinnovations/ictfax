@@ -79,9 +79,50 @@ function ctools_fields_get_field_formatter_settings_form($field, $formatter_type
     $instance = ctools_fields_fake_field_instance($field['field_name'], $view_mode, $formatter_type, $conf['formatter_settings']);
     $settings_form = $function($field, $instance, $view_mode, $form, $form_state);
     if ($settings_form) {
+      // Allow other modules to alter the formatter settings form.
+      $context = array(
+        'module' => $formatter['module'],
+        'formatter' => $formatter,
+        'field' => $field,
+        'instance' => $instance,
+        'view_mode' => $view_mode,
+        'form' => $form,
+        'form_state' => $form_state,
+      );
+      drupal_alter('field_formatter_settings_form', $settings_form, $context);
+
+      $settings_form['#tree'] = TRUE;
       $form['ctools_field_list']['#value'][] = $field;
       $form += $settings_form;
     }
+  }
+
+  if (isset($field['cardinality']) && $field['cardinality'] != 1) {
+    list($prefix, $suffix) = explode('@count', t('Skip the first @count item(s)'));
+    $form['delta_offset'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#field_prefix' => $prefix,
+      '#field_suffix' => $suffix,
+      '#default_value' => isset($conf['delta_offset']) ? $conf['delta_offset'] : 0,
+    );
+
+    list($prefix, $suffix) = explode('@count', t('Then display at most @count item(s)'));
+    $form['delta_limit'] = array(
+      '#type' => 'textfield',
+      '#size' => 5,
+      '#field_prefix' => $prefix,
+      '#field_suffix' => $suffix,
+      '#description' => t('Enter 0 to display all items.'),
+      '#default_value' => isset($conf['delta_limit']) ? $conf['delta_limit'] : 0,
+    );
+
+    $form['delta_reversed'] = array(
+      '#title' => t('Display in reverse order'),
+      '#type' => 'checkbox',
+      '#default_value' => !empty($conf['delta_reversed']),
+      '#description' => t('(start from last values)'),
+    );
   }
 }
 
@@ -96,7 +137,7 @@ function ctools_fields_get_field_formatter_settings_form($field, $formatter_type
  */
 function ctools_fields_get_field_formatter_info($fields) {
   $info = array();
-  $field_info = module_invoke_all('field_formatter_info');
+  $field_info = field_info_formatter_types();
   foreach ($fields as $field) {
     foreach ($field_info as $format_name => $formatter_info) {
       if (in_array($field['type'], $formatter_info['field types'])) {
@@ -104,7 +145,6 @@ function ctools_fields_get_field_formatter_info($fields) {
       }
     }
   }
-  drupal_alter('field_formatter_info', $info);
   return $info;
 }
 
@@ -131,4 +171,186 @@ function ctools_field_label($field_name) {
   arsort($label_counter);
   $label_counter = array_keys($label_counter);
   return $label_counter[0];
+}
+
+/**
+ * Replacement for core _field_invoke() to invoke on a single field.
+ *
+ * Core only allows invoking field hooks via a private function for all fields
+ * on an entire entity. However, we very often need to invoke our hooks on
+ * a single field as we take things apart and only use little bits.
+ *
+ * @param $field_name
+ *   Either a field instance object or the name of the field.
+ *   If the 'field' key is populated it will be used as the field
+ *   settings.
+ * @param $op
+ *   Possible operations include:
+ *   - form
+ *   - validate
+ *   - presave
+ *   - insert
+ *   - update
+ *   - delete
+ *   - delete revision
+ *   - view
+ *   - prepare translation
+ * @param $entity_type
+ *   The type of $entity; e.g. 'node' or 'user'.
+ * @param $entity
+ *   The fully formed $entity_type entity.
+ * @param $a
+ *   - The $form in the 'form' operation.
+ *   - The value of $view_mode in the 'view' operation.
+ *   - Otherwise NULL.
+ * @param $b
+ *   - The $form_state in the 'submit' operation.
+ *   - Otherwise NULL.
+ * @param $options
+ *   An associative array of additional options, with the following keys:
+ *  - 'field_name': The name of the field whose operation should be
+ *    invoked. By default, the operation is invoked on all the fields
+ *    in the entity's bundle. NOTE: This option is not compatible with
+ *    the 'deleted' option; the 'field_id' option should be used
+ *    instead.
+ *  - 'field_id': The id of the field whose operation should be
+ *    invoked. By default, the operation is invoked on all the fields
+ *    in the entity's' bundles.
+ *  - 'default': A boolean value, specifying which implementation of
+ *    the operation should be invoked.
+ *    - if FALSE (default), the field types implementation of the operation
+ *      will be invoked (hook_field_[op])
+ *    - If TRUE, the default field implementation of the field operation
+ *      will be invoked (field_default_[op])
+ *    Internal use only. Do not explicitely set to TRUE, but use
+ *    _field_invoke_default() instead.
+ *  - 'deleted': If TRUE, the function will operate on deleted fields
+ *    as well as non-deleted fields. If unset or FALSE, only
+ *    non-deleted fields are operated on.
+ *  - 'language': A language code or an array of language codes keyed by field
+ *    name. It will be used to narrow down to a single value the available
+ *    languages to act on.
+ *
+ * @see _field_invoke()
+ */
+function ctools_field_invoke_field($field_name, $op, $entity_type, $entity, &$a = NULL, &$b = NULL, $options = array()) {
+  if (is_array($field_name)) {
+    $instance = $field_name;
+    $field = empty($field_name['field']) ? field_info_field($instance['field_name']) : $field_name['field'];
+    $field_name = $instance['field_name'];
+  }
+  else {
+    list(, , $bundle) = entity_extract_ids($entity_type, $entity);
+    $instance = field_info_instance($entity_type, $field_name, $bundle);
+  }
+
+  if (empty($instance)) {
+    return;
+  }
+
+  // Merge default options.
+  $default_options = array(
+    'default' => FALSE,
+    'deleted' => FALSE,
+    'language' => NULL,
+  );
+  $options += $default_options;
+
+  $return = array();
+
+  // Everything from here is unmodified code from _field_invoke() formerly
+  // inside a foreach loop over the instances.
+  $function = $options['default'] ? 'field_default_' . $op : $field['module'] . '_field_' . $op;
+  if (function_exists($function)) {
+    // Determine the list of languages to iterate on.
+    $available_languages = field_available_languages($entity_type, $field);
+    $languages = _field_language_suggestion($available_languages, $options['language'], $field_name);
+
+    foreach ($languages as $langcode) {
+      $items = isset($entity->{$field_name}[$langcode]) ? $entity->{$field_name}[$langcode] : array();
+      $result = $function($entity_type, $entity, $field, $instance, $langcode, $items, $a, $b);
+      if (isset($result)) {
+        // For hooks with array results, we merge results together.
+        // For hooks with scalar results, we collect results in an array.
+        if (is_array($result)) {
+          $return = array_merge($return, $result);
+        }
+        else {
+          $return[] = $result;
+        }
+      }
+
+      // Populate $items back in the field values, but avoid replacing missing
+      // fields with an empty array (those are not equivalent on update).
+      if ($items !== array() || isset($entity->{$field_name}[$langcode])) {
+        $entity->{$field_name}[$langcode] = $items;
+      }
+    }
+  }
+
+  return $return;
+}
+
+/**
+ * Replacement for core _field_invoke_default() to invoke on a single field.
+ *
+ * @see ctools_field_invoke_field()
+ * @see _field_invoke_default()
+ */
+function ctools_field_invoke_field_default($field_name, $op, $entity_type, $entity, &$a = NULL, &$b = NULL, $options = array()) {
+  $options['default'] = TRUE;
+  return ctools_field_invoke_field($field_name, $op, $entity_type, $entity, $a, $b, $options);
+}
+
+/**
+ * Returns a list of field definitions of a specified type.
+ *
+ * @param string $field_type
+ *   A field type name; e.g. 'text' or 'date'.
+ *
+ * @return array
+ *   An array of field definitions of the specified type, keyed by field name.
+ */
+function ctools_fields_get_fields_by_type($field_type) {
+  $fields = array();
+  foreach (field_info_fields() as $field_name => $field_info) {
+    if ($field_info['type'] == $field_type) {
+      $fields[$field_name] = $field_info;
+    }
+  }
+  return $fields;
+}
+
+/**
+ * Derive the foreign keys that a field provides.
+ *
+ * @param $field_name
+ *   The name of the field.
+ *
+ * @return
+ *   An array of foreign keys according to Schema API.
+ */
+function ctools_field_foreign_keys($field_name) {
+  $foreign_keys = &drupal_static(__FUNCTION__, array());
+  if (!isset($foreign_keys[$field_name])) {
+    $foreign_keys[$field_name] = array();
+    $field = field_info_field($field_name);
+
+    if (!empty($field['foreign keys'])) {
+      $foreign_keys[$field_name] = $field['foreign keys'];
+    }
+    else {
+      // try to fetch foreign keys from schema, as not everything
+      // stores foreign keys properly in the field info.
+      $module = $field['module'];
+
+      module_load_install($module);
+      $schema = module_invoke($module, 'field_schema', $field);
+      if (!empty($schema['foreign keys'])) {
+        $foreign_keys[$field_name] = $schema['foreign keys'];
+      }
+    }
+  }
+
+  return $foreign_keys[$field_name];
 }

@@ -1,9 +1,10 @@
 <?php
-// $Id$
 
 /**
  * @file
  * Provide a javascript based dropbutton menu.
+ *
+ * An example are the edit/disable/delete links on the views listing page.
  *
  * The dropbutton menu will show up as a button with a clickable twisty pointer
  * to the right. When clicked the button will expand, showing the list of links.

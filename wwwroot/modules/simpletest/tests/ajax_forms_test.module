@@ -7,7 +7,6 @@
 
 /**
  * Implements hook_menu().
- * @return unknown_type
  */
 function ajax_forms_test_menu() {
   $items = array();
@@ -94,9 +93,6 @@ function ajax_forms_test_simple_form_checkbox_callback($form, $form_state) {
 
 /**
  * Form to display the Ajax Commands.
- * @param $form
- * @param $form_state
- * @return unknown_type
  */
 function ajax_forms_test_ajax_commands_form($form, &$form_state) {
   $form = array();
@@ -161,7 +157,7 @@ function ajax_forms_test_ajax_commands_form($form, &$form_state) {
 
   // Shows the Ajax 'css' command.
   $form['css_command_example'] = array(
-    '#value' => t("Set the the '#box' div to be blue."),
+    '#value' => t("Set the '#box' div to be blue."),
     '#type' => 'submit',
     '#ajax' => array(
       'callback' => 'ajax_forms_test_advanced_commands_css_callback',
@@ -255,6 +251,15 @@ function ajax_forms_test_ajax_commands_form($form, &$form_state) {
     '#value' => t("AJAX 'settings' command"),
     '#ajax' => array(
       'callback' => 'ajax_forms_test_advanced_commands_settings_callback',
+    ),
+  );
+
+  // Shows the Ajax 'add_css' command.
+  $form['add_css_command_example'] = array(
+    '#type' => 'submit',
+    '#value' => t("AJAX 'add_css' command"),
+    '#ajax' => array(
+      'callback' => 'ajax_forms_test_advanced_commands_add_css_callback',
     ),
   );
 
@@ -411,6 +416,15 @@ function ajax_forms_test_advanced_commands_settings_callback($form, $form_state)
 }
 
 /**
+ * Ajax callback for 'add_css'.
+ */
+function ajax_forms_test_advanced_commands_add_css_callback($form, $form_state) {
+  $commands = array();
+  $commands[] = ajax_command_add_css('my/file.css');
+  return array('#type' => 'ajax', '#commands' => $commands);
+}
+
+/**
  * This form and its related submit and callback functions demonstrate
  * not validating another form element when a single Ajax element is triggered.
  *
@@ -468,6 +482,10 @@ function ajax_forms_test_validation_form_callback($form, $form_state) {
  * Form builder: Builds a form that triggers a simple AJAX callback.
  */
 function ajax_forms_test_lazy_load_form($form, &$form_state) {
+  $form['add_files'] = array(
+    '#type' => 'checkbox',
+    '#default_value' => FALSE,
+  );
   $form['submit'] = array(
     '#type' => 'submit',
     '#value' => t('Submit'),
@@ -482,9 +500,11 @@ function ajax_forms_test_lazy_load_form($form, &$form_state) {
  * Form submit handler: Adds JavaScript and CSS that wasn't on the original form.
  */
 function ajax_forms_test_lazy_load_form_submit($form, &$form_state) {
-  drupal_add_js(array('ajax_forms_test_lazy_load_form_submit' => 'executed'), 'setting');
-  drupal_add_css(drupal_get_path('module', 'system') . '/system.admin.css');
-  drupal_add_js(drupal_get_path('module', 'system') . '/system.js');
+  if ($form_state['values']['add_files']) {
+    drupal_add_js(array('ajax_forms_test_lazy_load_form_submit' => 'executed'), 'setting');
+    drupal_add_css(drupal_get_path('module', 'system') . '/system.admin.css');
+    drupal_add_js(drupal_get_path('module', 'system') . '/system.js');
+  }
   $form_state['rebuild'] = TRUE;
 }
 

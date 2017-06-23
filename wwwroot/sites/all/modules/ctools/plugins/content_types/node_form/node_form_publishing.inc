@@ -45,7 +45,7 @@ function ctools_node_form_publishing_content_type_render($subtype, $conf, $panel
 }
 
 function ctools_node_form_publishing_content_type_admin_title($subtype, $conf, $context) {
-  return t('"@s" node form author information', array('@s' => $context->identifier));
+  return t('"@s" node form publishing options', array('@s' => $context->identifier));
 }
 
 function ctools_node_form_publishing_content_type_edit_form($form, &$form_state) {

@@ -30,6 +30,11 @@ function ctools_entity_form_field_content_type_content_type($subtype) {
  */
 function ctools_entity_form_field_content_type_content_types() {
   // This will hold all the individual field content types.
+  $types = &drupal_static(__FUNCTION__);
+  if (isset($types)) {
+    return $types;
+  }
+
   $types = array();
   $content_types = array();
   $entities = entity_get_info();
@@ -48,6 +53,26 @@ function ctools_entity_form_field_content_type_content_types() {
           );
         }
         $content_types[$entity_type . ':' . $field_name]['types'][$type] = $bundle['label'];
+      }
+    }
+  }
+
+  if (module_exists('field_group')) {
+    foreach ($entities as $entity_type => $entity) {
+      foreach ($entity['bundles'] as $type => $bundle) {
+        if ($group_info = field_group_info_groups($entity_type, $type, "form")) {
+          foreach ($group_info as $group_name => $group) {
+            if (!isset($types[$entity_type . ':' . $group_name])) {
+              $types[$entity_type . ':' . $group_name] = array(
+                'category' => t('Form'),
+                'icon' => 'icon_field.png',
+                'title' => t('Group form: @widget_label', array('@widget_label' => $group->label)),
+                'description' => t('Field group on the referenced entity.'),
+              );
+            }
+            $content_types[$entity_type . ':' . $group_name]['types'][$type] = $bundle['label'];
+          }
+      }
       }
     }
   }
@@ -80,19 +105,42 @@ function ctools_entity_form_field_content_type_render($subtype, $conf, $panel_ar
   $ids = entity_extract_ids($entity_type, $entity);
   $field = field_info_instance($entity_type, $field_name, $ids[2]);
 
-  // Do not render if the entity type does not have this field.
-  if (empty($field)) {
+  // Check for field groups.
+  if (empty($field) && module_exists('field_group')) {
+    $groups = field_group_info_groups($entity_type, $entity->type, "form");
+    $group = !empty($groups[$field_name]) ? $groups[$field_name] : NULL;
+  }
+
+  // Do not render if the entity type does not have this field or group.
+  if (empty($field) && empty($group)) {
     return;
   }
 
+  $block = new stdClass();
   if (isset($context->form)) {
-    $block->content[$field_name] = $context->form[$field_name];
-    unset($context->form[$field_name]);
+    $block->content = array();
+    if (!empty($field)) {
+      $block->content[$field_name] = $context->form[$field_name];
+      unset($context->form[$field_name]);
+    }
+    else {
+      // Pre-render the form to populate field groups.
+      if (isset($context->form['#pre_render'])) {
+        foreach ($context->form['#pre_render'] as $function) {
+          if (function_exists($function)) {
+            $context->form = $function($context->form);
+          }
+        }
+        unset($context->form['#pre_render']);
+      }
+
+      $block->content[$field_name] = $context->form[$field_name];
+      unset($context->form[$field_name]);
+    }
   }
   else {
     $block->content = t('Entity info.');
   }
-  return $block;
 
   return $block;
 }
@@ -103,7 +151,12 @@ function ctools_entity_form_field_content_type_render($subtype, $conf, $panel_ar
 function ctools_entity_form_field_content_type_admin_title($subtype, $conf, $context) {
   list($entity_type, $field_name) = explode(':', $subtype, 2);
 
-  $field = field_info_instance($entity_type, $field_name, $context->restrictions['type'][0]);
+  if (!empty($context->restrictions)) {
+    $field = field_info_instance($entity_type, $field_name, $context->restrictions['type'][0]);
+  }
+  else {
+    $field = array('label' => $subtype);
+  }
 
   return t('"@s" @field form', array('@s' => $context->identifier, '@field' => $field['label']));
 }

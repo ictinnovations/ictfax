@@ -13,7 +13,7 @@ function simpletest_help($path, $arg) {
     case 'admin/help#simpletest':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The Testing module provides a framework for running automated unit tests. It can be used to verify a working state of Drupal before and after any code changes, or as a means for developers to write and execute tests for their modules. For more information, see the online handbook entry for <a href="@simpletest">Testing module</a>.', array('@simpletest' => 'http://drupal.org/handbook/modules/simpletest', '@blocks' => url('admin/structure/block'))) . '</p>';
+      $output .= '<p>' . t('The Testing module provides a framework for running automated unit tests. It can be used to verify a working state of Drupal before and after any code changes, or as a means for developers to write and execute tests for their modules. For more information, see the online handbook entry for <a href="@simpletest">Testing module</a>.', array('@simpletest' => 'http://drupal.org/documentation/modules/simpletest', '@blocks' => url('admin/structure/block'))) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Running tests') . '</dt>';
@@ -154,9 +154,10 @@ function simpletest_run_tests($test_list, $reporter = 'drupal') {
 }
 
 /**
- * Batch operation callback.
+ * Implements callback_batch_operation().
  */
 function _simpletest_batch_operation($test_list_init, $test_id, &$context) {
+  simpletest_classloader_register();
   // Get working values.
   if (!isset($context['sandbox']['max'])) {
     // First iteration: initialize working values.
@@ -204,6 +205,9 @@ function _simpletest_batch_operation($test_list_init, $test_id, &$context) {
   $context['finished'] = 1 - $size / $max;
 }
 
+/**
+ * Implements callback_batch_finished().
+ */
 function _simpletest_batch_finished($success, $results, $operations, $elapsed) {
   if ($success) {
     drupal_set_message(t('The test run finished in @elapsed.', array('@elapsed' => $elapsed)));
@@ -289,6 +293,9 @@ function simpletest_log_read($test_id, $prefix, $test_class, $during_test = FALS
  * a static variable. In order to list tests provided by disabled modules
  * hook_registry_files_alter() is used to forcefully add them to the registry.
  *
+ * PSR-0 classes are found by searching the designated directory for each module
+ * for files matching the PSR-0 standard.
+ *
  * @return
  *   An array of tests keyed with the groups specified in each of the tests
  *   getInfo() method and then keyed by the test class. An example of the array
@@ -309,6 +316,9 @@ function simpletest_test_get_all() {
   $groups = &drupal_static(__FUNCTION__);
 
   if (!$groups) {
+    // Register a simple class loader for PSR-0 test classes.
+    simpletest_classloader_register();
+
     // Load test information from cache if available, otherwise retrieve the
     // information from each tests getInfo() method.
     if ($cache = cache_get('simpletest', 'cache')) {
@@ -317,6 +327,41 @@ function simpletest_test_get_all() {
     else {
       // Select all clases in files ending with .test.
       $classes = db_query("SELECT name FROM {registry} WHERE type = :type AND filename LIKE :name", array(':type' => 'class', ':name' => '%.test'))->fetchCol();
+
+      // Also discover PSR-0 test classes, if the PHP version allows it.
+      if (version_compare(PHP_VERSION, '5.3') > 0) {
+
+        // Select all PSR-0 and PSR-4 classes in the Tests namespace of all
+        // modules.
+        $system_list = db_query("SELECT name, filename FROM {system}")->fetchAllKeyed();
+
+        foreach ($system_list as $name => $filename) {
+          $module_dir = DRUPAL_ROOT . '/' . dirname($filename);
+          // Search both the 'lib/Drupal/mymodule' directory (for PSR-0 classes)
+          // and the 'src' directory (for PSR-4 classes).
+          foreach(array('lib/Drupal/' . $name, 'src') as $subdir) {
+            // Build directory in which the test files would reside.
+            $tests_dir = $module_dir . '/' . $subdir . '/Tests';
+            // Scan it for test files if it exists.
+            if (is_dir($tests_dir)) {
+              $files = file_scan_directory($tests_dir, '/.*\.php/');
+              if (!empty($files)) {
+                foreach ($files as $file) {
+                  // Convert the file name into the namespaced class name.
+                  $replacements = array(
+                    '/' => '\\',
+                    $module_dir . '/' => '',
+                    'lib/' => '',
+                    'src/' => 'Drupal\\' . $name . '\\',
+                    '.php' => '',
+                  );
+                  $classes[] = strtr($file->uri, $replacements);
+                }
+              }
+            }
+          }
+        }
+      }
 
       // Check that each class has a getInfo() method and store the information
       // in an array keyed with the group specified in the test information.
@@ -329,7 +374,10 @@ function simpletest_test_get_all() {
           // If this test class requires a non-existing module, skip it.
           if (!empty($info['dependencies'])) {
             foreach ($info['dependencies'] as $module) {
-              if (!drupal_get_filename('module', $module)) {
+              // Pass FALSE as fourth argument so no error gets created for
+              // the missing file.
+              $found_module = drupal_get_filename('module', $module, NULL, FALSE);
+              if (!$found_module) {
                 continue 2;
               }
             }
@@ -351,6 +399,93 @@ function simpletest_test_get_all() {
     }
   }
   return $groups;
+}
+
+/*
+ * Register a simple class loader that can find D8-style PSR-0 test classes.
+ *
+ * Other PSR-0 class loading can happen in contrib, but those contrib class
+ * loader modules will not be enabled when testbot runs. So we need to do this
+ * one in core.
+ */
+function simpletest_classloader_register() {
+
+  // Prevent duplicate classloader registration.
+  static $first_run = TRUE;
+  if (!$first_run) {
+    return;
+  }
+  $first_run = FALSE;
+
+  // Only register PSR-0 class loading if we are on PHP 5.3 or higher.
+  if (version_compare(PHP_VERSION, '5.3') > 0) {
+    spl_autoload_register('_simpletest_autoload_psr4_psr0');
+  }
+}
+
+/**
+ * Autoload callback to find PSR-4 and PSR-0 test classes.
+ *
+ * Looks in the 'src/Tests' and in the 'lib/Drupal/mymodule/Tests' directory of
+ * modules for the class.
+ *
+ * This will only work on classes where the namespace is of the pattern
+ *   "Drupal\$extension\Tests\.."
+ */
+function _simpletest_autoload_psr4_psr0($class) {
+
+  // Static cache for extension paths.
+  // This cache is lazily filled as soon as it is needed.
+  static $extensions;
+
+  // Check that the first namespace fragment is "Drupal\"
+  if (substr($class, 0, 7) === 'Drupal\\') {
+    // Find the position of the second namespace separator.
+    $pos = strpos($class, '\\', 7);
+    // Check that the third namespace fragment is "\Tests\".
+    if (substr($class, $pos, 7) === '\\Tests\\') {
+
+      // Extract the second namespace fragment, which we expect to be the
+      // extension name.
+      $extension = substr($class, 7, $pos - 7);
+
+      // Lazy-load the extension paths, both enabled and disabled.
+      if (!isset($extensions)) {
+        $extensions = db_query("SELECT name, filename FROM {system}")->fetchAllKeyed();
+      }
+
+      // Check if the second namespace fragment is a known extension name.
+      if (isset($extensions[$extension])) {
+
+        // Split the class into namespace and classname.
+        $nspos = strrpos($class, '\\');
+        $namespace = substr($class, 0, $nspos);
+        $classname = substr($class, $nspos + 1);
+
+        // Try the PSR-4 location first, and the PSR-0 location as a fallback.
+        // Build the PSR-4 filepath where we expect the class to be defined.
+        $psr4_path = dirname($extensions[$extension]) . '/src/' .
+          str_replace('\\', '/', substr($namespace, strlen('Drupal\\' . $extension . '\\'))) . '/' .
+          str_replace('_', '/', $classname) . '.php';
+
+        // Include the file, if it does exist.
+        if (file_exists($psr4_path)) {
+          include $psr4_path;
+        }
+        else {
+          // Build the PSR-0 filepath where we expect the class to be defined.
+          $psr0_path = dirname($extensions[$extension]) . '/lib/' .
+            str_replace('\\', '/', $namespace) . '/' .
+            str_replace('_', '/', $classname) . '.php';
+
+          // Include the file, if it does exist.
+          if (file_exists($psr0_path)) {
+            include $psr0_path;
+          }
+        }
+      }
+    }
+  }
 }
 
 /**
@@ -380,25 +515,25 @@ function simpletest_registry_files_alter(&$files, $modules) {
  * Generate test file.
  */
 function simpletest_generate_file($filename, $width, $lines, $type = 'binary-text') {
-  $size = $width * $lines - $lines;
-
-  // Generate random text
   $text = '';
-  for ($i = 0; $i < $size; $i++) {
-    switch ($type) {
-      case 'text':
-        $text .= chr(rand(32, 126));
-        break;
-      case 'binary':
-        $text .= chr(rand(0, 31));
-        break;
-      case 'binary-text':
-      default:
-        $text .= rand(0, 1);
-        break;
+  for ($i = 0; $i < $lines; $i++) {
+    // Generate $width - 1 characters to leave space for the "\n" character.
+    for ($j = 0; $j < $width - 1; $j++) {
+      switch ($type) {
+        case 'text':
+          $text .= chr(rand(32, 126));
+          break;
+        case 'binary':
+          $text .= chr(rand(0, 31));
+          break;
+        case 'binary-text':
+        default:
+          $text .= rand(0, 1);
+          break;
+      }
     }
+    $text .= "\n";
   }
-  $text = wordwrap($text, $width - 1, "\n", TRUE) . "\n"; // Add \n for symmetrical file.
 
   // Create filename.
   file_put_contents('public://' . $filename . '.txt', $text);
@@ -503,4 +638,17 @@ function simpletest_clean_results_table($test_id = NULL) {
     return $count;
   }
   return 0;
+}
+
+/**
+ * Implements hook_mail_alter().
+ *
+ * Aborts sending of messages with ID 'simpletest_cancel_test'.
+ *
+ * @see MailTestCase::testCancelMessage()
+ */
+function simpletest_mail_alter(&$message) {
+  if ($message['id'] == 'simpletest_cancel_test') {
+    $message['send'] = FALSE;
+  }
 }

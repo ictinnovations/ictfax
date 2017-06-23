@@ -28,6 +28,7 @@ function page_manager_contact_site_page_manager_tasks() {
     // Allow this to be enabled or disabled:
     'disabled' => variable_get('page_manager_contact_site_disabled', TRUE),
     'enable callback' => 'page_manager_contact_site_enable',
+    'access callback' => 'page_manager_contact_access_check',
   );
 }
 
@@ -109,4 +110,20 @@ function page_manager_contact_site_enable($cache, $status) {
   if (!$status) {
     $GLOBALS['page_manager_enabling_contact_site'] = TRUE;
   }
+}
+
+/**
+ * Callback to determine if a page is accessible.
+ *
+ * @param $task
+ *   The task plugin.
+ * @param $subtask_id
+ *   The subtask id
+ * @param $contexts
+ *   The contexts loaded for the task.
+ * @return
+ *   TRUE if the current user can access the page.
+ */
+function page_manager_contact_access_check($task, $subtask_id, $contexts) {
+  return user_access('access site-wide contact form');
 }

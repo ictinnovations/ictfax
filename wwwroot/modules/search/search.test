@@ -11,6 +11,9 @@ define('SEARCH_TYPE', '_test_');
 define('SEARCH_TYPE_2', '_test2_');
 define('SEARCH_TYPE_JPN', '_test3_');
 
+/**
+ * Indexes content and queries it.
+ */
 class SearchMatchTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
@@ -275,7 +278,7 @@ class SearchPageText extends DrupalWebTestCase {
     $edit = array();
     $edit['keys'] = 'bike shed ' . $this->randomName();
     $this->drupalPost('search/node', $edit, t('Search'));
-    $this->assertText(t('Consider loosening your query with OR. bike OR shed will often show more results than bike shed.'), t('Help text is displayed when search returns no results.'));
+    $this->assertText(t('Consider loosening your query with OR. bike OR shed will often show more results than bike shed.'), 'Help text is displayed when search returns no results.');
     $this->assertText(t('Search'));
     $this->assertTitle($title, 'Search page title is correct');
 
@@ -290,9 +293,26 @@ class SearchPageText extends DrupalWebTestCase {
     $this->drupalGet('search/node/' . $arg);
     $input = $this->xpath("//input[@id='edit-keys' and @value='{$arg}']");
     $this->assertFalse(empty($input), 'Search keys with a / are correctly set as the default value in the search box.');
+
+    // Test a search input exceeding the limit of AND/OR combinations to test
+    // the Denial-of-Service protection.
+    $limit = variable_get('search_and_or_limit', 7);
+    $keys = array();
+    for ($i = 0; $i < $limit + 1; $i++) {
+      $keys[] = $this->randomName(3);
+      if ($i % 2 == 0) {
+        $keys[] = 'OR';
+      }
+    }
+    $edit['keys'] = implode(' ', $keys);
+    $this->drupalPost('search/node', $edit, t('Search'));
+    $this->assertRaw(t('Your search used too many AND/OR expressions. Only the first @count terms were included in this search.', array('@count' => $limit)));
   }
 }
 
+/**
+ * Indexes content and tests the advanced search form.
+ */
 class SearchAdvancedSearchForm extends DrupalWebTestCase {
   protected $node;
 
@@ -328,34 +348,37 @@ class SearchAdvancedSearchForm extends DrupalWebTestCase {
    * Test using the advanced search form to limit search to nodes of type "Basic page".
    */
   function testNodeType() {
-    $this->assertTrue($this->node->type == 'page', t('Node type is Basic page.'));
+    $this->assertTrue($this->node->type == 'page', 'Node type is Basic page.');
 
     // Assert that the dummy title doesn't equal the real title.
     $dummy_title = 'Lorem ipsum';
-    $this->assertNotEqual($dummy_title, $this->node->title, t("Dummy title doesn't equal node title"));
+    $this->assertNotEqual($dummy_title, $this->node->title, "Dummy title doesn't equal node title");
 
     // Search for the dummy title with a GET query.
     $this->drupalGet('search/node/' . $dummy_title);
-    $this->assertNoText($this->node->title, t('Basic page node is not found with dummy title.'));
+    $this->assertNoText($this->node->title, 'Basic page node is not found with dummy title.');
 
     // Search for the title of the node with a GET query.
     $this->drupalGet('search/node/' . $this->node->title);
-    $this->assertText($this->node->title, t('Basic page node is found with GET query.'));
+    $this->assertText($this->node->title, 'Basic page node is found with GET query.');
 
     // Search for the title of the node with a POST query.
     $edit = array('or' => $this->node->title);
     $this->drupalPost('search/node', $edit, t('Advanced search'));
-    $this->assertText($this->node->title, t('Basic page node is found with POST query.'));
+    $this->assertText($this->node->title, 'Basic page node is found with POST query.');
 
     // Advanced search type option.
     $this->drupalPost('search/node', array_merge($edit, array('type[page]' => 'page')), t('Advanced search'));
-    $this->assertText($this->node->title, t('Basic page node is found with POST query and type:page.'));
+    $this->assertText($this->node->title, 'Basic page node is found with POST query and type:page.');
 
     $this->drupalPost('search/node', array_merge($edit, array('type[article]' => 'article')), t('Advanced search'));
-    $this->assertText('bike shed', t('Article node is not found with POST query and type:article.'));
+    $this->assertText('bike shed', 'Article node is not found with POST query and type:article.');
   }
 }
 
+/**
+ * Indexes content and tests ranking factors.
+ */
 class SearchRankingTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
@@ -450,7 +473,7 @@ class SearchRankingTestCase extends DrupalWebTestCase {
   function testHTMLRankings() {
     // Login with sufficient privileges.
     $this->drupalLogin($this->drupalCreateUser(array('create page content')));
-    
+
     // Test HTML tags with different weights.
     $sorted_tags = array('h1', 'h2', 'h3', 'h4', 'a', 'h5', 'h6', 'notag');
     $shuffled_tags = $sorted_tags;
@@ -482,7 +505,7 @@ class SearchRankingTestCase extends DrupalWebTestCase {
 
     // Refresh variables after the treatment.
     $this->refreshVariables();
-    
+
     // Disable all other rankings.
     $node_ranks = array('sticky', 'promote', 'recent', 'comments', 'views');
     foreach ($node_ranks as $node_rank) {
@@ -520,7 +543,7 @@ class SearchRankingTestCase extends DrupalWebTestCase {
 
       // Assert the results.
       $this->assertEqual($set[0]['node']->nid, $node->nid, 'Search tag ranking for "&lt;' . $tag . '&gt;" order.');
-      
+
       // Delete node so it doesn't show up in subsequent search results.
       node_delete($node->nid);
     }
@@ -566,6 +589,9 @@ class SearchRankingTestCase extends DrupalWebTestCase {
   }
 }
 
+/**
+ * Tests the rendering of the search block.
+ */
 class SearchBlockTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
@@ -586,13 +612,13 @@ class SearchBlockTestCase extends DrupalWebTestCase {
   function testSearchFormBlock() {
     // Set block title to confirm that the interface is available.
     $this->drupalPost('admin/structure/block/manage/search/form/configure', array('title' => $this->randomName(8)), t('Save block'));
-    $this->assertText(t('The block configuration has been saved.'), t('Block configuration set.'));
+    $this->assertText(t('The block configuration has been saved.'), 'Block configuration set.');
 
     // Set the block to a region to confirm block is available.
     $edit = array();
     $edit['blocks[search_form][region]'] = 'footer';
     $this->drupalPost('admin/structure/block', $edit, t('Save blocks'));
-    $this->assertText(t('The block settings have been updated.'), t('Block successfully move to footer region.'));
+    $this->assertText(t('The block settings have been updated.'), 'Block successfully move to footer region.');
   }
 
   /**
@@ -626,7 +652,7 @@ class SearchBlockTestCase extends DrupalWebTestCase {
     $this->assertEqual(
       $this->getUrl(),
       url('search/node/' . $terms['search_block_form'], array('absolute' => TRUE)),
-      t('Redirected to correct url.')
+      'Redirected to correct url.'
     );
 
     // Test an empty search via the block form, from the front page.
@@ -638,8 +664,26 @@ class SearchBlockTestCase extends DrupalWebTestCase {
     $this->assertEqual(
       $this->getUrl(),
       url('search/node/', array('absolute' => TRUE)),
-      t('Redirected to correct url.')
+      'Redirected to correct url.'
     );
+
+    // Test that after entering a too-short keyword in the form, you can then
+    // search again with a longer keyword. First test using the block form.
+    $terms = array('search_block_form' => 'a');
+    $this->drupalPost('node', $terms, t('Search'));
+    $this->assertText('You must include at least one positive keyword with 3 characters or more');
+    $terms = array('search_block_form' => 'foo');
+    $this->drupalPost(NULL, $terms, t('Search'));
+    $this->assertNoText('You must include at least one positive keyword with 3 characters or more');
+    $this->assertText('Your search yielded no results');
+
+    // Same test again, using the search page form for the second search this time.
+    $terms = array('search_block_form' => 'a');
+    $this->drupalPost('node', $terms, t('Search'));
+    $terms = array('keys' => 'foo');
+    $this->drupalPost(NULL, $terms, t('Search'));
+    $this->assertNoText('You must include at least one positive keyword with 3 characters or more');
+    $this->assertText('Your search yielded no results');
   }
 }
 
@@ -713,7 +757,7 @@ class SearchCommentTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
       'name' => 'Comment Search tests',
-      'description' => 'Verify text formats and filters used elsewhere.',
+      'description' => 'Test integration searching comments.',
       'group' => 'Search',
     );
   }
@@ -776,20 +820,20 @@ class SearchCommentTestCase extends DrupalWebTestCase {
       'search_block_form' => "'" . $edit_comment['subject'] . "'",
     );
     $this->drupalPost('', $edit, t('Search'));
-    $this->assertText($node->title, t('Node found in search results.'));
-    $this->assertText($edit_comment['subject'], t('Comment subject found in search results.'));
+    $this->assertText($node->title, 'Node found in search results.');
+    $this->assertText($edit_comment['subject'], 'Comment subject found in search results.');
 
     // Search for the comment body.
     $edit = array(
       'search_block_form' => "'" . $comment_body . "'",
     );
     $this->drupalPost('', $edit, t('Search'));
-    $this->assertText($node->title, t('Node found in search results.'));
+    $this->assertText($node->title, 'Node found in search results.');
 
     // Verify that comment is rendered using proper format.
-    $this->assertText($comment_body, t('Comment body text found in search results.'));
-    $this->assertNoRaw(t('n/a'), t('HTML in comment body is not hidden.'));
-    $this->assertNoRaw(check_plain($edit_comment['comment_body[' . LANGUAGE_NONE . '][0][value]']), t('HTML in comment body is not escaped.'));
+    $this->assertText($comment_body, 'Comment body text found in search results.');
+    $this->assertNoRaw(t('n/a'), 'HTML in comment body is not hidden.');
+    $this->assertNoRaw(check_plain($edit_comment['comment_body[' . LANGUAGE_NONE . '][0][value]']), 'HTML in comment body is not escaped.');
 
     // Hide comments.
     $this->drupalLogin($this->admin_user);
@@ -802,7 +846,7 @@ class SearchCommentTestCase extends DrupalWebTestCase {
 
     // Search for $title.
     $this->drupalPost('', $edit, t('Search'));
-    $this->assertNoText($comment_body, t('Comment body text not found in search results.'));
+    $this->assertNoText($comment_body, 'Comment body text not found in search results.');
   }
 
   /**
@@ -861,7 +905,7 @@ class SearchCommentTestCase extends DrupalWebTestCase {
     $this->setRolePermissions(DRUPAL_AUTHENTICATED_RID, TRUE, TRUE);
     $this->setRolePermissions($this->admin_role, TRUE, FALSE);
     $this->checkCommentAccess('Admin user has access comments permission and no search permission, but comments should be indexed because admin user inherits authenticated user\'s permission to search', TRUE);
-    
+
   }
 
   /**
@@ -912,7 +956,7 @@ class SearchCommentTestCase extends DrupalWebTestCase {
     // Verify that if you view the node on its own page, 'add new comment'
     // is there.
     $this->drupalGet('node/' . $node->nid);
-    $this->assertText(t('Add new comment'), t('Add new comment appears on node page'));
+    $this->assertText(t('Add new comment'), 'Add new comment appears on node page');
 
     // Run cron to index this page.
     $this->drupalLogout();
@@ -921,13 +965,13 @@ class SearchCommentTestCase extends DrupalWebTestCase {
     // Search for 'comment'. Should be no results.
     $this->drupalLogin($user);
     $this->drupalPost('search/node', array('keys' => 'comment'), t('Search'));
-    $this->assertText(t('Your search yielded no results'), t('No results searching for the word comment'));
+    $this->assertText(t('Your search yielded no results'), 'No results searching for the word comment');
 
     // Search for the node title. Should be found, and 'Add new comment' should
     // not be part of the search snippet.
     $this->drupalPost('search/node', array('keys' => 'short'), t('Search'));
-    $this->assertText($node->title, t('Search for keyword worked'));
-    $this->assertNoText(t('Add new comment'), t('Add new comment does not appear on search results page'));
+    $this->assertText($node->title, 'Search for keyword worked');
+    $this->assertNoText(t('Add new comment'), 'Add new comment does not appear on search results page');
   }
 
 }
@@ -1060,8 +1104,8 @@ class SearchCommentCountToggleTestCase extends DrupalWebTestCase {
 
     // Test comment count display for nodes with comment status set to Open
     $this->drupalPost('', $edit, t('Search'));
-    $this->assertText(t('0 comments'), t('Empty comment count displays for nodes with comment status set to Open'));
-    $this->assertText(t('1 comment'), t('Non-empty comment count displays for nodes with comment status set to Open'));
+    $this->assertText(t('0 comments'), 'Empty comment count displays for nodes with comment status set to Open');
+    $this->assertText(t('1 comment'), 'Non-empty comment count displays for nodes with comment status set to Open');
 
     // Test comment count display for nodes with comment status set to Closed
     $this->searchable_nodes['0 comments']->comment = COMMENT_NODE_CLOSED;
@@ -1070,8 +1114,8 @@ class SearchCommentCountToggleTestCase extends DrupalWebTestCase {
     node_save($this->searchable_nodes['1 comment']);
 
     $this->drupalPost('', $edit, t('Search'));
-    $this->assertNoText(t('0 comments'), t('Empty comment count does not display for nodes with comment status set to Closed'));
-    $this->assertText(t('1 comment'), t('Non-empty comment count displays for nodes with comment status set to Closed'));
+    $this->assertNoText(t('0 comments'), 'Empty comment count does not display for nodes with comment status set to Closed');
+    $this->assertText(t('1 comment'), 'Non-empty comment count displays for nodes with comment status set to Closed');
 
     // Test comment count display for nodes with comment status set to Hidden
     $this->searchable_nodes['0 comments']->comment = COMMENT_NODE_HIDDEN;
@@ -1080,8 +1124,8 @@ class SearchCommentCountToggleTestCase extends DrupalWebTestCase {
     node_save($this->searchable_nodes['1 comment']);
 
     $this->drupalPost('', $edit, t('Search'));
-    $this->assertNoText(t('0 comments'), t('Empty comment count does not display for nodes with comment status set to Hidden'));
-    $this->assertNoText(t('1 comment'), t('Non-empty comment count does not display for nodes with comment status set to Hidden'));
+    $this->assertNoText(t('0 comments'), 'Empty comment count does not display for nodes with comment status set to Hidden');
+    $this->assertNoText(t('1 comment'), 'Non-empty comment count does not display for nodes with comment status set to Hidden');
   }
 }
 
@@ -1146,7 +1190,7 @@ class SearchSimplifyTestCase extends DrupalWebTestCase {
     for ($i = 0; $i < 32; $i++) {
       $string .= chr($i);
     }
-    $this->assertIdentical(' ', search_simplify($string), t('Search simplify works for ASCII control characters.'));
+    $this->assertIdentical(' ', search_simplify($string), 'Search simplify works for ASCII control characters.');
   }
 
   /**
@@ -1302,7 +1346,7 @@ class SearchNumbersTestCase extends DrupalWebTestCase {
       $this->drupalPost('search/node',
         array('keys' => $number),
         t('Search'));
-      $this->assertText($node->title, $type . ': node title shown (search found the node) in search for number ' . $number);
+      $this->assertText($node->title, format_string('%type: node title shown (search found the node) in search for number %number.', array('%type' => $type, '%number' => $number)));
     }
   }
 }
@@ -1370,7 +1414,7 @@ class SearchNumberMatchingTestCase extends DrupalWebTestCase {
       $this->drupalPost('search/node',
         array('keys' => 'foo'),
         t('Search'));
-      $this->assertNoText($node->title, $i . ': node title not shown in dummy search');
+      $this->assertNoText($node->title, format_string('%number: node title not shown in dummy search', array('%number' => $i)));
 
       // Now verify that we can find node i by searching for any of the
       // numbers.
@@ -1383,7 +1427,7 @@ class SearchNumberMatchingTestCase extends DrupalWebTestCase {
         $this->drupalPost('search/node',
           array('keys' => $number),
           t('Search'));
-        $this->assertText($node->title, $i . ': node title shown (search found the node) in search for number ' . $number);
+        $this->assertText($node->title, format_string('%i: node title shown (search found the node) in search for number %number', array('%i' => $i, '%number' => $number)));
       }
     }
 
@@ -1409,7 +1453,7 @@ class SearchConfigSettingsForm extends DrupalWebTestCase {
     parent::setUp('search', 'search_extra_type');
 
     // Login as a user that can create and search content.
-    $this->search_user = $this->drupalCreateUser(array('search content', 'administer search', 'administer nodes', 'bypass node access', 'access user profiles', 'administer users', 'administer blocks'));
+    $this->search_user = $this->drupalCreateUser(array('search content', 'administer search', 'administer nodes', 'bypass node access', 'access user profiles', 'administer users', 'administer blocks', 'access site reports'));
     $this->drupalLogin($this->search_user);
 
     // Add a single piece of content and index it.
@@ -1447,6 +1491,30 @@ class SearchConfigSettingsForm extends DrupalWebTestCase {
     $this->assertText(t('The index will be rebuilt'));
     $this->drupalGet('admin/config/search/settings');
     $this->assertText(t('There is 1 item left to index.'));
+
+    // Test that the form saves with the default values.
+    $this->drupalPost('admin/config/search/settings', array(), t('Save configuration'));
+    $this->assertText(t('The configuration options have been saved.'), 'Form saves with the default values.');
+
+    // Test that the form does not save with an invalid word length.
+    $edit = array(
+      'minimum_word_size' => $this->randomName(3),
+    );
+    $this->drupalPost('admin/config/search/settings', $edit, t('Save configuration'));
+    $this->assertNoText(t('The configuration options have been saved.'), 'Form does not save with an invalid word length.');
+
+    // Test logging setting. It should be on by default.
+    $text = $this->randomName(5);
+    $this->drupalPost('search/node', array('keys' => $text), t('Search'));
+    $this->drupalGet('admin/reports/dblog');
+    $this->assertLink('Searched Content for ' . $text . '.', 0, 'Search was logged');
+
+    // Turn off logging.
+    variable_set('search_logging', FALSE);
+    $text = $this->randomName(5);
+    $this->drupalPost('search/node', array('keys' => $text), t('Search'));
+    $this->drupalGet('admin/reports/dblog');
+    $this->assertNoLink('Searched Content for ' . $text . '.', 'Search was not logged');
   }
 
   /**
@@ -1533,7 +1601,7 @@ class SearchConfigSettingsForm extends DrupalWebTestCase {
       $this->drupalGet($path);
       foreach ($modules as $module) {
         $title = $module_info[$module]['title'];
-        $this->assertText($title, $title . ' search tab is shown');
+        $this->assertText($title, format_string('%title search tab is shown', array('%title' => $title)));
       }
     }
   }
@@ -1542,7 +1610,7 @@ class SearchConfigSettingsForm extends DrupalWebTestCase {
 /**
  * Tests the search_excerpt() function.
  */
-class SearchExcerptTestCase extends DrupalUnitTestCase {
+class SearchExcerptTestCase extends DrupalWebTestCase {
   public static function getInfo() {
     return array(
       'name' => 'Search excerpt extraction',
@@ -1552,8 +1620,7 @@ class SearchExcerptTestCase extends DrupalUnitTestCase {
   }
 
   function setUp() {
-    drupal_load('module', 'search');
-    parent::setUp();
+    parent::setUp('search');
   }
 
   /**
@@ -1578,13 +1645,19 @@ class SearchExcerptTestCase extends DrupalUnitTestCase {
     $this->assertEqual($result, 'The quick brown <strong>fox</strong> &amp; jumps over the lazy dog ...', 'Found keyword is highlighted');
 
     $longtext = str_repeat($text . ' ', 10);
-    $result = preg_replace('| +|', ' ', search_excerpt('nothing', $text));
+    $result = preg_replace('| +|', ' ', search_excerpt('nothing', $longtext));
     $this->assertTrue(strpos($result, $expected) === 0, 'When keyword is not found in long string, return value starts as expected');
 
     $entities = str_repeat('k&eacute;sz&iacute;t&eacute;se ', 20);
     $result = preg_replace('| +|', ' ', search_excerpt('nothing', $entities));
     $this->assertFalse(strpos($result, '&'), 'Entities are not present in excerpt');
     $this->assertTrue(strpos($result, 'í') > 0, 'Entities are converted in excerpt');
+
+    // The node body that will produce this rendered $text is:
+    // 123456789 HTMLTest +123456789+&lsquo;  +&lsquo;  +&lsquo;  +&lsquo;  +12345678  &nbsp;&nbsp;  +&lsquo;  +&lsquo;  +&lsquo;   &lsquo;
+    $text = "<div class=\"field field-name-body field-type-text-with-summary field-label-hidden\"><div class=\"field-items\"><div class=\"field-item even\" property=\"content:encoded\"><p>123456789 HTMLTest +123456789+‘  +‘  +‘  +‘  +12345678      +‘  +‘  +‘   ‘</p>\n</div></div></div> ";
+    $result = search_excerpt('HTMLTest', $text);
+    $this->assertFalse(empty($result),  'Rendered Multi-byte HTML encodings are not corrupted in search excerpts');
   }
 
   /**
@@ -1619,6 +1692,21 @@ class SearchExcerptTestCase extends DrupalUnitTestCase {
 
     $result = preg_replace('| +|', ' ', search_excerpt('"abc def"', $text));
     $this->assertTrue(strpos($result, '<strong>abc,def</strong>') !== FALSE, 'Phrase with keyword simplified into two separate words is highlighted with simplified match');
+
+    // Test phrases with characters which are being truncated.
+    $result = preg_replace('| +|', ' ', search_excerpt('"ipsum _"', $text));
+    $this->assertTrue(strpos($result, '<strong>ipsum </strong>') !== FALSE, 'Only valid part of the phrase is highlighted and invalid part containing "_" is ignored.');
+
+    $result = preg_replace('| +|', ' ', search_excerpt('"ipsum 0000"', $text));
+    $this->assertTrue(strpos($result, '<strong>ipsum </strong>') !== FALSE, 'Only valid part of the phrase is highlighted and invalid part "0000" is ignored.');
+
+    // Test combination of the valid keyword and keyword containing only
+    // characters which are being truncated during simplification.
+    $result = preg_replace('| +|', ' ', search_excerpt('ipsum _', $text));
+    $this->assertTrue(strpos($result, '<strong>ipsum</strong>') !== FALSE, 'Only valid keyword is highlighted and invalid keyword "_" is ignored.');
+
+    $result = preg_replace('| +|', ' ', search_excerpt('ipsum 0000', $text));
+    $this->assertTrue(strpos($result, '<strong>ipsum</strong>') !== FALSE, 'Only valid keyword is highlighted and invalid keyword "0000" is ignored.');
   }
 }
 
@@ -1909,42 +1997,42 @@ class SearchLanguageTestCase extends DrupalWebTestCase {
   function testLanguages() {
     // Check that there are initially no languages displayed.
     $this->drupalGet('search/node');
-    $this->assertNoText(t('Languages'), t('No languages to choose from.'));
+    $this->assertNoText(t('Languages'), 'No languages to choose from.');
 
     // Add predefined language.
     $edit = array('langcode' => 'fr');
     $this->drupalPost('admin/config/regional/language/add', $edit, t('Add language'));
-    $this->assertText('fr', t('Language added successfully.'));
+    $this->assertText('fr', 'Language added successfully.');
 
     // Now we should have languages displayed.
     $this->drupalGet('search/node');
-    $this->assertText(t('Languages'), t('Languages displayed to choose from.'));
-    $this->assertText(t('English'), t('English is a possible choice.'));
-    $this->assertText(t('French'), t('French is a possible choice.'));
+    $this->assertText(t('Languages'), 'Languages displayed to choose from.');
+    $this->assertText(t('English'), 'English is a possible choice.');
+    $this->assertText(t('French'), 'French is a possible choice.');
 
     // Ensure selecting no language does not make the query different.
     $this->drupalPost('search/node', array(), t('Advanced search'));
-    $this->assertEqual($this->getUrl(), url('search/node/', array('absolute' => TRUE)), t('Correct page redirection, no language filtering.'));
+    $this->assertEqual($this->getUrl(), url('search/node/', array('absolute' => TRUE)), 'Correct page redirection, no language filtering.');
 
     // Pick French and ensure it is selected.
     $edit = array('language[fr]' => TRUE);
     $this->drupalPost('search/node', $edit, t('Advanced search'));
-    $this->assertFieldByXPath('//input[@name="keys"]', 'language:fr', t('Language filter added to query.'));
+    $this->assertFieldByXPath('//input[@name="keys"]', 'language:fr', 'Language filter added to query.');
 
     // Change the default language and disable English.
     $path = 'admin/config/regional/language';
     $this->drupalGet($path);
-    $this->assertFieldChecked('edit-site-default-en', t('English is the default language.'));
+    $this->assertFieldChecked('edit-site-default-en', 'English is the default language.');
     $edit = array('site_default' => 'fr');
     $this->drupalPost(NULL, $edit, t('Save configuration'));
-    $this->assertNoFieldChecked('edit-site-default-en', t('Default language updated.'));
+    $this->assertNoFieldChecked('edit-site-default-en', 'Default language updated.');
     $edit = array('enabled[en]' => FALSE);
     $this->drupalPost('admin/config/regional/language', $edit, t('Save configuration'));
-    $this->assertNoFieldChecked('edit-enabled-en', t('Language disabled.'));
+    $this->assertNoFieldChecked('edit-enabled-en', 'Language disabled.');
 
     // Check that there are again no languages displayed.
     $this->drupalGet('search/node');
-    $this->assertNoText(t('Languages'), t('No languages to choose from.'));
+    $this->assertNoText(t('Languages'), 'No languages to choose from.');
   }
 }
 
@@ -1972,10 +2060,11 @@ class SearchNodeAccessTest extends DrupalWebTestCase {
   }
 
   /**
-   * Tests that search returns results with punctuation in the search phrase.
+   * Tests that search works with punctuation and HTML entities.
    */
   function testPhraseSearchPunctuation() {
     $node = $this->drupalCreateNode(array('body' => array(LANGUAGE_NONE => array(array('value' => "The bunny's ears were fuzzy.")))));
+    $node2 = $this->drupalCreateNode(array('body' => array(LANGUAGE_NONE => array(array('value' => 'Dignissim Aliquam &amp; Quieligo meus natu quae quia te. Damnum&copy; erat&mdash; neo pneum. Facilisi feugiat ibidem ratis.')))));
 
     // Update the search index.
     module_invoke_all('update_index');
@@ -1988,5 +2077,99 @@ class SearchNodeAccessTest extends DrupalWebTestCase {
     $edit = array('keys' => '"bunny\'s"');
     $this->drupalPost('search/node', $edit, t('Search'));
     $this->assertText($node->title);
+
+    // Search for "&" and verify entities are not broken up in the output.
+    $edit = array('keys' => '&');
+    $this->drupalPost('search/node', $edit, t('Search'));
+    $this->assertNoRaw('<strong>&</strong>amp;');
+    $this->assertText('You must include at least one positive keyword');
+
+    $edit = array('keys' => '&amp;');
+    $this->drupalPost('search/node', $edit, t('Search'));
+    $this->assertNoRaw('<strong>&</strong>amp;');
+    $this->assertText('You must include at least one positive keyword');
+  }
+}
+
+/**
+ * Tests node search with query tags.
+ */
+class SearchNodeTagTest extends DrupalWebTestCase {
+  public $test_user;
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Node search query tags',
+      'description' => 'Tests Node search tags functionality.',
+      'group' => 'Search',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('search', 'search_node_tags');
+    node_access_rebuild();
+
+    // Create a test user and log in.
+    $this->test_user = $this->drupalCreateUser(array('search content'));
+    $this->drupalLogin($this->test_user);
+  }
+
+  /**
+   * Tests that the correct tags are available and hooks invoked.
+   */
+  function testNodeSearchQueryTags() {
+    $this->drupalCreateNode(array('body' => array(LANGUAGE_NONE => array(array('value' => 'testing testing testing.')))));
+
+    // Update the search index.
+    module_invoke_all('update_index');
+    search_update_totals();
+
+    $edit = array('keys' => 'testing');
+    $this->drupalPost('search/node', $edit, t('Search'));
+
+    $this->assertTrue(variable_get('search_node_tags_test_query_tag', FALSE), 'hook_query_alter() was invoked and the query contained the "search_node" tag.');
+    $this->assertTrue(variable_get('search_node_tags_test_query_tag_hook', FALSE), 'hook_query_search_node_alter() was invoked.');
+  }
+}
+
+/**
+ * Tests searching with locale values set.
+ */
+class SearchSetLocaleTest extends DrupalWebTestCase {
+
+  public static function getInfo() {
+    return array(
+      'name' => 'Search with numeric locale set',
+      'description' => 'Check that search works with numeric locale settings',
+      'group' => 'Search',
+    );
+  }
+
+  function setUp() {
+    parent::setUp('search');
+
+    // Create a simple node so something will be put in the index.
+    $info = array(
+      'body' => array(LANGUAGE_NONE => array(array('value' => 'Tapir'))),
+    );
+    $this->drupalCreateNode($info);
+
+    // Run cron to index.
+    $this->cronRun();
+  }
+
+  /**
+   * Verify that search works with a numeric locale set.
+   */
+  public function testSearchWithNumericLocale() {
+    // French decimal point is comma.
+    setlocale(LC_NUMERIC, 'fr_FR');
+
+    // An exception will be thrown if a float in the wrong format occurs in the
+    // query to the database, so an assertion is not necessary here.
+    db_select('search_index', 'i')
+      ->extend('searchquery')
+      ->searchexpression('tapir', 'node')
+      ->execute();
   }
 }

@@ -1,2 +1,0 @@
-jQuery Scroll to Top:
-http://www.dynamicdrive.com/dynamicindex3/scrolltop.htm

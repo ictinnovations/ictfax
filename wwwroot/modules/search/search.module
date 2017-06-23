@@ -68,7 +68,7 @@ function search_help($path, $arg) {
     case 'admin/help#search':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The Search module provides the ability to index and search for content by exact keywords, and for users by username or e-mail. For more information, see the online handbook entry for <a href="@search-module">Search module</a>.', array('@search-module' => 'http://drupal.org/handbook/modules/search/', '@search' => url('search'))) . '</p>';
+      $output .= '<p>' . t('The Search module provides the ability to index and search for content by exact keywords, and for users by username or e-mail. For more information, see the online handbook entry for <a href="@search-module">Search module</a>.', array('@search-module' => 'http://drupal.org/documentation/modules/search/', '@search' => url('search'))) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Searching content and users') . '</dt>';
@@ -1067,7 +1067,7 @@ function template_preprocess_search_block_form(&$variables) {
   $hidden = array();
   // Provide variables named after form keys so themers can print each element independently.
   foreach (element_children($variables['form']) as $key) {
-    $type = $variables['form'][$key]['#type'];
+    $type = isset($variables['form'][$key]['#type']) ? $variables['form'][$key]['#type'] : '';
     if ($type == 'hidden' || $type == 'token') {
       $hidden[] = drupal_render($variables['form'][$key]);
     }
@@ -1188,7 +1188,7 @@ function search_excerpt($keys, $text) {
           if (($s = strrpos($end, ' ')) !== FALSE) {
             // Account for the added spaces.
             $q = max($q - 1, 0);
-            $s = min($s, drupal_strlen($end) - 1);
+            $s = min($s, strlen($end) - 1);
             $ranges[$q] = $p + $s;
             $length += $p + $s - $q;
             $included[$key] = $p + 1;
@@ -1292,6 +1292,11 @@ function search_simplify_excerpt_match($key, $text, $offset, $boundary) {
   $pos = NULL;
   $simplified_key = search_simplify($key);
   $simplified_text = search_simplify($text);
+
+  // Return immediately if simplified key or text are empty.
+  if (!$simplified_key || !$simplified_text) {
+    return FALSE;
+  }
 
   // Check if we have a match after simplification in the text.
   if (!preg_match('/' . $boundary . $simplified_key . $boundary . '/iu', $simplified_text, $match, PREG_OFFSET_CAPTURE, $offset)) {

@@ -43,7 +43,7 @@ function _password_itoa64() {
 }
 
 /**
- * Encode bytes into printable base 64 using the *nix standard from crypt().
+ * Encodes bytes into printable base 64 using the *nix standard from crypt().
  *
  * @param $input
  *   The string containing bytes to encode.
@@ -140,7 +140,7 @@ function _password_enforce_log2_boundaries($count_log2) {
  * @param $algo
  *   The string name of a hashing algorithm usable by hash(), like 'sha256'.
  * @param $password
- *   The plain-text password to hash.
+ *   Plain-text password up to 512 bytes (128 to 512 UTF-8 characters) to hash.
  * @param $setting
  *   An existing hash or the output of _password_generate_salt().  Must be
  *   at least 12 characters (the settings and salt).
@@ -150,6 +150,10 @@ function _password_enforce_log2_boundaries($count_log2) {
  *   The return string will be truncated at DRUPAL_HASH_LENGTH characters max.
  */
 function _password_crypt($algo, $password, $setting) {
+  // Prevent DoS attacks by refusing to hash large passwords.
+  if (strlen($password) > 512) {
+    return FALSE;
+  }
   // The first 12 characters of an existing hash are its setting string.
   $setting = substr($setting, 0, 12);
 
@@ -285,4 +289,3 @@ function user_needs_new_hash($account) {
   // Check whether the iteration count used differs from the standard number.
   return (_password_get_count_log2($account->pass) !== $count_log2);
 }
-

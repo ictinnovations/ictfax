@@ -34,9 +34,6 @@
  * Remember that the form builders for this form will receive
  * &$form, &$form_state, NOT just &$form_state and no additional args.
  *
- * Do NOT use #required => TRUE with these forms as that validation
- * cannot be skipped for the CANCEL button.
- *
  * @param $form_info
  *   An array of form info. @todo document the array.
  * @param $step
@@ -46,6 +43,10 @@
  *   whatever information the form(s) involved left for it.
  */
 function ctools_wizard_multistep_form($form_info, $step, &$form_state) {
+  // Make sure 'wizard' always exists for the form when dealing
+  // with form caching.
+  ctools_form_include($form_state, 'wizard');
+
   // allow order array to be optional
   if (empty($form_info['order'])) {
     foreach ($form_info['forms'] as $step_id => $params) {
@@ -104,11 +105,11 @@ function ctools_wizard_multistep_form($form_info, $step, &$form_state) {
   if (!empty($info['include'])) {
     if (is_array($info['include'])) {
       foreach ($info['include'] as $file) {
-        require_once DRUPAL_ROOT . '/' . $file;
+        ctools_form_include_file($form_state, $file);
       }
     }
     else {
-      require_once DRUPAL_ROOT . '/' . $info['include'];
+      ctools_form_include_file($form_state, $info['include']);
     }
   }
 
@@ -255,16 +256,13 @@ function ctools_wizard_wrapper($form, &$form_state) {
 
     if (!empty($form_info['show trail'])) {
       if (!empty($form_info['free trail'])) {
-        // ctools_wizard_get_path() returns results suitable for #redirect
-        // which can only be directly used in drupal_goto. We have to futz
-        // with it.
+        // ctools_wizard_get_path() returns results suitable for
+        // $form_state['redirect] which can only be directly used in
+        // drupal_goto. We have to futz a bit with it.
         $path = ctools_wizard_get_path($form_info, $id);
         $options = array();
         if (!empty($path[1])) {
-          $options['query'] = $path[1];
-        }
-        if (!empty($path[2])) {
-          $options['fragment'] = $path[2];
+          $options = $path[1];
         }
         $title = l($title, $path[0], $options);
       }
@@ -276,7 +274,7 @@ function ctools_wizard_wrapper($form, &$form_state) {
   if (!empty($form_info['show trail'])) {
     ctools_add_css('wizard');
     $form['ctools_trail'] = array(
-      '#markup' => theme(array('ctools_wizard_trail__' . $form_info['id'], 'ctools_wizard_trail'), array('trail' => $trail)),
+      '#markup' => theme(array('ctools_wizard_trail__' . $form_info['id'], 'ctools_wizard_trail'), array('trail' => $trail, 'form_info' => $form_info)),
       '#weight' => -1000,
     );
   }
@@ -284,8 +282,7 @@ function ctools_wizard_wrapper($form, &$form_state) {
   if (empty($form_info['no buttons'])) {
     // Ensure buttons stay on the bottom.
     $form['buttons'] = array(
-      '#prefix' => '<div class="clearfix">',
-      '#suffix' => '</div>',
+      '#type' => 'actions',
       '#weight' => 1000,
     );
 
@@ -433,6 +430,12 @@ function ctools_wizard_submit(&$form, &$form_state) {
       }
       else if ($type == 'next') {
         $form_state['redirect'] = ctools_wizard_get_path($form_state['form_info'], $form_state['clicked_button']['#next']);
+        if (!empty($_GET['destination'])) {
+          // We don't want drupal_goto redirect this request
+          // back. ctools_wizard_get_path ensures that the destination is
+          // carried over on subsequent pages.
+          unset($_GET['destination']);
+        }
       }
       else if (isset($form_state['form_info']['return path'])) {
         $form_state['redirect'] = $form_state['form_info']['return path'];
@@ -452,11 +455,27 @@ function ctools_wizard_get_path($form_info, $step) {
     foreach ($form_info['path'] as $id => $part) {
       $form_info['path'][$id] = str_replace('%step', $step, $form_info['path'][$id]);
     }
-    return $form_info['path'];
+    $path = $form_info['path'];
   }
   else {
-    return array(str_replace('%step', $step, $form_info['path']));
+    $path = array(str_replace('%step', $step, $form_info['path']));
   }
+
+  // If destination is set, carry it over so it'll take effect when
+  // saving. The submit handler will unset destination to avoid drupal_goto
+  // redirecting us.
+  if (!empty($_GET['destination'])) {
+    // Ensure that options is an array.
+    if (!isset($path[1]) || !is_array($path[1])) {
+      $path[1] = array();
+    }
+    // Ensure that the query part of options is an array.
+    $path[1] += array('query' => array());
+    // Add the destination parameter, if not set already.
+    $path[1]['query'] += drupal_get_destination();
+  }
+
+  return $path;
 }
 
 /**

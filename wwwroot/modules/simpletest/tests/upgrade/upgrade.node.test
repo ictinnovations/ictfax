@@ -26,7 +26,7 @@ class NodeBodyUpgradePathTestCase extends UpgradePathTestCase {
    * Test a successful upgrade.
    */
   public function testNodeBodyUpgrade() {
-    $this->assertTrue($this->performUpgrade(), t('The upgrade was completed successfully.'));
+    $this->assertTrue($this->performUpgrade(), 'The upgrade was completed successfully.');
 
     $instance = field_info_instance('node', 'body', 'story');
     $this->assertIdentical($instance['required'], 0, 'The required setting was preserved during the upgrade path.');
@@ -47,6 +47,38 @@ class NodeBodyUpgradePathTestCase extends UpgradePathTestCase {
     // Check that fields created during the upgrade can be edited and resaved
     // in the UI.
     $this->drupalPost('admin/structure/types/manage/story/fields/body', array(), t('Save settings'));
+  }
+}
+
+/**
+ * Tests the upgrade path for node disabled node types.
+ *
+ * Load a filled installation of Drupal 6 and run the upgrade process on it.
+ */
+class DisabledNodeTypeTestCase extends UpgradePathTestCase {
+  public static function getInfo() {
+    return array(
+      'name'  => 'Disabled node type upgrade path',
+      'description'  => 'Disabled node type upgrade path tests.',
+      'group' => 'Upgrade path',
+    );
+  }
+
+  public function setUp() {
+    // Path to the database dump.
+    $this->databaseDumpFiles = array(
+      drupal_get_path('module', 'simpletest') . '/tests/upgrade/drupal-6.filled.database.php',
+      drupal_get_path('module', 'simpletest') . '/tests/upgrade/drupal-6.node_type_broken.database.php',
+    );
+    parent::setUp();
+  }
+
+  /**
+   * Tests a successful upgrade.
+   */
+  public function testDisabledNodeTypeUpgrade() {
+    $this->assertTrue($this->performUpgrade(), 'The upgrade was completed successfully.');
+    $this->assertTrue(field_info_instance('comment', 'comment_body', 'comment_node_broken'), 'Comment body field instance was created for comments attached to the disabled broken node type');
   }
 }
 
@@ -82,7 +114,7 @@ class PollUpgradePathTestCase extends UpgradePathTestCase {
    * Test a successful upgrade.
    */
   public function testPollUpgrade() {
-    $this->assertTrue($this->performUpgrade(), t('The upgrade was completed successfully.'));
+    $this->assertTrue($this->performUpgrade(), 'The upgrade was completed successfully.');
 
     // Check modules page for poll
     $this->drupalGet('admin/modules');
@@ -94,14 +126,14 @@ class PollUpgradePathTestCase extends UpgradePathTestCase {
       $nbchoices = ($i % 4) + 2;
 
       for ($c = 0; $c < $nbchoices; $c++) {
-        $this->assertText("Choice $c for poll $i", t('Choice text is displayed correctly on poll view'));
+        $this->assertText("Choice $c for poll $i", 'Choice text is displayed correctly on poll view');
       }
 
       // Now check that the votes are correct
       $this->clickLink(t('Results'));
 
       for ($c = 0; $c < $nbchoices; $c++) {
-        $this->assertText("Choice $c for poll $i", t('Choice text is displayed correctly on result view'));
+        $this->assertText("Choice $c for poll $i", 'Choice text is displayed correctly on result view');
       }
 
       $nbvotes = floor (($i % 4) + 5);
@@ -109,7 +141,7 @@ class PollUpgradePathTestCase extends UpgradePathTestCase {
       for ($c = 0; $c < $nbchoices; $c++) {
         $votes = floor($nbvotes / $nbchoices);
         if (($nbvotes % $nbchoices) > $c) $votes++;
-        $this->assertTrue(preg_match("/$votes vote/", $elements[$c]), t('The number of votes is displayed correctly: expected ' . $votes . ', got ' . $elements[$c]));
+        $this->assertTrue(preg_match("/$votes vote/", $elements[$c]), 'The number of votes is displayed correctly: expected ' . $votes . ', got ' . $elements[$c]);
       }
     }
   }

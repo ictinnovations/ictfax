@@ -93,7 +93,7 @@ define('STREAM_WRAPPERS_LOCAL_NORMAL', STREAM_WRAPPERS_LOCAL | STREAM_WRAPPERS_N
 /**
  * Generic PHP stream wrapper interface.
  *
- * @see http://www.php.net/manual/en/class.streamwrapper.php
+ * @see http://www.php.net/manual/class.streamwrapper.php
  */
 interface StreamWrapperInterface {
   public function stream_open($uri, $mode, $options, &$opened_url);
@@ -133,7 +133,7 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    * @param $uri
    *   A string containing the URI that should be used for this instance.
    */
-  function setUri($uri);
+  public function setUri($uri);
 
   /**
    * Returns the stream resource URI.
@@ -218,7 +218,6 @@ interface DrupalStreamWrapperInterface extends StreamWrapperInterface {
    */
   public function dirname($uri = NULL);
 }
-
 
 /**
  * Drupal stream wrapper base class for local files.
@@ -317,7 +316,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
     }
 
     $extension = '';
-    $file_parts = explode('.', basename($uri));
+    $file_parts = explode('.', drupal_basename($uri));
 
     // Remove the first part: a full filename should not match an extension.
     array_shift($file_parts);
@@ -377,7 +376,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
     $realpath = realpath($path);
     if (!$realpath) {
       // This file does not yet exist.
-      $realpath = realpath(dirname($path)) . '/' . basename($path);
+      $realpath = realpath(dirname($path)) . '/' . drupal_basename($path);
     }
     $directory = realpath($this->getDirectoryPath());
     if (!$realpath || !$directory || strpos($realpath, $directory) !== 0) {
@@ -401,7 +400,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   Returns TRUE if file was opened successfully.
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-open.php
+   * @see http://php.net/manual/streamwrapper.stream-open.php
    */
   public function stream_open($uri, $mode, $options, &$opened_path) {
     $this->uri = $uri;
@@ -429,7 +428,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   Always returns TRUE at the present time.
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-lock.php
+   * @see http://php.net/manual/streamwrapper.stream-lock.php
    */
   public function stream_lock($operation) {
     if (in_array($operation, array(LOCK_SH, LOCK_EX, LOCK_UN, LOCK_NB))) {
@@ -448,7 +447,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   The string that was read, or FALSE in case of an error.
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-read.php
+   * @see http://php.net/manual/streamwrapper.stream-read.php
    */
   public function stream_read($count) {
     return fread($this->handle, $count);
@@ -463,7 +462,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   The number of bytes written (integer).
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-write.php
+   * @see http://php.net/manual/streamwrapper.stream-write.php
    */
   public function stream_write($data) {
     return fwrite($this->handle, $data);
@@ -475,7 +474,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   TRUE if end-of-file has been reached.
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-eof.php
+   * @see http://php.net/manual/streamwrapper.stream-eof.php
    */
   public function stream_eof() {
     return feof($this->handle);
@@ -492,7 +491,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   TRUE on success.
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-seek.php
+   * @see http://php.net/manual/streamwrapper.stream-seek.php
    */
   public function stream_seek($offset, $whence) {
     // fseek returns 0 on success and -1 on a failure.
@@ -506,7 +505,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   TRUE if data was successfully stored (or there was no data to store).
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-flush.php
+   * @see http://php.net/manual/streamwrapper.stream-flush.php
    */
   public function stream_flush() {
     return fflush($this->handle);
@@ -518,7 +517,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   The current offset in bytes from the beginning of file.
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-tell.php
+   * @see http://php.net/manual/streamwrapper.stream-tell.php
    */
   public function stream_tell() {
     return ftell($this->handle);
@@ -531,7 +530,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *   An array with file status, or FALSE in case of an error - see fstat()
    *   for a description of this array.
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-stat.php
+   * @see http://php.net/manual/streamwrapper.stream-stat.php
    */
   public function stream_stat() {
     return fstat($this->handle);
@@ -543,22 +542,171 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   TRUE if stream was successfully closed.
    *
-   * @see http://php.net/manual/en/streamwrapper.stream-close.php
+   * @see http://php.net/manual/streamwrapper.stream-close.php
    */
   public function stream_close() {
     return fclose($this->handle);
   }
 
   /**
+   * Sets metadata on the stream.
+   *
+   * WARNING: Do not call this method directly! It will be called internally by
+   * PHP itself when one of the following functions is called on a stream URL:
+   *
+   * @param string $uri
+   *   A string containing the URI to the file to set metadata on.
+   * @param int $option
+   *   One of:
+   *   - STREAM_META_TOUCH: The method was called in response to touch().
+   *   - STREAM_META_OWNER_NAME: The method was called in response to chown()
+   *     with string parameter.
+   *   - STREAM_META_OWNER: The method was called in response to chown().
+   *   - STREAM_META_GROUP_NAME: The method was called in response to chgrp().
+   *   - STREAM_META_GROUP: The method was called in response to chgrp().
+   *   - STREAM_META_ACCESS: The method was called in response to chmod().
+   * @param mixed $value
+   *   If option is:
+   *   - STREAM_META_TOUCH: Array consisting of two arguments of the touch()
+   *     function.
+   *   - STREAM_META_OWNER_NAME or STREAM_META_GROUP_NAME: The name of the owner
+   *     user/group as string.
+   *   - STREAM_META_OWNER or STREAM_META_GROUP: The value of the owner
+   *     user/group as integer.
+   *   - STREAM_META_ACCESS: The argument of the chmod() as integer.
+   *
+   * @return bool
+   *   Returns TRUE on success or FALSE on failure. If $option is not
+   *   implemented, FALSE should be returned.
+   *
+   * @see touch()
+   * @see chmod()
+   * @see chown()
+   * @see chgrp()
+   * @link http://php.net/manual/streamwrapper.stream-metadata.php
+   */
+  public function stream_metadata($uri, $option, $value) {
+    $target = $this->getLocalPath($uri);
+    $return = FALSE;
+    switch ($option) {
+      case STREAM_META_TOUCH:
+        if (!empty($value)) {
+          $return = touch($target, $value[0], $value[1]);
+        }
+        else {
+          $return = touch($target);
+        }
+        break;
+
+      case STREAM_META_OWNER_NAME:
+      case STREAM_META_OWNER:
+        $return = chown($target, $value);
+        break;
+
+      case STREAM_META_GROUP_NAME:
+      case STREAM_META_GROUP:
+        $return = chgrp($target, $value);
+        break;
+
+      case STREAM_META_ACCESS:
+        $return = chmod($target, $value);
+        break;
+    }
+    if ($return) {
+      // For convenience clear the file status cache of the underlying file,
+      // since metadata operations are often followed by file status checks.
+      clearstatcache(TRUE, $target);
+    }
+    return $return;
+  }
+
+  /**
+   * Truncate stream.
+   *
+   * Will respond to truncation; e.g., through ftruncate().
+   *
+   * @param int $new_size
+   *   The new size.
+   *
+   * @return bool
+   *   TRUE on success, FALSE otherwise.
+   */
+  public function stream_truncate($new_size) {
+    return ftruncate($this->handle, $new_size);
+  }
+
+  /**
+   * Retrieve the underlying stream resource.
+   *
+   * This method is called in response to stream_select().
+   *
+   * @param int $cast_as
+   *   Can be STREAM_CAST_FOR_SELECT when stream_select() is calling
+   *   stream_cast() or STREAM_CAST_AS_STREAM when stream_cast() is called for
+   *   other uses.
+   *
+   * @return resource|false
+   *   The underlying stream resource or FALSE if stream_select() is not
+   *   supported.
+   *
+   * @see stream_select()
+   * @link http://php.net/manual/streamwrapper.stream-cast.php
+   */
+  public function stream_cast($cast_as) {
+    return $this->handle ? $this->handle : FALSE;
+  }
+
+  /**
+   * Change stream options.
+   *
+   * This method is called to set options on the stream.
+   *
+   * Since Windows systems do not allow it and it is not needed for most use
+   * cases anyway, this method is not supported on local files and will trigger
+   * an error and return false. If needed, custom subclasses can provide
+   * OS-specific implementations for advanced use cases.
+   *
+   * @param int $option
+   *   One of:
+   *   - STREAM_OPTION_BLOCKING: The method was called in response to
+   *     stream_set_blocking().
+   *   - STREAM_OPTION_READ_TIMEOUT: The method was called in response to
+   *     stream_set_timeout().
+   *   - STREAM_OPTION_WRITE_BUFFER: The method was called in response to
+   *     stream_set_write_buffer().
+   * @param int $arg1
+   *   If option is:
+   *   - STREAM_OPTION_BLOCKING: The requested blocking mode:
+   *     - 1 means blocking.
+   *     - 0 means not blocking.
+   *   - STREAM_OPTION_READ_TIMEOUT: The timeout in seconds.
+   *   - STREAM_OPTION_WRITE_BUFFER: The buffer mode, STREAM_BUFFER_NONE or
+   *     STREAM_BUFFER_FULL.
+   * @param int $arg2
+   *   If option is:
+   *   - STREAM_OPTION_BLOCKING: This option is not set.
+   *   - STREAM_OPTION_READ_TIMEOUT: The timeout in microseconds.
+   *   - STREAM_OPTION_WRITE_BUFFER: The requested buffer size.
+   *
+   * @return bool
+   *   TRUE on success, FALSE otherwise. If $option is not implemented, FALSE
+   *   should be returned.
+   */
+  public function stream_set_option($option, $arg1, $arg2) {
+    trigger_error('stream_set_option() not supported for local file based stream wrappers', E_USER_WARNING);
+    return FALSE;
+  }
+
+  /**
    * Support for unlink().
    *
    * @param $uri
-   *   A string containing the uri to the resource to delete.
+   *   A string containing the URI to the resource to delete.
    *
    * @return
    *   TRUE if resource was successfully deleted.
    *
-   * @see http://php.net/manual/en/streamwrapper.unlink.php
+   * @see http://php.net/manual/streamwrapper.unlink.php
    */
   public function unlink($uri) {
     $this->uri = $uri;
@@ -569,14 +717,14 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * Support for rename().
    *
    * @param $from_uri,
-   *   The uri to the file to rename.
+   *   The URI to the file to rename.
    * @param $to_uri
-   *   The new uri for file.
+   *   The new URI for file.
    *
    * @return
    *   TRUE if file was successfully renamed.
    *
-   * @see http://php.net/manual/en/streamwrapper.rename.php
+   * @see http://php.net/manual/streamwrapper.rename.php
    */
   public function rename($from_uri, $to_uri) {
     return rename($this->getLocalPath($from_uri), $this->getLocalPath($to_uri));
@@ -622,7 +770,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   TRUE if directory was successfully created.
    *
-   * @see http://php.net/manual/en/streamwrapper.mkdir.php
+   * @see http://php.net/manual/streamwrapper.mkdir.php
    */
   public function mkdir($uri, $mode, $options) {
     $this->uri = $uri;
@@ -654,7 +802,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   TRUE if directory was successfully removed.
    *
-   * @see http://php.net/manual/en/streamwrapper.rmdir.php
+   * @see http://php.net/manual/streamwrapper.rmdir.php
    */
   public function rmdir($uri, $options) {
     $this->uri = $uri;
@@ -678,7 +826,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    *   An array with file status, or FALSE in case of an error - see fstat()
    *   for a description of this array.
    *
-   * @see http://php.net/manual/en/streamwrapper.url-stat.php
+   * @see http://php.net/manual/streamwrapper.url-stat.php
    */
   public function url_stat($uri, $flags) {
     $this->uri = $uri;
@@ -704,7 +852,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   TRUE on success.
    *
-   * @see http://php.net/manual/en/streamwrapper.dir-opendir.php
+   * @see http://php.net/manual/streamwrapper.dir-opendir.php
    */
   public function dir_opendir($uri, $options) {
     $this->uri = $uri;
@@ -719,7 +867,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   The next filename, or FALSE if there are no more files in the directory.
    *
-   * @see http://php.net/manual/en/streamwrapper.dir-readdir.php
+   * @see http://php.net/manual/streamwrapper.dir-readdir.php
    */
   public function dir_readdir() {
     return readdir($this->handle);
@@ -731,7 +879,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   TRUE on success.
    *
-   * @see http://php.net/manual/en/streamwrapper.dir-rewinddir.php
+   * @see http://php.net/manual/streamwrapper.dir-rewinddir.php
    */
   public function dir_rewinddir() {
     rewinddir($this->handle);
@@ -747,7 +895,7 @@ abstract class DrupalLocalStreamWrapper implements DrupalStreamWrapperInterface 
    * @return
    *   TRUE on success.
    *
-   * @see http://php.net/manual/en/streamwrapper.dir-closedir.php
+   * @see http://php.net/manual/streamwrapper.dir-closedir.php
    */
   public function dir_closedir() {
     closedir($this->handle);
@@ -788,8 +936,6 @@ class DrupalPublicStreamWrapper extends DrupalLocalStreamWrapper {
  *
  * Provides support for storing privately accessible files with the Drupal file
  * interface.
- *
- * Extends DrupalPublicStreamWrapper.
  */
 class DrupalPrivateStreamWrapper extends DrupalLocalStreamWrapper {
   /**

@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @file
@@ -75,8 +74,13 @@ function ctools_entity_bundle_ctools_access_settings_submit($form, &$form_state)
 /**
  * Check for access.
  */
-function ctools_entity_bundle_ctools_access_check($conf, $context) {
-  $entity = entity_get_info($context->type[2]);
+function ctools_entity_bundle_ctools_access_check($conf, $context, $plugin) {
+  list($plugin_name, $entity_type) = explode(':', $plugin['name']);
+  if (!$entity_type) {
+    return FALSE;
+  };
+
+  $entity = entity_get_info($entity_type);
   // As far as I know there should always be a context at this point, but this
   // is safe.
   if (empty($context) || empty($context->data) || empty($context->data->{$entity['entity keys']['bundle']})) {
@@ -106,11 +110,17 @@ function ctools_entity_bundle_ctools_access_restrictions($conf, &$context) {
 /**
  * Provide a summary description based upon the checked entity_bundle.
  */
-function ctools_entity_bundle_ctools_access_summary($conf, $context) {
+function ctools_entity_bundle_ctools_access_summary($conf, $context, $plugin) {
   if (!isset($conf['type'])) {
     $conf['type'] = array();
   }
-  $entity = entity_get_info($context->type[2]);
+
+  list($plugin_name, $entity_type) = explode(':', $plugin['name']);
+  if (!$entity_type) {
+    return t('Error, misconfigured entity_bundle access plugin');
+  };
+
+  $entity = entity_get_info($entity_type);
 
   $names = array();
   foreach (array_filter($conf['type']) as $type) {

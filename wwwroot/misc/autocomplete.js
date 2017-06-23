@@ -32,7 +32,7 @@ Drupal.behaviors.autocomplete = {
 Drupal.autocompleteSubmit = function () {
   return $('#autocomplete').each(function () {
     this.owner.hidePopup();
-  }).size() == 0;
+  }).length == 0;
 };
 
 /**
@@ -41,7 +41,7 @@ Drupal.autocompleteSubmit = function () {
 Drupal.jsAC = function ($input, db) {
   var ac = this;
   this.input = $input[0];
-  this.ariaLive = $('#' + $input.attr('id') + '-autocomplete-aria-live');
+  this.ariaLive = $('#' + this.input.id + '-autocomplete-aria-live');
   this.db = db;
 
   $input
@@ -99,10 +99,12 @@ Drupal.jsAC.prototype.onkeyup = function (input, e) {
       return true;
 
     default: // All other keys.
-      if (input.value.length > 0)
+      if (input.value.length > 0 && !input.readOnly) {
         this.populatePopup();
-      else
+      }
+      else {
         this.hidePopup(e.keyCode);
+      }
       return true;
   }
 };
@@ -112,6 +114,7 @@ Drupal.jsAC.prototype.onkeyup = function (input, e) {
  */
 Drupal.jsAC.prototype.select = function (node) {
   this.input.value = $(node).data('autocompleteValue');
+  $(this.input).trigger('autocompleteSelect', [node]);
 };
 
 /**
@@ -123,7 +126,7 @@ Drupal.jsAC.prototype.selectDown = function () {
   }
   else if (this.popup) {
     var lis = $('li', this.popup);
-    if (lis.size() > 0) {
+    if (lis.length > 0) {
       this.highlight(lis.get(0));
     }
   }
@@ -165,7 +168,7 @@ Drupal.jsAC.prototype.unhighlight = function (node) {
 Drupal.jsAC.prototype.hidePopup = function (keycode) {
   // Select item if the right key or mousebutton was pressed.
   if (this.selected && ((keycode && keycode != 46 && keycode != 8 && keycode != 27) || !keycode)) {
-    this.input.value = $(this.selected).data('autocompleteValue');
+    this.select(this.selected);
   }
   // Hide popup.
   var popup = this.popup;
@@ -218,7 +221,7 @@ Drupal.jsAC.prototype.found = function (matches) {
   for (key in matches) {
     $('<li></li>')
       .html($('<div></div>').html(matches[key]))
-      .mousedown(function () { ac.select(this); })
+      .mousedown(function () { ac.hidePopup(this); })
       .mouseover(function () { ac.highlight(this); })
       .mouseout(function () { ac.unhighlight(this); })
       .data('autocompleteValue', key)
@@ -227,7 +230,7 @@ Drupal.jsAC.prototype.found = function (matches) {
 
   // Show popup with matches, if any.
   if (this.popup) {
-    if (ul.children().size()) {
+    if (ul.children().length) {
       $(this.popup).empty().append(ul).show();
       $(this.ariaLive).html(Drupal.t('Autocomplete popup'));
     }
@@ -268,8 +271,11 @@ Drupal.ACDB.prototype.search = function (searchString) {
   var db = this;
   this.searchString = searchString;
 
-  // See if this string needs to be searched for anyway.
-  searchString = searchString.replace(/^\s+|\s+$/, '');
+  // See if this string needs to be searched for anyway. The pattern ../ is
+  // stripped since it may be misinterpreted by the browser.
+  searchString = searchString.replace(/^\s+|\.{2,}\/|\s+$/g, '');
+  // Skip empty search strings, or search strings ending with a comma, since
+  // that is the separator between search terms.
   if (searchString.length <= 0 ||
     searchString.charAt(searchString.length - 1) == ',') {
     return;
@@ -287,10 +293,11 @@ Drupal.ACDB.prototype.search = function (searchString) {
   this.timer = setTimeout(function () {
     db.owner.setStatus('begin');
 
-    // Ajax GET request for autocompletion.
+    // Ajax GET request for autocompletion. We use Drupal.encodePath instead of
+    // encodeURIComponent to allow autocomplete search terms to contain slashes.
     $.ajax({
       type: 'GET',
-      url: db.uri + '/' + encodeURIComponent(searchString),
+      url: db.uri + '/' + Drupal.encodePath(searchString),
       dataType: 'json',
       success: function (matches) {
         if (typeof matches.status == 'undefined' || matches.status != 0) {
@@ -303,7 +310,7 @@ Drupal.ACDB.prototype.search = function (searchString) {
         }
       },
       error: function (xmlhttp) {
-        alert(Drupal.ajaxError(xmlhttp, db.uri));
+        Drupal.displayAjaxError(Drupal.ajaxError(xmlhttp, db.uri));
       }
     });
   }, this.delay);

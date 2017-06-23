@@ -10,6 +10,14 @@
 }
 
 .ctools-collapsible-container .ctools-collapsible-handle {
+  display: none;
+}
+
+html.js .ctools-collapsible-container .ctools-collapsible-handle {
+  display: block;
+}
+
+.ctools-collapsible-container .ctools-collapsible-handle {
   cursor: pointer;
 }
 

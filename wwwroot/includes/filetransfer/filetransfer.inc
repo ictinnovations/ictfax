@@ -211,7 +211,7 @@ abstract class FileTransfer {
    */
   protected function copyDirectoryJailed($source, $destination) {
     if ($this->isDirectory($destination)) {
-      $destination = $destination . '/' . basename($source);
+      $destination = $destination . '/' . drupal_basename($source);
     }
     $this->createDirectory($destination);
     foreach (new RecursiveIteratorIterator(new SkipDotsRecursiveDirectoryIterator($source), RecursiveIteratorIterator::SELF_FIRST) as $filename => $file) {
@@ -302,9 +302,9 @@ abstract class FileTransfer {
     $chroot = '';
     while (count($parts)) {
       $check = implode($parts, '/');
-      if ($this->isFile($check . '/' . basename(__FILE__))) {
+      if ($this->isFile($check . '/' . drupal_basename(__FILE__))) {
         // Remove the trailing slash.
-        return substr($chroot,0,-1);
+        return substr($chroot, 0, -1);
       }
       $chroot .= array_shift($parts) . '/';
     }
@@ -381,7 +381,7 @@ interface FileTransferChmodInterface {
    * @param string $path
    *   Path to change permissions of.
    * @param long $mode
-   *   @see http://php.net/chmod
+   *   The new file permission mode to be passed to chmod().
    * @param boolean $recursive
    *   Pass TRUE to recursively chmod the entire directory specified in $path.
    */
@@ -406,10 +406,20 @@ class SkipDotsRecursiveDirectoryIterator extends RecursiveDirectoryIterator {
    */
   function __construct($path) {
     parent::__construct($path);
+    $this->skipdots();
+  }
+
+  function rewind() {
+    parent::rewind();
+    $this->skipdots();
   }
 
   function next() {
     parent::next();
+    $this->skipdots();
+  }
+
+  protected function skipdots() {
     while ($this->isDot()) {
       parent::next();
     }

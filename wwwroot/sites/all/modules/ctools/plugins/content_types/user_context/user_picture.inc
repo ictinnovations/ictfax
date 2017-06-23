@@ -30,8 +30,14 @@ function ctools_user_picture_content_type_render($subtype, $conf, $panel_args, $
   $block = new stdClass();
   $block->module = 'user-profile';
   $block->title = check_plain($account->name);
-  $block->content = theme('user_picture', array('account' => $account));
 
+  $element['user_picture'] = array(
+    '#theme' => 'user_picture',
+    '#account' => $account,
+  );
+
+
+  $block->content = $element;
   return $block;
 }
 

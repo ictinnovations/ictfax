@@ -105,6 +105,8 @@ class SearchQuery extends SelectQueryExtender {
    * Stores score expressions.
    *
    * @var array
+   *
+   * @see addScore()
    */
   protected $scores = array();
 
@@ -116,11 +118,21 @@ class SearchQuery extends SelectQueryExtender {
   protected $scoresArguments = array();
 
   /**
-   * Total value of all the multipliers.
+   * Stores multipliers for score expressions.
    *
    * @var array
    */
   protected $multiply = array();
+
+  /**
+   * Whether or not search expressions were ignored.
+   *
+   * The maximum number of AND/OR combinations exceeded can be configured to
+   * avoid Denial-of-Service attacks. Expressions beyond the limit are ignored.
+   *
+   * @var boolean
+   */
+  protected $expressionsIgnored = FALSE;
 
   /**
    * Sets up the search query expression.
@@ -136,6 +148,17 @@ class SearchQuery extends SelectQueryExtender {
   public function searchExpression($expression, $module) {
     $this->searchExpression = $expression;
     $this->type = $module;
+
+    // Add a search_* tag. This needs to be added before any preExecute methods
+    // for decorated queries are called, as $this->prepared will be set to TRUE
+    // and tags added in the execute method will never get used. For example,
+    // if $query is extended by 'SearchQuery' then 'PagerDefault', the
+    // search-specific tag will be added too late (when preExecute() has
+    // already been called from the PagerDefault extender), and as a
+    // consequence will not be available to hook_query_alter() implementations,
+    // nor will the correct hook_query_TAG_alter() implementations get invoked.
+    // See node_search_execute().
+    $this->addTag('search_' . $module);
 
     return $this;
   }
@@ -183,7 +206,17 @@ class SearchQuery extends SelectQueryExtender {
     // Classify tokens.
     $or = FALSE;
     $warning = '';
+    $limit_combinations = variable_get('search_and_or_limit', 7);
+    // The first search expression does not count as AND.
+    $and_count = -1;
+    $or_count = 0;
     foreach ($keywords as $match) {
+      if ($or_count && $and_count + $or_count >= $limit_combinations) {
+        // Ignore all further search expressions to prevent Denial-of-Service
+        // attacks using a high number of AND/OR combinations.
+        $this->expressionsIgnored = TRUE;
+        break;
+      }
       $phrase = FALSE;
       // Strip off phrase quotes.
       if ($match[2]{0} == '"') {
@@ -212,6 +245,7 @@ class SearchQuery extends SelectQueryExtender {
         }
         $this->keys['positive'][] = $last;
         $or = TRUE;
+        $or_count++;
         continue;
       }
       // AND operator: implied, so just ignore it.
@@ -231,6 +265,7 @@ class SearchQuery extends SelectQueryExtender {
         }
         else {
           $this->keys['positive'] = array_merge($this->keys['positive'], $words);
+          $and_count++;
         }
       }
       $or = FALSE;
@@ -323,6 +358,9 @@ class SearchQuery extends SelectQueryExtender {
       form_set_error('keys', format_plural(variable_get('minimum_word_size', 3), 'You must include at least one positive keyword with 1 character or more.', 'You must include at least one positive keyword with @count characters or more.'));
       return FALSE;
     }
+    if ($this->expressionsIgnored) {
+      drupal_set_message(t('Your search used too many AND/OR expressions. Only the first @count terms were included in this search.', array('@count' => variable_get('search_and_or_limit', 7))), 'warning');
+    }
     $this->executedFirstPass = TRUE;
 
     if (!empty($this->words)) {
@@ -366,21 +404,39 @@ class SearchQuery extends SelectQueryExtender {
   /**
    * Adds a custom score expression to the search query.
    *
-   * Each score expression can optionally use a multiplier, and multiple
-   * expressions are combined.
+   * Score expressions are used to order search results. If no calls to
+   * addScore() have taken place, a default keyword relevance score will be
+   * used. However, if at least one call to addScore() has taken place, the
+   * keyword relevance score is not automatically added.
+   *
+   * Note that you must use this method to add ordering to your searches, and
+   * not call orderBy() directly, when using the SearchQuery extender. This is
+   * because of the two-pass system the SearchQuery class uses to normalize
+   * scores.
    *
    * @param $score
-   *   The score expression.
+   *   The score expression, which should evaluate to a number between 0 and 1.
+   *   The string 'i.relevance' in a score expression will be replaced by a
+   *   measure of keyword relevance between 0 and 1.
    * @param $arguments
-   *   Custom query arguments for that expression.
+   *   Query arguments needed to provide values to the score expression.
    * @param $multiply
-   *   If set, the score is multiplied with that value. Search query ensures
-   *   that the search scores are still normalized.
+   *   If set, the score is multiplied with this value. However, all scores
+   *   with multipliers are then divided by the total of all multipliers, so
+   *   that overall, the normalization is maintained.
+   *
+   * @return object
+   *   The updated query object.
    */
   public function addScore($score, $arguments = array(), $multiply = FALSE) {
     if ($multiply) {
       $i = count($this->multiply);
+      // Modify the score expression so it is multiplied by the multiplier,
+      // with a divisor to renormalize.
       $score = "CAST(:multiply_$i AS DECIMAL) * COALESCE(( " . $score . "), 0) / CAST(:total_$i AS DECIMAL)";
+      // Add an argument for the multiplier. The :total_$i argument is taken
+      // care of in the execute() method, which is when the total divisor is
+      // calculated.
       $arguments[':multiply_' . $i] = $multiply;
       $this->multiply[] = $multiply;
     }
@@ -421,8 +477,9 @@ class SearchQuery extends SelectQueryExtender {
     }
 
     if (count($this->multiply)) {
-      // Add the total multiplicator as many times as requested to maintain
-      // normalization as far as possible.
+      // Re-normalize scores with multipliers by dividing by the total of all
+      // multipliers. The expressions were altered in addScore(), so here just
+      // add the arguments for the total.
       $i = 0;
       $sum = array_sum($this->multiply);
       foreach ($this->multiply as $total) {
@@ -431,19 +488,25 @@ class SearchQuery extends SelectQueryExtender {
       }
     }
 
-    // Replace i.relevance pseudo-field with the actual, normalized value.
-    $this->scores = str_replace('i.relevance', '(' . (1.0 / $this->normalize) . ' * i.score * t.count)', $this->scores);
-    // Convert scores to an expression.
+    // Replace the pseudo-expression 'i.relevance' with a measure of keyword
+    // relevance in all score expressions, using string replacement. Careful
+    // though! If you just print out a float, some locales use ',' as the
+    // decimal separator in PHP, while SQL always uses '.'. So, make sure to
+    // set the number format correctly.
+    $relevance = number_format((1.0 / $this->normalize), 10, '.', '');
+    $this->scores = str_replace('i.relevance', '(' . $relevance . ' * i.score * t.count)', $this->scores);
+
+    // Add all scores together to form a query field.
     $this->addExpression('SUM(' . implode(' + ', $this->scores) . ')', 'calculated_score', $this->scoresArguments);
 
+    // If an order has not yet been set for this query, add a default order
+    // that sorts by the calculated sum of scores.
     if (count($this->getOrderBy()) == 0) {
-      // Add default order after adding the expression.
       $this->orderBy('calculated_score', 'DESC');
     }
 
-    // Add tag and useful metadata.
+    // Add useful metadata.
     $this
-      ->addTag('search_' . $this->type)
       ->addMetaData('normalize', $this->normalize)
       ->fields('i', array('type', 'sid'));
 

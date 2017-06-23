@@ -77,9 +77,9 @@ function ctools_css_store($id, $css, $filter = TRUE) {
 
   $filename = ctools_css_cache($css, $filter);
 
-  db_insert('ctools_css_cache')
+  db_merge('ctools_css_cache')
+    ->key(array('cid' => $id))
     ->fields(array(
-      'cid' => $id,
       'filename' => $filename,
       'css' => $css,
       'filter' => intval($filter),
@@ -172,10 +172,12 @@ function ctools_css_cache($css, $filter = TRUE) {
   // @todo Is this slow? Does it matter if it is?
   $filename = $path . '/' . md5($css) . '.css';
 
-  // This will do renames if the file already exists, ensuring we don't
-  // accidentally overwrite other files who share the same md5. Yes this
-  // is a very miniscule chance but it's safe.
-  $filename = file_unmanaged_save_data($css, $filename);
+  // Generally md5 is considered unique enough to sign file downloads.
+  // So this replaces already existing files based on the assumption that two
+  // files with the same hash are identical content wise.
+  // If we rename, the cache folder can potentially fill up with thousands of
+  // files with the same content.
+  $filename = file_unmanaged_save_data($css, $filename, FILE_EXISTS_REPLACE);
 
   return $filename;
 }
@@ -284,8 +286,10 @@ function ctools_css_disassemble($css) {
   $disassembled_css = array();
   // Remove comments.
   $css = preg_replace("/\/\*(.*)?\*\//Usi", "", $css);
-  // Split out each statement
-  $statements = explode("}", $css);
+  // Split out each statement. Match either a right curly brace or a semi-colon
+  // that precedes a left curly brace with no right curly brace separating them.
+  $statements = preg_split('/}|;(?=[^}]*{)/', $css);
+
   // If we have any statements, parse them.
   if (!empty($statements)) {
     // Iterate through all of the statements.
@@ -306,7 +310,10 @@ function ctools_css_disassemble($css) {
       }
 
       // Disassemble the declaration, check it and tuck it into an array.
-      $disassembled_css[$selector_str] = _ctools_css_disassemble_declaration($declaration);
+      if (!isset($disassembled_css[$selector_str])) {
+        $disassembled_css[$selector_str] = array();
+      }
+      $disassembled_css[$selector_str] += _ctools_css_disassemble_declaration($declaration);
     }
   }
   return $disassembled_css;
@@ -556,7 +563,7 @@ function ctools_css_flush_caches() {
   // @see http://drupal.org/node/573292
   // file_unmanaged_delete_recursive('public://render');
   $filedir = file_default_scheme() . '://ctools/css';
-  if (drupal_realpath($filedir)) {
+  if (drupal_realpath($filedir) && file_exists($filedir)) {
     // We use the @ because it's possible that files created by the webserver
     // cannot be deleted while using drush to clear the cache. We don't really
     // care that much about that, to be honest, so we use the @ to suppress

@@ -281,3 +281,38 @@ function _views_content_get_context_from_display($view, $id, $parent, $required 
     'view display id' => $id,
   );
 }
+
+/**
+ * Implements hook_get_pane_links_alter().
+ */
+function views_content_get_pane_links_alter(&$links, $pane, $content_type) {
+  if ($pane->type === 'views_panes') {
+    list($view_name, $display_name) = explode('-', $pane->subtype);
+    $destination = array('destination' => current_path());
+    $links['top'][] = array(
+      'title' => t('Edit view'),
+      'href' => url('admin/structure/views/view/' . $view_name . '/edit/' . $display_name, array('query' => $destination, 'absolute' => TRUE)),
+    );
+  }
+}
+
+/**
+ * Implements hook_module_implements_alter()
+ */
+function views_content_module_implements_alter(&$implementations, $hook) {
+  if ($hook == 'views_pre_view') {
+    $group = $implementations['views_content'];
+    unset($implementations['views_content']);
+    $implementations = array('views_content' => $group) + $implementations;
+  }
+}
+
+/**
+ * Implements hook_views_pre_view()
+ */
+function views_content_views_pre_view(&$view) {
+  if (method_exists($view->display_handler, 'pane_process_conf')) {
+    // process the pane configuration to prevent loss when using ajax
+    $view->display_handler->pane_process_conf();
+  }
+}

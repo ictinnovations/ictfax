@@ -5,7 +5,6 @@
  * Page callbacks for adding, editing, deleting, and revisions management for content.
  */
 
-
 /**
  * Menu callback; presents the node editing form.
  */
@@ -15,6 +14,13 @@ function node_page_edit($node) {
   return drupal_get_form($node->type . '_node_form', $node);
 }
 
+/**
+ * Page callback: Displays add content links for available content types.
+ *
+ * Redirects to node/add/[type] if only one content type is available.
+ *
+ * @see node_menu()
+ */
 function node_add_page() {
   $item = menu_get_item();
   $content = system_admin_menu_block($item);
@@ -56,6 +62,12 @@ function theme_node_add_list($variables) {
 
 /**
  * Returns a node submission form.
+ *
+ * @param $type
+ *   The node type for the submitted node.
+ *
+ * @return
+ *   The themed form.
  */
 function node_add($type) {
   global $user;
@@ -68,6 +80,12 @@ function node_add($type) {
   return $output;
 }
 
+/**
+ * Form validation handler for node_form().
+ *
+ * @see node_form()
+ * @see node_form_submit()
+ */
 function node_form_validate($form, &$form_state) {
   // $form_state['node'] contains the actual entity being edited, but we must
   // not update it with form values that have not yet been validated, so we
@@ -78,7 +96,13 @@ function node_form_validate($form, &$form_state) {
 }
 
 /**
- * Generate the node add/edit form array.
+ * Form constructor for the node add/edit form.
+ *
+ * @see node_form_validate()
+ * @see node_form_submit()
+ * @see node_form_build_preview()
+ * @see node_form_delete_submit()
+ * @ingroup forms
  */
 function node_form($form, &$form_state, $node) {
   global $user;
@@ -299,12 +323,17 @@ function node_form($form, &$form_state, $node) {
   }
   $form += array('#submit' => array());
 
-  field_attach_form('node', $node, $form, $form_state, $node->language);
+  field_attach_form('node', $node, $form, $form_state, entity_language('node', $node));
   return $form;
 }
 
 /**
- * Button submit function: handle the 'Delete' button on the node form.
+ * Form submission handler for node_form().
+ *
+ * Handles the 'Delete' button on the node form.
+ *
+ * @see node_form()
+ * @see node_form_validate()
  */
 function node_form_delete_submit($form, &$form_state) {
   $destination = array();
@@ -316,7 +345,14 @@ function node_form_delete_submit($form, &$form_state) {
   $form_state['redirect'] = array('node/' . $node->nid . '/delete', array('query' => $destination));
 }
 
-
+/**
+ * Form submission handler for node_form().
+ *
+ * Handles the 'Preview' button on the node form.
+ *
+ * @see node_form()
+ * @see node_form_validate()
+ */
 function node_form_build_preview($form, &$form_state) {
   $node = node_form_submit_build_node($form, $form_state);
   $form_state['node_preview'] = node_preview($node);
@@ -324,38 +360,48 @@ function node_form_build_preview($form, &$form_state) {
 }
 
 /**
- * Generate a node preview.
+ * Generates a node preview.
+ *
+ * @param $node
+ *   The node to preview.
+ *
+ * @return
+ *   An HTML-formatted string of a node preview.
+ *
+ * @see node_form_build_preview()
  */
 function node_preview($node) {
-  if (node_access('create', $node) || node_access('update', $node)) {
-    _field_invoke_multiple('load', 'node', array($node->nid => $node));
+  // Clone the node before previewing it to prevent the node itself from being
+  // modified.
+  $cloned_node = clone $node;
+  if (node_access('create', $cloned_node) || node_access('update', $cloned_node)) {
+    _field_invoke_multiple('load', 'node', array($cloned_node->nid => $cloned_node));
     // Load the user's name when needed.
-    if (isset($node->name)) {
+    if (isset($cloned_node->name)) {
       // The use of isset() is mandatory in the context of user IDs, because
       // user ID 0 denotes the anonymous user.
-      if ($user = user_load_by_name($node->name)) {
-        $node->uid = $user->uid;
-        $node->picture = $user->picture;
+      if ($user = user_load_by_name($cloned_node->name)) {
+        $cloned_node->uid = $user->uid;
+        $cloned_node->picture = $user->picture;
       }
       else {
-        $node->uid = 0; // anonymous user
+        $cloned_node->uid = 0; // anonymous user
       }
     }
-    elseif ($node->uid) {
-      $user = user_load($node->uid);
-      $node->name = $user->name;
-      $node->picture = $user->picture;
+    elseif ($cloned_node->uid) {
+      $user = user_load($cloned_node->uid);
+      $cloned_node->name = $user->name;
+      $cloned_node->picture = $user->picture;
     }
 
-    $node->changed = REQUEST_TIME;
-    $nodes = array($node->nid => $node);
-    field_attach_prepare_view('node', $nodes, 'full');
+    $cloned_node->changed = REQUEST_TIME;
+    $nodes = array($cloned_node->nid => $cloned_node);
 
     // Display a preview of the node.
     if (!form_get_errors()) {
-      $node->in_preview = TRUE;
-      $output = theme('node_preview', array('node' => $node));
-      unset($node->in_preview);
+      $cloned_node->in_preview = TRUE;
+      $output = theme('node_preview', array('node' => $cloned_node));
+      unset($cloned_node->in_preview);
     }
     drupal_set_title(t('Preview'), PASS_THROUGH);
 
@@ -370,6 +416,7 @@ function node_preview($node) {
  *   An associative array containing:
  *   - node: The node object which is being previewed.
  *
+ * @see node_preview()
  * @ingroup themeable
  */
 function theme_node_preview($variables) {
@@ -400,6 +447,12 @@ function theme_node_preview($variables) {
   return $output;
 }
 
+/**
+ * Form submission handler for node_form().
+ *
+ * @see node_form()
+ * @see node_form_validate()
+ */
 function node_form_submit($form, &$form_state) {
   $node = node_form_submit_build_node($form, $form_state);
   $insert = empty($node->nid);
@@ -419,7 +472,7 @@ function node_form_submit($form, &$form_state) {
   if ($node->nid) {
     $form_state['values']['nid'] = $node->nid;
     $form_state['nid'] = $node->nid;
-    $form_state['redirect'] = 'node/' . $node->nid;
+    $form_state['redirect'] = node_access('view', $node) ? 'node/' . $node->nid : '<front>';
   }
   else {
     // In the unlikely case something went wrong on save, the node will be
@@ -465,7 +518,9 @@ function node_form_submit_build_node($form, &$form_state) {
 }
 
 /**
- * Menu callback -- ask for confirmation of node deletion
+ * Form constructor for the node deletion confirmation form.
+ *
+ * @see node_delete_confirm_submit()
  */
 function node_delete_confirm($form, &$form_state, $node) {
   $form['#node'] = $node;
@@ -481,12 +536,15 @@ function node_delete_confirm($form, &$form_state, $node) {
 }
 
 /**
- * Execute node deletion
+ * Executes node deletion.
+ *
+ * @see node_delete_confirm()
  */
 function node_delete_confirm_submit($form, &$form_state) {
   if ($form_state['values']['confirm']) {
     $node = node_load($form_state['values']['nid']);
     node_delete($form_state['values']['nid']);
+    cache_clear_all();
     watchdog('content', '@type: deleted %title.', array('@type' => $node->type, '%title' => $node->title));
     drupal_set_message(t('@type %title has been deleted.', array('@type' => node_type_get_name($node), '%title' => $node->title)));
   }
@@ -495,7 +553,15 @@ function node_delete_confirm_submit($form, &$form_state) {
 }
 
 /**
- * Generate an overview table of older revisions of a node.
+ * Generates an overview table of older revisions of a node.
+ *
+ * @param $node
+ *   A node object.
+ *
+ * @return array
+ *   An array as expected by drupal_render().
+ *
+ * @see node_menu()
  */
 function node_revision_overview($node) {
   drupal_set_title(t('Revisions for %title', array('%title' => $node->title)), PASS_THROUGH);
@@ -546,13 +612,26 @@ function node_revision_overview($node) {
 }
 
 /**
- * Ask for confirmation of the reversion to prevent against CSRF attacks.
+ * Asks for confirmation of the reversion to prevent against CSRF attacks.
+ *
+ * @param int $node_revision
+ *   The node revision ID.
+ *
+ * @return array
+ *   An array as expected by drupal_render().
+ *
+ * @see node_menu()
+ * @see node_revision_revert_confirm_submit()
+ * @ingroup forms
  */
 function node_revision_revert_confirm($form, $form_state, $node_revision) {
   $form['#node_revision'] = $node_revision;
   return confirm_form($form, t('Are you sure you want to revert to the revision from %revision-date?', array('%revision-date' => format_date($node_revision->revision_timestamp))), 'node/' . $node_revision->nid . '/revisions', '', t('Revert'), t('Cancel'));
 }
 
+/**
+ * Form submission handler for node_revision_revert_confirm().
+ */
 function node_revision_revert_confirm_submit($form, &$form_state) {
   $node_revision = $form['#node_revision'];
   $node_revision->revision = 1;
@@ -565,11 +644,29 @@ function node_revision_revert_confirm_submit($form, &$form_state) {
   $form_state['redirect'] = 'node/' . $node_revision->nid . '/revisions';
 }
 
+/**
+ * Form constructor for the revision deletion confirmation form.
+ *
+ * This form prevents against CSRF attacks.
+ *
+ * @param $node_revision
+ *   The node revision ID.
+ *
+ * @return
+ *   An array as expected by drupal_render().
+ *
+ * @see node_menu()
+ * @see node_revision_delete_confirm_submit()
+ * @ingroup forms
+ */
 function node_revision_delete_confirm($form, $form_state, $node_revision) {
   $form['#node_revision'] = $node_revision;
   return confirm_form($form, t('Are you sure you want to delete the revision from %revision-date?', array('%revision-date' => format_date($node_revision->revision_timestamp))), 'node/' . $node_revision->nid . '/revisions', t('This action cannot be undone.'), t('Delete'), t('Cancel'));
 }
 
+/**
+ * Form submission handler for node_revision_delete_confirm().
+ */
 function node_revision_delete_confirm_submit($form, &$form_state) {
   $node_revision = $form['#node_revision'];
   node_revision_delete($node_revision->vid);

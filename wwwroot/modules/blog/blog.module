@@ -40,7 +40,7 @@ function blog_help($path, $arg) {
   switch ($path) {
     case 'admin/help#blog':
       $output = '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t("The Blog module allows registered users to maintain an online journal, or <em>blog</em>. Blogs are made up of individual <em>blog entries</em>. By default, the blog entries are displayed by creation time in descending order, with comments enabled, and are promoted to the site's front page. For more information, see the online handbook entry for <a href='@blog'>Blog module</a>.", array('@blog' => 'http://drupal.org/handbook/modules/blog/')) . '</p>';
+      $output .= '<p>' . t("The Blog module allows registered users to maintain an online journal, or <em>blog</em>. Blogs are made up of individual <em>blog entries</em>. By default, the blog entries are displayed by creation time in descending order, with comments enabled, and are promoted to the site's front page. For more information, see the online handbook entry for <a href='@blog'>Blog module</a>.", array('@blog' => 'http://drupal.org/documentation/modules/blog/')) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Single-user blogs') . '</dt>';
@@ -152,7 +152,7 @@ function blog_menu_local_tasks_alter(&$data, $router_item, $root_path) {
     }
   }
   // Provide a helper action link to the author on the 'blog/%' page.
-  elseif ($root_path == 'blog/%' && $router_item['page_arguments'][0]->uid == $user->uid) {
+  elseif ($root_path == 'blog/%' && isset($router_item['page_arguments'][0]->uid) && $router_item['page_arguments'][0]->uid == $user->uid) {
     $data['actions']['output']['blog'] = array(
       '#theme' => 'menu_local_action',
     );

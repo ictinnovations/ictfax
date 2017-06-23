@@ -88,10 +88,11 @@
     var url_class = '.' + $(item).attr('id') + '-url';
     $(url_class).each(
       function() {
-        if (url && $(this).val()) {
+        var $this = $(this);
+        if (url && $this.val()) {
           url += '/';
         }
-        url += $(this).val();
+        url += $this.val();
       });
     return url;
   };

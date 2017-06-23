@@ -16,7 +16,7 @@
 $plugin = array(
   'title' => t('Custom content'),
   'no title override' => TRUE,
-  'defaults' => array('admin_title' => '', 'title' => '', 'body' => '', 'format' => filter_fallback_format(), 'substitute' => TRUE),
+  'defaults' => array('admin_title' => '', 'title' => '', 'title_heading' => 'h2', 'body' => '', 'format' => filter_default_format(), 'substitute' => TRUE),
   'js' => array('misc/autocomplete.js', 'misc/textarea.js', 'misc/collapse.js'),
   // Make sure the edit form is only used for some subtypes.
   'edit form' => '',
@@ -32,7 +32,7 @@ function ctools_custom_content_type_content_type($subtype_id) {
   if ($subtype_id == 'custom') {
     return _ctools_default_content_type_content_type();
   }
-  else {
+  elseif (module_exists('ctools_custom_content')) {
     ctools_include('export');
     $content = ctools_export_crud_load('ctools_custom_content', $subtype_id);
     if ($content) {
@@ -45,13 +45,21 @@ function ctools_custom_content_type_content_type($subtype_id) {
  * Return all custom content types available.
  */
 function ctools_custom_content_type_content_types() {
+  $types = &drupal_static(__FUNCTION__);
+  if (isset($types)) {
+    return $types;
+  }
+
   ctools_include('export');
   $types = array();
   $types['custom'] = _ctools_default_content_type_content_type();
 
-  foreach (ctools_export_crud_load_all('ctools_custom_content') as $name => $content) {
-    $types[$name] = _ctools_custom_content_type_content_type($content);
+  if (module_exists('ctools_custom_content')) {
+    foreach (ctools_export_crud_load_all('ctools_custom_content') as $name => $content) {
+      $types[$name] = _ctools_custom_content_type_content_type($content);
+    }
   }
+
   return $types;
 }
 
@@ -112,7 +120,7 @@ function ctools_custom_content_type_get_conf($subtype, $conf) {
     // reusable. Since we're not allowed to change the subtype, we're
     // still stored as though we are local, but are pointing off to
     // non-local.
-    if (!empty($conf['name'])) {
+    if (!empty($conf['name']) && module_exists('ctools_custom_content')) {
       ctools_include('export');
       $content = ctools_export_crud_load('ctools_custom_content', $conf['name']);
       if ($content) {
@@ -127,8 +135,9 @@ function ctools_custom_content_type_get_conf($subtype, $conf) {
         $settings = array(
           'admin_title' => t('Missing/deleted content'),
           'title' => '',
+          'title_heading' => '',
           'body' => '',
-          'format' => filter_fallback_format(),
+          'format' => filter_default_format(),
           'substitute' => TRUE,
           'custom_type' => 'fixed',
           'content' => $content,
@@ -141,6 +150,12 @@ function ctools_custom_content_type_get_conf($subtype, $conf) {
       $settings = $conf;
       $settings['custom_type'] = 'local';
     }
+  }
+
+  // Correct for an error that came in because filter format changed.
+  if (is_array($settings['body'])) {
+    $settings['format'] = $settings['body']['format'];
+    $settings['body'] = $settings['body']['value'];
   }
 
   return $settings;
@@ -166,6 +181,8 @@ function ctools_custom_content_type_render($subtype, $conf, $args, $contexts) {
   $block          = new stdClass();
   $block->subtype = ++$delta;
   $block->title   = filter_xss_admin($settings['title']);
+  $block->title_heading = isset($settings['title_heading']) ? $settings['title_heading'] : 'h2';
+
 
   // Add keyword substitutions if we were configured to do so.
   $content = $settings['body'];
@@ -263,10 +280,36 @@ function ctools_custom_content_type_edit_form($form, &$form_state) {
     '#description' => t('This title will be used administratively to identify this pane. If blank, the regular title will be used.'),
   );
 
+  // Copy over the title override settings for a title heading.
+  $form['aligner_start'] = array(
+    '#markup' => '<div class="option-text-aligner clearfix">',
+  );
+
   $form['title'] = array(
     '#type' => 'textfield',
     '#default_value' => $settings['title'],
     '#title' => t('Title'),
+    '#id' => 'override-title-textfield',
+  );
+
+  $form['title_heading'] = array(
+    '#type' => 'select',
+    '#default_value' => isset($settings['title_heading']) ? $settings['title_heading'] : 'h2',
+    '#options' => array(
+      'h1' => t('h1'),
+      'h2' => t('h2'),
+      'h3' => t('h3'),
+      'h4' => t('h4'),
+      'h5' => t('h5'),
+      'h6' => t('h6'),
+      'div' => t('div'),
+      'span' => t('span'),
+    ),
+    '#id' => 'override-title-heading',
+  );
+
+  $form['aligner_stop'] = array(
+    '#markup' => '</div>',
   );
 
   $form['body'] = array(
@@ -380,6 +423,10 @@ function ctools_custom_content_type_edit_form_validate(&$form, &$form_state) {
       return;
     }
 
+    if (!module_exists('ctools_custom_content')) {
+      return;
+    }
+
     // Check for name collision
     if ($form_state['values']['name'] == 'custom' || (ctools_export_crud_load('ctools_custom_content', $form_state['values']['name']))) {
       form_error($form['name'], t('Content with this name already exists. Please choose another name or delete the existing item before creating a new one.'));
@@ -391,6 +438,10 @@ function ctools_custom_content_type_edit_form_validate(&$form, &$form_state) {
  * The submit form stores the data in $conf.
  */
 function ctools_custom_content_type_edit_form_submit($form, &$form_state) {
+  // Because of changes in filter form, these two keys are out of position:
+  $form_state['values']['format'] = $form_state['values']['body']['format'];
+  $form_state['values']['body'] = $form_state['values']['body']['value'];
+
   if ($form_state['settings']['custom_type'] == 'fixed') {
     _ctools_custom_content_type_edit_save($form_state['settings']['content'], $form_state);
   }
@@ -404,14 +455,9 @@ function ctools_custom_content_type_edit_form_submit($form, &$form_state) {
   }
   else {
     // Otherwise, just save values into $conf normally.
-    // Because of changes in filter form, these two keys are out of position:
-    $form_state['conf']['body'] = $form_state['values']['body']['value'];
-    $form_state['conf']['format'] = $form_state['values']['body']['format'];
 
     foreach (array_keys($form_state['plugin']['defaults']) as $key) {
-      if (isset($form_state['values'][$key]) && $key != 'body' && $key != 'format') {
-        $form_state['conf'][$key] = $form_state['values'][$key];
-      }
+      $form_state['conf'][$key] = isset($form_state['values'][$key]) ? $form_state['values'][$key] : $form_state['plugin']['defaults'][$key];
     }
   }
 }

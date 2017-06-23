@@ -12,7 +12,7 @@ class CtoolsCssTestCase extends DrupalWebTestCase {
     return array(
       'name' => 'CSS Tools tests',
       'description' => '...',
-      'group' => 'Chaos Tools Suite',
+      'group' => 'ctools',
     );
   }
 
@@ -65,5 +65,17 @@ class CtoolsCssTestCase extends DrupalWebTestCase {
     $font_size = (strpos($filtered, 'font-size:12px;') !== FALSE);
     $color = (strpos($filtered, 'color:blue') !== FALSE);
     $this->assertTrue($font_size && $color, 'Multiple properties are merged.');
+
+    $css = '@import url("other.css");p {color: red;}';
+    $filtered = ctools_css_filter($css);
+    $other_css = (strpos($filtered, 'other.css') === FALSE);
+    $color = (strpos($filtered, 'color:red') !== FALSE);
+    $this->assertTrue($other_css && $color, 'CSS is properly sanitized.');
+
+    $css = ';p {color: red; font-size: 12px;}';
+    $filtered = ctools_css_filter($css);
+    $font_size = (strpos($filtered, 'font-size:12px;') !== FALSE);
+    $color = (strpos($filtered, 'color:red') !== FALSE);
+    $this->assertTrue($font_size && $color, 'Multiple properties are retained.');
   }
 }

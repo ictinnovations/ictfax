@@ -66,9 +66,9 @@ function ctools_context_handler_get_render_handler($task, $subtask, $handlers, $
       // If not, if it's a 'context' type handler, use the default tester.
       if ($plugin['handler type'] == 'context') {
         $test = ctools_context_handler_default_test($handler, $contexts, $args);
-      }
-      if ($test) {
-        return $id;
+        if ($test) {
+          return $id;
+        }
       }
     }
   }
@@ -100,6 +100,24 @@ function ctools_context_handler_render_handler($task, $subtask, $handler, $conte
     return NULL;
   }
 
+  if ($page) {
+    if ($subtask) {
+      $task_name = page_manager_make_task_name($task['name'], $subtask['name']);
+    }
+    else {
+      $task_name = $task['name'];
+    }
+
+    page_manager_get_current_page(array(
+      'name' => $task_name,
+      'task' => $task,
+      'subtask' => $subtask,
+      'contexts' => $contexts,
+      'arguments' => $args,
+      'handler' => $handler,
+    ));
+  }
+
   $info = $function($handler, $contexts, $args);
   if (!$info) {
     return NULL;
@@ -119,28 +137,16 @@ function ctools_context_handler_render_handler($task, $subtask, $handler, $conte
     return $info;
   }
 
-  if ($subtask) {
-    $task_name = page_manager_make_task_name($task['name'], $subtask['name']);
-  }
-  else {
-    $task_name = $task['name'];
-  }
-
-  page_manager_get_current_page(array(
-    'name' => $task_name,
-    'task' => $task,
-    'subtask' => $subtask,
-    'contexts' => $contexts,
-    'arguments' => $args,
-    'handler' => $handler,
-  ));
-
   if (!empty($info['response code']) && $info['response code'] != 200) {
     switch ($info['response code']) {
       case 403:
         return MENU_ACCESS_DENIED;
       case 404:
         return MENU_NOT_FOUND;
+      case 410:
+        drupal_add_http_header('Status', '410 Gone');
+        drupal_exit();
+        break;
       case 301:
       case 302:
       case 303:
@@ -148,63 +154,52 @@ function ctools_context_handler_render_handler($task, $subtask, $handler, $conte
       case 305:
       case 307:
         $info += array(
-          'query' => '',
+          'query' => array(),
           'fragment' => '',
         );
         $options = array(
           'query' => $info['query'],
           'fragment' => $info['fragment'],
         );
-        return drupal_goto($info['destination'], $options, $info['response code']);
+        drupal_goto($info['destination'], $options, $info['response code']);
       // @todo -- should other response codes be supported here?
     }
   }
 
   $plugin = page_manager_get_task_handler($handler->handler);
 
-  if (module_exists('contextual') && user_access('access contextual links') && user_access('administer page manager') && isset($handler->task)) {
-    // Provide a tab to edit this context:
-    ctools_include('menu');
-    $task = page_manager_get_task($handler->task);
+  if (module_exists('contextual') && user_access('access contextual links') && isset($handler->task)) {
+    // Provide a contextual link to edit this, if we can:
+    $callback = isset($plugin['contextual link']) ? $plugin['contextual link'] : 'ctools_task_handler_default_contextual_link';
+    if ($callback && function_exists($callback)) {
+      $links = $callback($handler, $plugin, $contexts, $args);
+    }
 
-    $title = !empty($task['tab title']) ? $task['tab title'] : t('Edit @type', array('@type' => $plugin['title']));
-    $trail = array();
-    if (!empty($plugin['tab operation'])) {
-      if (is_array($plugin['tab operation'])) {
-        $trail = $plugin['tab operation'];
+    if (!empty($links) && is_array($links)) {
+      $build = array(
+        '#theme_wrappers' => array('container'),
+        '#attributes' => array('class' => array('contextual-links-region')),
+      );
+
+      if (!is_array($info['content'])) {
+        $build['content']['#markup'] = $info['content'];
       }
-      else if (function_exists($plugin['tab operation'])) {
-        $trail = $plugin['tab operation']($handler, $contexts, $args);
+      else {
+        $build['content'] = $info['content'];
       }
-    }
 
-    $build = array(
-      '#theme_wrappers' => array('container'),
-      '#attributes' => array('class' => array('contextual-links-region')),
-    );
-
-    if (!is_array($info['content'])) {
-      $build['content']['#markup'] = $info['content'];
+      $build['contextual_links'] = array(
+        '#prefix' => '<div class="contextual-links-wrapper">',
+        '#suffix' => '</div>',
+        '#theme' => 'links__contextual',
+        '#links' => $links,
+        '#attributes' => array('class' => array('contextual-links')),
+        '#attached' => array(
+          'library' => array(array('contextual', 'contextual-links')),
+        ),
+      );
+      $info['content'] = $build;
     }
-    else {
-      $build['content'] = $info['content'];
-    }
-
-    $path = page_manager_edit_url(page_manager_make_task_name($handler->task, $handler->subtask), $trail);
-    $build['contextual_links'] = array(
-      '#prefix' => '<div class="contextual-links-wrapper">',
-      '#suffix' => '</div>',
-      '#theme' => 'links__contextual',
-      '#links' => array(array(
-        'href' => $path,
-        'title' => $title,
-      )),
-      '#attributes' => array('class' => array('contextual-links')),
-      '#attached' => array(
-        'library' => array(array('contextual', 'contextual-links')),
-      ),
-    );
-    $info['content'] = drupal_render($build);
   }
 
   foreach (ctools_context_handler_get_task_arguments($task, $subtask) as $id => $argument) {
@@ -224,6 +219,41 @@ function ctools_context_handler_render_handler($task, $subtask, $handler, $conte
     ctools_set_no_blocks(FALSE);
   }
   return $info['content'];
+}
+
+/**
+ * Default function to provide contextual link for a task as defined by the handler.
+ *
+ * This provides a simple link to th main content operation and is suitable
+ * for most normal handlers. Setting 'contextual link' to a function overrides
+ * this and setting it to FALSE will prevent a contextual link from appearing.
+ */
+function ctools_task_handler_default_contextual_link($handler, $plugin, $contexts, $args) {
+  if (!user_access('administer page manager')) {
+    return;
+  }
+
+  $task = page_manager_get_task($handler->task);
+
+  $title = !empty($task['tab title']) ? $task['tab title'] : t('Edit @type', array('@type' => $plugin['title']));
+  $trail = array();
+  if (!empty($plugin['tab operation'])) {
+    if (is_array($plugin['tab operation'])) {
+      $trail = $plugin['tab operation'];
+    }
+    else if (function_exists($plugin['tab operation'])) {
+      $trail = $plugin['tab operation']($handler, $contexts, $args);
+    }
+  }
+  $path = page_manager_edit_url(page_manager_make_task_name($handler->task, $handler->subtask), $trail);
+
+  $links = array(array(
+    'href' => $path,
+    'title' => $title,
+    'query' => drupal_get_destination(),
+  ));
+
+  return $links;
 }
 
 /**
@@ -425,7 +455,7 @@ function ctools_context_handler_edit_criteria($form, &$form_state) {
   ctools_include('ajax');
   ctools_modal_add_plugin_js(ctools_get_access_plugins());
   ctools_include('context-access-admin');
-  $form_state['module'] = 'page_manager_task_handler';
+  $form_state['module'] = (isset($form_state['module'])) ? $form_state['module'] : 'page_manager_task_handler';
   // Encode a bunch of info into the argument so we can get our cache later
   $form_state['callback argument'] = $form_state['task_name'] . '*' . $form_state['handler']->name;
   $form_state['access'] = $form_state['handler']->conf['access'];

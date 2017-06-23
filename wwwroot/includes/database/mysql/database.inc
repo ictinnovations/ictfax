@@ -6,18 +6,18 @@
  */
 
 /**
- * @ingroup database
+ * @addtogroup database
  * @{
  */
 
 class DatabaseConnection_mysql extends DatabaseConnection {
 
   /**
-   * Flag to indicate if we have registered the nextID cleanup function.
+   * Flag to indicate if the cleanup function in __destruct() should run.
    *
    * @var boolean
    */
-  protected $shutdownRegistered = FALSE;
+  protected $needsCleanup = FALSE;
 
   public function __construct(array $connection_options = array()) {
     // This driver defaults to transaction support, except if explicitly passed FALSE.
@@ -28,6 +28,12 @@ class DatabaseConnection_mysql extends DatabaseConnection {
 
     $this->connectionOptions = $connection_options;
 
+    $charset = 'utf8';
+    // Check if the charset is overridden to utf8mb4 in settings.php.
+    if ($this->utf8mb4IsActive()) {
+      $charset = 'utf8mb4';
+    }
+
     // The DSN should use either a socket or a host/port.
     if (isset($connection_options['unix_socket'])) {
       $dsn = 'mysql:unix_socket=' . $connection_options['unix_socket'];
@@ -36,34 +42,63 @@ class DatabaseConnection_mysql extends DatabaseConnection {
       // Default to TCP connection on port 3306.
       $dsn = 'mysql:host=' . $connection_options['host'] . ';port=' . (empty($connection_options['port']) ? 3306 : $connection_options['port']);
     }
+    // Character set is added to dsn to ensure PDO uses the proper character
+    // set when escaping. This has security implications. See
+    // https://www.drupal.org/node/1201452 for further discussion.
+    $dsn .= ';charset=' . $charset;
     $dsn .= ';dbname=' . $connection_options['database'];
-    parent::__construct($dsn, $connection_options['username'], $connection_options['password'], array(
+    // Allow PDO options to be overridden.
+    $connection_options += array(
+      'pdo' => array(),
+    );
+    $connection_options['pdo'] += array(
       // So we don't have to mess around with cursors and unbuffered queries by default.
       PDO::MYSQL_ATTR_USE_BUFFERED_QUERY => TRUE,
       // Because MySQL's prepared statements skip the query cache, because it's dumb.
       PDO::ATTR_EMULATE_PREPARES => TRUE,
-      // Force column names to lower case.
-      PDO::ATTR_CASE => PDO::CASE_LOWER,
-    ));
+    );
+    if (defined('PDO::MYSQL_ATTR_MULTI_STATEMENTS')) {
+      // An added connection option in PHP 5.5.21+ to optionally limit SQL to a
+      // single statement like mysqli.
+      $connection_options['pdo'] += array(PDO::MYSQL_ATTR_MULTI_STATEMENTS => FALSE);
+    }
+
+    parent::__construct($dsn, $connection_options['username'], $connection_options['password'], $connection_options['pdo']);
 
     // Force MySQL to use the UTF-8 character set. Also set the collation, if a
     // certain one has been set; otherwise, MySQL defaults to 'utf8_general_ci'
     // for UTF-8.
     if (!empty($connection_options['collation'])) {
-      $this->exec('SET NAMES utf8 COLLATE ' . $connection_options['collation']);
+      $this->exec('SET NAMES ' . $charset . ' COLLATE ' . $connection_options['collation']);
     }
     else {
-      $this->exec('SET NAMES utf8');
+      $this->exec('SET NAMES ' . $charset);
     }
 
-    // Force MySQL's behavior to conform more closely to SQL standards.
-    // This allows Drupal to run almost seamlessly on many different
-    // kinds of database systems. These settings force MySQL to behave
-    // the same as postgresql, or sqlite in regards to syntax interpretation
-    // and invalid data handling. See http://drupal.org/node/344575 for
-    // further discussion. Also, as MySQL 5.5 changed the meaning of
-    // TRADITIONAL we need to spell out the modes one by one.
-    $this->exec("SET sql_mode='ANSI,STRICT_TRANS_TABLES,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER'");
+    // Set MySQL init_commands if not already defined.  Default Drupal's MySQL
+    // behavior to conform more closely to SQL standards.  This allows Drupal
+    // to run almost seamlessly on many different kinds of database systems.
+    // These settings force MySQL to behave the same as postgresql, or sqlite
+    // in regards to syntax interpretation and invalid data handling.  See
+    // http://drupal.org/node/344575 for further discussion. Also, as MySQL 5.5
+    // changed the meaning of TRADITIONAL we need to spell out the modes one by
+    // one.
+    $connection_options += array(
+      'init_commands' => array(),
+    );
+    $connection_options['init_commands'] += array(
+      'sql_mode' => "SET sql_mode = 'REAL_AS_FLOAT,PIPES_AS_CONCAT,ANSI_QUOTES,IGNORE_SPACE,STRICT_TRANS_TABLES,STRICT_ALL_TABLES,NO_ZERO_IN_DATE,NO_ZERO_DATE,ERROR_FOR_DIVISION_BY_ZERO,NO_AUTO_CREATE_USER'",
+    );
+    // Execute initial commands.
+    foreach ($connection_options['init_commands'] as $sql) {
+      $this->exec($sql);
+    }
+  }
+
+  public function __destruct() {
+    if ($this->needsCleanup) {
+      $this->nextIdDelete();
+    }
   }
 
   public function queryRange($query, $from, $count, array $args = array(), array $options = array()) {
@@ -72,7 +107,7 @@ class DatabaseConnection_mysql extends DatabaseConnection {
 
   public function queryTemporary($query, array $args = array(), array $options = array()) {
     $tablename = $this->generateTemporaryTableName();
-    $this->query(preg_replace('/^SELECT/i', 'CREATE TEMPORARY TABLE {' . $tablename . '} Engine=MEMORY SELECT', $query), $args, $options);
+    $this->query('CREATE TEMPORARY TABLE {' . $tablename . '} Engine=MEMORY ' . $query, $args, $options);
     return $tablename;
   }
 
@@ -103,12 +138,7 @@ class DatabaseConnection_mysql extends DatabaseConnection {
       $this->query('INSERT INTO {sequences} (value) VALUES (:value) ON DUPLICATE KEY UPDATE value = value', array(':value' => $existing_id));
       $new_id = $this->query('INSERT INTO {sequences} () VALUES ()', array(), array('return' => Database::RETURN_INSERT_ID));
     }
-    if (!$this->shutdownRegistered) {
-      // Use register_shutdown_function() here to keep the database system
-      // independent of Drupal.
-      register_shutdown_function(array($this, 'nextIdDelete'));
-      $shutdownRegistered = TRUE;
-    }
+    $this->needsCleanup = TRUE;
     return $new_id;
   }
 
@@ -169,8 +199,11 @@ class DatabaseConnection_mysql extends DatabaseConnection {
           // succeed for MySQL error code 1305 ("SAVEPOINT does not exist").
           if ($e->errorInfo[1] == '1305') {
             // If one SAVEPOINT was released automatically, then all were.
-            // Therefore, we keep just the topmost transaction.
-            $this->transactionLayers = array('drupal_transaction' => 'drupal_transaction');
+            // Therefore, clean the transaction stack.
+            $this->transactionLayers = array();
+            // We also have to explain to PDO that the transaction stack has
+            // been cleaned-up.
+            PDO::commit();
           }
           else {
             throw $e;
@@ -179,9 +212,45 @@ class DatabaseConnection_mysql extends DatabaseConnection {
       }
     }
   }
+
+  public function utf8mb4IsConfigurable() {
+    return TRUE;
+  }
+
+  public function utf8mb4IsActive() {
+    return isset($this->connectionOptions['charset']) && $this->connectionOptions['charset'] === 'utf8mb4';
+  }
+
+  public function utf8mb4IsSupported() {
+    // Ensure that the MySQL driver supports utf8mb4 encoding.
+    $version = $this->getAttribute(PDO::ATTR_CLIENT_VERSION);
+    if (strpos($version, 'mysqlnd') !== FALSE) {
+      // The mysqlnd driver supports utf8mb4 starting at version 5.0.9.
+      $version = preg_replace('/^\D+([\d.]+).*/', '$1', $version);
+      if (version_compare($version, '5.0.9', '<')) {
+        return FALSE;
+      }
+    }
+    else {
+      // The libmysqlclient driver supports utf8mb4 starting at version 5.5.3.
+      if (version_compare($version, '5.5.3', '<')) {
+        return FALSE;
+      }
+    }
+
+    // Ensure that the MySQL server supports large prefixes and utf8mb4.
+    try {
+      $this->query("CREATE TABLE {drupal_utf8mb4_test} (id VARCHAR(255), PRIMARY KEY(id(255))) CHARACTER SET utf8mb4 COLLATE utf8mb4_general_ci ROW_FORMAT=DYNAMIC ENGINE=INNODB");
+    }
+    catch (Exception $e) {
+      return FALSE;
+    }
+    $this->query("DROP TABLE {drupal_utf8mb4_test}");
+    return TRUE;
+  }
 }
 
 
 /**
- * @} End of "ingroup database".
+ * @} End of "addtogroup database".
  */

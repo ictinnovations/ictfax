@@ -14,7 +14,9 @@
  *   The page content.
  */
 function taxonomy_term_page($term) {
-  // Assign the term name as the page title.
+  // If there is a menu link to this term, the link becomes the last part of
+  // the active trail, and the link name becomes the page title. Thus, we must
+  // explicitly set the page title to be the term title.
   drupal_set_title($term->name);
 
   // Build breadcrumb based on the hierarchy of the term.
@@ -33,8 +35,17 @@ function taxonomy_term_page($term) {
   drupal_set_breadcrumb($breadcrumb);
   drupal_add_feed('taxonomy/term/' . $term->tid . '/feed', 'RSS - ' . $term->name);
 
-  $build = array();
+  // Set the term path as the canonical URL to prevent duplicate content.
+  $uri = entity_uri('taxonomy_term', $term);
+  drupal_add_html_head_link(array('rel' => 'canonical', 'href' => url($uri['path'], $uri['options'])), TRUE);
+  // Set the non-aliased path as a default shortlink.
+  drupal_add_html_head_link(array('rel' => 'shortlink', 'href' => url($uri['path'], array_merge($uri['options'], array('alias' => TRUE)))), TRUE);
 
+  // Normally we would call taxonomy_term_show() here, but for backwards
+  // compatibility in Drupal 7 we do not want to do that (it produces different
+  // data structures and HTML markup than what Drupal 7 released with). Calling
+  // taxonomy_term_view() directly provides essentially the same thing, but
+  // allows us to wrap the rendered term in our desired array structure.
   $build['term_heading'] = array(
     '#prefix' => '<div class="term-listing-heading">',
     '#suffix' => '</div>',
@@ -47,7 +58,7 @@ function taxonomy_term_page($term) {
     $build['pager'] = array(
       '#theme' => 'pager',
       '#weight' => 5,
-     );
+    );
   }
   else {
     $build['no_content'] = array(
@@ -107,14 +118,27 @@ function taxonomy_term_feed($term) {
  * @see taxonomy_menu()
  * @see taxonomy_field_widget_info()
  */
-function taxonomy_autocomplete($field_name, $tags_typed = '') {
-  $field = field_info_field($field_name);
+function taxonomy_autocomplete($field_name = '', $tags_typed = '') {
+  // If the request has a '/' in the search text, then the menu system will have
+  // split it into multiple arguments, recover the intended $tags_typed.
+  $args = func_get_args();
+  // Shift off the $field_name argument.
+  array_shift($args);
+  $tags_typed = implode('/', $args);
+
+  // Make sure the field exists and is a taxonomy field.
+  if (!($field = field_info_field($field_name)) || $field['type'] !== 'taxonomy_term_reference') {
+    // Error string. The JavaScript handler will realize this is not JSON and
+    // will display it as debugging information.
+    print t('Taxonomy field @field_name not found.', array('@field_name' => $field_name));
+    exit;
+  }
 
   // The user enters a comma-separated list of tags. We only autocomplete the last tag.
   $tags_typed = drupal_explode_tags($tags_typed);
   $tag_last = drupal_strtolower(array_pop($tags_typed));
 
-  $matches = array();
+  $term_matches = array();
   if ($tag_last != '') {
 
     // Part of the criteria for the query come from the field's own settings.
@@ -126,7 +150,7 @@ function taxonomy_autocomplete($field_name, $tags_typed = '') {
 
     $query = db_select('taxonomy_term_data', 't');
     $query->addTag('translatable');
-    $query->addTag('term_access');
+    $query->addTag('taxonomy_term_access');
 
     // Do not select already entered terms.
     if (!empty($tags_typed)) {
@@ -143,7 +167,6 @@ function taxonomy_autocomplete($field_name, $tags_typed = '') {
 
     $prefix = count($tags_typed) ? drupal_implode_tags($tags_typed) . ', ' : '';
 
-    $term_matches = array();
     foreach ($tags_return as $tid => $name) {
       $n = $name;
       // Term names containing commas or quotes must be wrapped in quotes.

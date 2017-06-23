@@ -41,10 +41,17 @@ function image_schema() {
         'not null' => TRUE,
       ),
       'name' => array(
-        'description' => 'The style name.',
+        'description' => 'The style machine name.',
         'type' => 'varchar',
         'length' => 255,
         'not null' => TRUE,
+      ),
+      'label' => array(
+        'description' => 'The style administrative name.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
       ),
     ),
     'primary key' => array('isid'),
@@ -121,13 +128,13 @@ function image_field_schema($field) {
       'alt' => array(
         'description' => "Alternative image text, for the image's 'alt' attribute.",
         'type' => 'varchar',
-        'length' => 128,
+        'length' => 512,
         'not null' => FALSE,
       ),
       'title' => array(
         'description' => "Image title text, for the image's 'title' attribute.",
         'type' => 'varchar',
-        'length' => 128,
+        'length' => 1024,
         'not null' => FALSE,
       ),
       'width' => array(
@@ -151,6 +158,18 @@ function image_field_schema($field) {
       ),
     ),
   );
+}
+
+/**
+ * Implements hook_update_dependencies().
+ */
+function image_update_dependencies() {
+  $dependencies['image'][7002] = array(
+    // Image update 7002 uses field API functions, so must run after
+    // Field API has been enabled.
+    'system' => 7020,
+  );
+  return $dependencies;
 }
 
 /**
@@ -240,6 +259,11 @@ function image_update_7000() {
     db_create_table('image_effects', $schema['image_effects']);
   }
 }
+
+/**
+ * @addtogroup updates-7.x-extra
+ * @{
+ */
 
 /**
  * Rename possibly misnamed {image_effect} table to {image_effects}.
@@ -374,7 +398,8 @@ function image_update_7002(array &$sandbox) {
   }
 
   // Process the table at the top of the list.
-  $table = reset(array_keys($sandbox['tables']));
+  $keys = array_keys($sandbox['tables']);
+  $table = reset($keys);
   $sandbox['processed'] += _image_update_7002_populate_dimensions($table, $sandbox['tables'][$table], $sandbox['last_fid']);
 
   // Has the table been fully processed?
@@ -384,6 +409,79 @@ function image_update_7002(array &$sandbox) {
 
   $sandbox['#finished'] = count($sandbox['tables']) ? ($sandbox['processed'] / $sandbox['total']) : 1;
 }
+
+/**
+ * Remove the variables that set alt and title length since they were not
+ * used for database column size and could cause PDO exceptions.
+ */
+function image_update_7003() {
+  variable_del('image_alt_length');
+  variable_del('image_title_length');
+}
+
+/**
+ * Use a large setting (512 and 1024 characters) for the length of the image alt
+ * and title fields.
+ */
+function image_update_7004() {
+  $alt_spec = array(
+    'type' => 'varchar',
+    'length' => 512,
+    'not null' => FALSE,
+  );
+
+  $title_spec = array(
+    'type' => 'varchar',
+    'length' => 1024,
+    'not null' => FALSE,
+  );
+
+  $fields = _update_7000_field_read_fields(array(
+    'module' => 'image',
+    'storage_type' => 'field_sql_storage',
+  ));
+
+  foreach ($fields as $field_name => $field) {
+    $tables = array(
+      _field_sql_storage_tablename($field),
+      _field_sql_storage_revision_tablename($field),
+    );
+    $alt_column = $field['field_name'] . '_alt';
+    $title_column = $field['field_name'] . '_title';
+    foreach ($tables as $table) {
+      db_change_field($table, $alt_column, $alt_column, $alt_spec);
+      db_change_field($table, $title_column, $title_column, $title_spec);
+    }
+  }
+}
+
+/**
+ * Add a column to the 'image_style' table to store administrative labels.
+ */
+function image_update_7005() {
+  $field = array(
+    'type' => 'varchar',
+    'length' => 255,
+    'not null' => TRUE,
+    'default' => '',
+    'description' => 'The style administrative name.',
+  );
+  db_add_field('image_styles', 'label', $field);
+
+  // Do a direct query here, rather than calling image_styles(),
+  // in case Image module is disabled.
+  $styles = db_query('SELECT name FROM {image_styles}')->fetchCol();
+  foreach ($styles as $style) {
+    db_update('image_styles')
+      ->fields(array('label' => $style))
+      ->condition('name', $style)
+      ->execute();
+  }
+}
+
+/**
+ * @} End of "addtogroup updates-7.x-extra".
+ */
 
 /**
  * Implements hook_requirements() to check the PHP GD Library.

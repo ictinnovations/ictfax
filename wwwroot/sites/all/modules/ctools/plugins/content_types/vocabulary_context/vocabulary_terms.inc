@@ -10,7 +10,7 @@ if (module_exists('taxonomy')) {
     'title' => t('Vocabulary terms'),
     'icon' => 'icon_vocabulary.png',
     'description' => t('All the terms in a vocabulary.'),
-    'required context' => new ctools_context_required(t('Vocabulary'), 'vocabulary'),
+    'required context' => new ctools_context_required(t('Vocabulary'), 'entity:taxonomy_vocabulary'),
     'category' => t('Vocabulary'),
     'defaults' => array('max_depth' => 0, 'tree' => 1),
   );
@@ -21,18 +21,18 @@ if (module_exists('taxonomy')) {
  * list of terms for the input vocabulary.
  */
 function ctools_vocabulary_terms_content_type_render($subtype, $conf, $panel_args, $context) {
-  $vocab = isset($context->data) ? clone($context->data) : NULL;
+  $vocab = isset($context->data) ? clone $context->data : NULL;
   $max_depth = (!empty($conf['max_depth']) ? (int)$conf['max_depth'] : NULL);
   if ($conf['tree'] == FALSE) {
-    $terms = taxonomy_get_tree($vocab->vid, 0, -1, $max_depth);
+    $terms = taxonomy_get_tree($vocab->vid, 0, $max_depth);
     $items = array();
     foreach ($terms as $term) {
       $items[] = l($term->name, 'taxonomy/term/' . $term->tid);
     }
-    $output = theme('item_list', $items);
+    $output = theme('item_list', array('items' => $items));
   }
   else {
-    $output = theme('item_list', _ctools_content_vocabulary_terms($vocab->vid, $max_depth));
+    $output = theme('item_list', array('items' => _ctools_content_vocabulary_terms($vocab->vid, $max_depth)));
   }
 
   $block = new stdClass();
@@ -50,8 +50,15 @@ function _ctools_content_vocabulary_terms($vid, $max_depth, $depth = -1, $tid = 
     return array();
   }
   $return = array();
-  $result = db_query('SELECT t.name, t.tid FROM {taxonomy_term_data} t INNER JOIN {taxonomy_term_hierarchy} h ON t.tid = h.tid WHERE t.vid = :vid AND h.parent = :parent ORDER BY t.weight ASC, t.name ASC', array(':vid' => $vid, ':parent' => $tid));
-  foreach ($result as $term) {
+  $query = db_select('taxonomy_term_data', 't')->fields('t', array('tid'));
+  $query->join('taxonomy_term_hierarchy', 'h', ' t.tid = h.tid');
+  $query->condition('t.vid', $vid)
+    ->condition('h.parent', $tid)
+    ->orderBy('t.weight')
+    ->orderBy('t.name');
+  $tids = $query->execute()->fetchCol();
+  $terms = taxonomy_term_load_multiple($tids);
+  foreach ($terms as $term) {
     $return[] = array(
       'data' => l($term->name, 'taxonomy/term/' . $term->tid),
       'children' => _ctools_content_vocabulary_terms($vid, $max_depth, $depth, $term->tid),

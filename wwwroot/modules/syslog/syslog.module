@@ -6,6 +6,15 @@
  */
 
 if (defined('LOG_LOCAL0')) {
+  /**
+   * Sets the proper logging facility.
+   *
+   * Note that LOG_LOCAL0 through LOG_LOCAL7 are not available on Windows, so we
+   * check for availability. If LOG_LOCAL0 is defined by the PHP environment, we
+   * set that as the default; if not, we use LOG_USER.
+   *
+   * @see http://php.net/manual/function.syslog.php
+   */
   define('DEFAULT_SYSLOG_FACILITY', LOG_LOCAL0);
 }
 else {
@@ -20,7 +29,7 @@ function syslog_help($path, $arg) {
     case 'admin/help#syslog':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t("The Syslog module logs events by sending messages to the logging facility of your web server's operating system. Syslog is an operating system administrative logging tool that provides valuable information for use in system management and security auditing. Most suited to medium and large sites, Syslog provides filtering tools that allow messages to be routed by type and severity. For more information, see the online handbook entry for <a href='@syslog'>Syslog module</a> and PHP's <a href='@php_openlog'>openlog</a> and <a href='@php_syslog'>syslog</a> functions.", array('@syslog' => 'http://drupal.org/handbook/modules/syslog', '@php_openlog' => 'http://www.php.net/manual/function.openlog.php', '@php_syslog' => 'http://www.php.net/manual/function.syslog.php')) . '</p>';
+      $output .= '<p>' . t("The Syslog module logs events by sending messages to the logging facility of your web server's operating system. Syslog is an operating system administrative logging tool that provides valuable information for use in system management and security auditing. Most suited to medium and large sites, Syslog provides filtering tools that allow messages to be routed by type and severity. For more information, see the online handbook entry for <a href='@syslog'>Syslog module</a> and PHP's <a href='@php_openlog'>openlog</a> and <a href='@php_syslog'>syslog</a> functions.", array('@syslog' => 'http://drupal.org/documentation/modules/syslog', '@php_openlog' => 'http://www.php.net/manual/function.openlog.php', '@php_syslog' => 'http://www.php.net/manual/function.syslog.php')) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Logging for UNIX, Linux, and Mac OS X') . '</dt>';
@@ -61,10 +70,11 @@ function syslog_form_system_logging_settings_alter(&$form, &$form_state) {
   $form['actions']['#weight'] = 1;
 }
 
- /**
- * List all possible syslog facilities for UNIX/Linux.
+/**
+ * Lists all possible syslog facilities for UNIX/Linux.
  *
  * @return array
+ *   An array of syslog facilities for UNIX/Linux.
  */
 function syslog_facility_list() {
   return array(
@@ -100,7 +110,7 @@ function syslog_watchdog(array $log_entry) {
     '!ip'          => $log_entry['ip'],
     '!request_uri' => $log_entry['request_uri'],
     '!referer'     => $log_entry['referer'],
-    '!uid'         => $log_entry['user']->uid,
+    '!uid'         => $log_entry['uid'],
     '!link'        => strip_tags($log_entry['link']),
     '!message'     => strip_tags(!isset($log_entry['variables']) ? $log_entry['message'] : strtr($log_entry['message'], $log_entry['variables'])),
   ));

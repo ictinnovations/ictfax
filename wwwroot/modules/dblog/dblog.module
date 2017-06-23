@@ -4,9 +4,9 @@
  * @file
  * System monitoring and logging for administrators.
  *
- * The dblog module monitors your site and keeps a list of
- * recorded events containing usage and performance data, errors,
- * warnings, and similar operational information.
+ * The Database Logging module monitors your site and keeps a list of recorded
+ * events containing usage and performance data, errors, warnings, and similar
+ * operational information.
  *
  * @see watchdog()
  */
@@ -19,7 +19,7 @@ function dblog_help($path, $arg) {
     case 'admin/help#dblog':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The Database logging module logs system events in the Drupal database. For more information, see the online handbook entry for the <a href="@dblog">Database logging module</a>.', array('@dblog' => 'http://drupal.org/handbook/modules/dblog')) . '</p>';
+      $output .= '<p>' . t('The Database logging module logs system events in the Drupal database. For more information, see the online handbook entry for the <a href="@dblog">Database logging module</a>.', array('@dblog' => 'http://drupal.org/documentation/modules/dblog')) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Monitoring your site') . '</dt>';
@@ -96,7 +96,7 @@ function dblog_init() {
 /**
  * Implements hook_cron().
  *
- * Remove expired log messages and flood control events.
+ * Controls the size of the log table, paring it to 'dblog_row_limit' messages.
  */
 function dblog_cron() {
   // Cleanup the watchdog table.
@@ -121,6 +121,12 @@ function dblog_cron() {
   }
 }
 
+/**
+ * Gathers a list of uniquely defined database log message types.
+ *
+ * @return array
+ *   List of uniquely defined database log message types.
+ */
 function _dblog_get_message_types() {
   $types = array();
 
@@ -135,30 +141,37 @@ function _dblog_get_message_types() {
 /**
  * Implements hook_watchdog().
  *
- * Note some values may be truncated for database column size restrictions.
+ * Note: Some values may be truncated to meet database column size restrictions.
  */
 function dblog_watchdog(array $log_entry) {
-  // The user object may not exist in all conditions, so 0 is substituted if needed.
-  $user_uid = isset($log_entry['user']->uid) ? $log_entry['user']->uid : 0;
-
-  Database::getConnection('default', 'default')->insert('watchdog')
-    ->fields(array(
-      'uid' => $user_uid,
-      'type' => substr($log_entry['type'], 0, 64),
-      'message' => $log_entry['message'],
-      'variables' => serialize($log_entry['variables']),
-      'severity' => $log_entry['severity'],
-      'link' => substr($log_entry['link'], 0, 255),
-      'location' => $log_entry['request_uri'],
-      'referer' => $log_entry['referer'],
-      'hostname' => substr($log_entry['ip'], 0, 128),
-      'timestamp' => $log_entry['timestamp'],
-    ))
-    ->execute();
+  if (!function_exists('drupal_substr')) {
+    require_once DRUPAL_ROOT . '/includes/unicode.inc';
+  }
+  try {
+    Database::getConnection('default', 'default')->insert('watchdog')
+      ->fields(array(
+        'uid' => $log_entry['uid'],
+        'type' => drupal_substr($log_entry['type'], 0, 64),
+        'message' => $log_entry['message'],
+        'variables' => serialize($log_entry['variables']),
+        'severity' => $log_entry['severity'],
+        'link' => drupal_substr($log_entry['link'], 0, 255),
+        'location' => $log_entry['request_uri'],
+        'referer' => $log_entry['referer'],
+        'hostname' => drupal_substr($log_entry['ip'], 0, 128),
+        'timestamp' => $log_entry['timestamp'],
+      ))
+      ->execute();
+  }
+  catch (Exception $e) {
+    // Exception is ignored so that watchdog does not break pages during the
+    // installation process or is not able to create the watchdog table during
+    // installation.
+  }
 }
 
 /**
- * Implements hook_form_FORM_ID_alter().
+ * Implements hook_form_FORM_ID_alter() for system_logging_settings().
  */
 function dblog_form_system_logging_settings_alter(&$form, $form_state) {
   $form['dblog_row_limit'] = array(

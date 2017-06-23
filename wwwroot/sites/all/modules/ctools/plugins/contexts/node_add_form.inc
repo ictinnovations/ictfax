@@ -32,7 +32,7 @@ $plugin = array(
  */
 function ctools_context_create_node_add_form($empty, $data = NULL, $conf = FALSE) {
   static $creating = FALSE;
-  $context = new ctools_context(array('form', 'node_add', 'node_form'));
+  $context = new ctools_context(array('form', 'node_add', 'node_form', 'node', 'entity:node'));
   $context->plugin = 'node_add_form';
 
   if ($empty || ($creating)) {
@@ -75,7 +75,7 @@ function ctools_context_create_node_add_form($empty, $data = NULL, $conf = FALSE
       $form = drupal_build_form($form_id, $form_state);
 
       // In a form, $data is the object being edited.
-      $context->data     = $type;
+      $context->data     = $node;
       $context->title    = $types[$type]->name;
       $context->argument = $type;
 
@@ -119,6 +119,6 @@ function ctools_context_node_add_form_settings_form_submit($form, &$form_state) 
 function ctools_context_node_add_form_convert($context, $type) {
   switch ($type) {
     case 'type':
-      return $context->data;
+      return $context->data->type;
   }
 }

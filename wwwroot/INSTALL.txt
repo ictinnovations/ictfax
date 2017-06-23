@@ -20,8 +20,10 @@ Drupal requires:
   - MySQL 5.0.15 (or greater) (http://www.mysql.com/).
   - MariaDB 5.1.44 (or greater) (http://mariadb.org/). MariaDB is a fully
     compatible drop-in replacement for MySQL.
+  - Percona Server 5.1.70 (or greater) (http://www.percona.com/). Percona
+    Server is a backwards-compatible replacement for MySQL.
   - PostgreSQL 8.3 (or greater) (http://www.postgresql.org/).
-  - SQLite 3.4.2 (or greater) (http://www.sqlite.org/).
+  - SQLite 3.3.7 (or greater) (http://www.sqlite.org/).
 
 For more detailed information about Drupal requirements, including a list of
 PHP extensions and configurations that are required, see "System requirements"
@@ -89,8 +91,8 @@ INSTALLATION
    - Download a translation file for the correct Drupal version and language
      from the translation server: http://localize.drupal.org/translate/downloads
 
-   - Place the file into your installation profile's translations
-     directory. For instance, if you are using the Standard install profile,
+   - Place the file into your installation profile's translations directory.
+     For instance, if you are using the Standard installation profile,
      move the .po file into the directory:
 
        profiles/standard/translations/

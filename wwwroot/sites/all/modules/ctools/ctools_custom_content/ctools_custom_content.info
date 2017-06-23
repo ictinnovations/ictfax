@@ -2,11 +2,12 @@ name = Custom content panes
 description = Create custom, exportable, reusable content panes for applications like Panels.
 core = 7.x
 package = Chaos tool suite
+version = CTOOLS_MODULE_VERSION
 dependencies[] = ctools
 
-; Information added by drupal.org packaging script on 2011-07-28
-version = "7.x-1.0-rc1"
+; Information added by Drupal.org packaging script on 2016-11-22
+version = "7.x-1.12"
 core = "7.x"
 project = "ctools"
-datestamp = "1311894415"
+datestamp = "1479787162"
 

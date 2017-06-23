@@ -24,7 +24,7 @@ class ModuleUpdater extends Updater implements DrupalUpdaterInterface {
    * found on your system, and if there was a copy in sites/all, we'd see it.
    */
   public function getInstallDirectory() {
-    if ($relative_path = drupal_get_path('module', $this->name)) {
+    if ($this->isInstalled() && ($relative_path = drupal_get_path('module', $this->name))) {
       $relative_path = dirname($relative_path);
     }
     else {
@@ -34,7 +34,7 @@ class ModuleUpdater extends Updater implements DrupalUpdaterInterface {
   }
 
   public function isInstalled() {
-    return (bool) drupal_get_path('module', $this->name);
+    return (bool) drupal_get_filename('module', $this->name, NULL, FALSE);
   }
 
   public static function canUpdateDirectory($directory) {
@@ -73,8 +73,12 @@ class ModuleUpdater extends Updater implements DrupalUpdaterInterface {
     return array();
   }
 
+  /**
+   * Returns a list of post install actions.
+   */
   public function postInstallTasks() {
     return array(
+      l(t('Install another module'), 'admin/modules/install'),
       l(t('Enable newly added modules'), 'admin/modules'),
       l(t('Administration pages'), 'admin'),
     );
@@ -105,7 +109,7 @@ class ThemeUpdater extends Updater implements DrupalUpdaterInterface {
    * found on your system, and if there was a copy in sites/all, we'd see it.
    */
   public function getInstallDirectory() {
-    if ($relative_path = drupal_get_path('theme', $this->name)) {
+    if ($this->isInstalled() && ($relative_path = drupal_get_path('theme', $this->name))) {
       $relative_path = dirname($relative_path);
     }
     else {
@@ -115,7 +119,7 @@ class ThemeUpdater extends Updater implements DrupalUpdaterInterface {
   }
 
   public function isInstalled() {
-    return (bool) drupal_get_path('theme', $this->name);
+    return (bool) drupal_get_filename('theme', $this->name, NULL, FALSE);
   }
 
   static function canUpdateDirectory($directory) {

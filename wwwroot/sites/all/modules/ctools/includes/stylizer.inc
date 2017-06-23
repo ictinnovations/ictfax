@@ -500,7 +500,7 @@ class ctools_stylizer_image_processor {
     $palette[$luminosity_input]['green'] = $green;
     $palette[$luminosity_input]['blue'] = $blue;
 
-    // Now we complete the palette, first we'll do it tothe black, and then to
+    // Now we complete the palette, first we'll do it to the black, and then to
     // the white.
 
     // From input to black
@@ -960,8 +960,7 @@ function ctools_stylizer_edit_style_form_choose_submit($form, &$form_state) {
 function ctools_stylizer_edit_style_form_default($form, &$form_state) {
   ctools_add_js('stylizer');
   ctools_add_css('stylizer');
-  drupal_add_js('misc/farbtastic/farbtastic.js');
-  drupal_add_css('misc/farbtastic/farbtastic.css');
+  drupal_add_library('system', 'farbtastic');
 
   $plugin = &$form_state['base_style_plugin'];
   $settings = &$form_state['settings'];

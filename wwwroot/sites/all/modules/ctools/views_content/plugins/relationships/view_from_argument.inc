@@ -1,5 +1,4 @@
 <?php
-// $Id$
 
 /**
  * @file
@@ -77,7 +76,7 @@ function views_content_view_from_argument_context($contexts, $conf) {
         if (isset($contexts [$key])) {
           if (strpos($argument['context'], '.')) {
             list($context, $converter) = explode('.', $argument['context'], 2);
-            $args[] = ctools_context_convert_context($contexts[$key], $converter);
+            $args[] = ctools_context_convert_context($contexts[$key], $converter, array('sanitize' => FALSE));
           }
           else {
             $args[] = $contexts[$key]->argument;

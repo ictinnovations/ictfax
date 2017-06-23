@@ -77,8 +77,12 @@ function bartik_process_page(&$variables) {
  * Implements hook_preprocess_maintenance_page().
  */
 function bartik_preprocess_maintenance_page(&$variables) {
+  // By default, site_name is set to Drupal if no db connection is available
+  // or during site installation. Setting site_name to an empty string makes
+  // the site and update pages look cleaner.
+  // @see template_preprocess_maintenance_page
   if (!$variables['db_is_active']) {
-    unset($variables['site_name']);
+    $variables['site_name'] = '';
   }
   drupal_add_css(drupal_get_path('theme', 'bartik') . '/css/maintenance-page.css');
 }
@@ -146,7 +150,7 @@ function bartik_field__taxonomy_term_reference($variables) {
   $output .= '</ul>';
 
   // Render the top-level DIV.
-  $output = '<div class="' . $variables['classes'] . (!in_array('clearfix', $variables['classes_array']) ? ' clearfix' : '') . '">' . $output . '</div>';
+  $output = '<div class="' . $variables['classes'] . (!in_array('clearfix', $variables['classes_array']) ? ' clearfix' : '') . '"' . $variables['attributes'] .'>' . $output . '</div>';
 
   return $output;
 }

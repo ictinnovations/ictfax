@@ -38,7 +38,7 @@ function page_manager_page_menu(&$items, $task) {
   ) + $base;
   if ($access_callback == 'user_access') {
     $items['admin/structure/pages/import']['access callback'] = 'ctools_access_multiperm';
-    $items['admin/structure/pages/import']['access arguments'][] = 'use PHP for settings';
+    $items['admin/structure/pages/import']['access arguments'][] = 'use ctools import';
   }
 
   // AJAX callbacks for argument modal.
@@ -61,7 +61,7 @@ function page_manager_page_menu(&$items, $task) {
     }
 
     $path             = array();
-    $page_arguments   = array($subtask_id);
+    $page_arguments   = array((string) $subtask_id);
     $access_arguments = array($subtask->access);
     $load_arguments   = array($subtask_id, '%index', '%map');
 
@@ -237,7 +237,7 @@ function page_manager_page_add_subtask($task_name = NULL, $step = NULL) {
   if ($task_name) {
     $page = page_manager_get_page_cache($task_name);
     if (empty($page)) {
-      return drupal_not_found();
+      return MENU_NOT_FOUND;
     }
 
     $form_info['path'] = "admin/structure/pages/add/$task_name/%step";
@@ -443,7 +443,7 @@ function page_manager_page_form_basic($form, &$form_state) {
       '#type' => 'checkbox',
       '#default_value' => !empty($page->make_frontpage),
       '#title' => t('Make this your site home page.'),
-      '#description' => t('To set this panel as your home page you must create a unique path name with no % placeholders in the path. The site home page is currently set to %homepage on the !siteinfo configuration form.', array('!siteinfo' => l(t('Site Information'), 'admin/settings/site-information'), '%homepage' => '/' . $frontpage)),
+      '#description' => t('To set this panel as your home page you must create a unique path name with no % placeholders in the path. The site home page is currently set to %homepage on the !siteinfo configuration form.', array('!siteinfo' => l(t('Site Information'), 'admin/config/system/site-information'), '%homepage' => '/' . $frontpage)),
     );
     $form['admin_paths'] = array(
       '#type' => 'checkbox',
@@ -566,7 +566,7 @@ function page_manager_page_form_basic_validate(&$form, &$form_state) {
   if (strpos($path, '%') === FALSE) {
     $alias = db_query('SELECT alias, source FROM {url_alias} WHERE alias = :path', array(':path' => $path))->fetchObject();
     if ($alias) {
-      form_error($form['path'], t('That path is currently assigned to be an alias for @alias. This system cannot override existing aliases.', array('@alias' => $alias->src)));
+      form_error($form['path'], t('That path is currently assigned to be an alias for @alias. This system cannot override existing aliases.', array('@alias' => $alias->source)));
     }
   }
   else {
@@ -698,7 +698,7 @@ function page_manager_page_form_menu($form, &$form_state) {
     '#title' => t('Title'),
     '#type' => 'textfield',
     '#default_value' => $menu['title'],
-    '#description' => t('If set to normal or tab, enter the text to use for the menu item.'),
+    '#description' => t('If set to normal or tab, enter the text to use for the menu item. Renaming the menu item using the Drupal menu system (admin/structure/menu) will override this, even if it is renamed again here.'),
     '#dependency' => array('radio:menu[type]' => array('normal', 'tab', 'default tab', 'action')),
   );
 
@@ -769,12 +769,12 @@ function page_manager_page_form_menu($form, &$form_state) {
     );
   }
   $form['menu']['parent']['weight'] = array(
-    '#title' => t('Tab weight'),
+    '#title' => t('Parent weight'),
     '#type' => 'textfield',
     '#default_value' => $menu['parent']['weight'],
     '#size' => 5,
-    '#description' => t('If the parent menu item is a tab, enter the weight of the tab. The lower the number, the more to the left it will be.'),
-    '#dependency' => array('radio:menu[type]' => array('default tab'), 'radio:menu[parent][type]' => array('tab')),
+    '#description' => t('Enter the weight of the parent item. The lower the number, the more to the left it will be.'),
+    '#dependency' => array('radio:menu[type]' => array('default tab'), 'radio:menu[parent][type]' => array('tab', 'normal')),
     '#dependency_count' => 2,
   );
 
@@ -1056,7 +1056,6 @@ function page_manager_page_subtask_argument_ajax($step = NULL, $task_name = NULL
 
     $clone_state = $form_state;
     $clone_state['allow temp'] = TRUE;
-    page_manager_page_form_argument($form, $clone_state);
     $form = drupal_build_form('page_manager_page_form_argument', $form_state);
 
     // Render just the table portion.
@@ -1463,6 +1462,15 @@ function page_manager_page_form_clone_submit(&$form, &$form_state) {
   $original->path = $form_state['values']['path'];
 
   $handlers = !empty($form_state['values']['handlers']) ? $form_state['page']->handlers : FALSE;
+  // Ensure the handler uuids are re-generated.
+  if ($handlers) {
+    foreach ($handlers as &$handler) {
+      if (isset($handler->conf['display']) && method_exists($handler->conf['display'], 'clone_display')) {
+        $handler->conf['display'] = $handler->conf['display']->clone_display();
+      }
+    }
+  }
+
   // Export the handler, which is a fantastic way to clean database IDs out of it.
   $export = page_manager_page_export($original, $handlers);
   ob_start();

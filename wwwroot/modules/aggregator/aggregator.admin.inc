@@ -2,11 +2,11 @@
 
 /**
  * @file
- * Admin page callbacks for the aggregator module.
+ * Administration page callbacks for the Aggregator module.
  */
 
 /**
- * Menu callback; displays the aggregator administration page.
+ * Page callback: Displays the Aggregator module administration page.
  */
 function aggregator_admin_overview() {
   return aggregator_view();
@@ -16,7 +16,7 @@ function aggregator_admin_overview() {
  * Displays the aggregator administration page.
  *
  * @return
- *   The page HTML.
+ *   A HTML-formatted string with administration page content.
  */
 function aggregator_view() {
   $result = db_query('SELECT f.fid, f.title, f.url, f.refresh, f.checked, f.link, f.description, f.hash, f.etag, f.modified, f.image, f.block, COUNT(i.iid) AS items FROM {aggregator_feed} f LEFT JOIN {aggregator_item} i ON f.fid = i.fid GROUP BY f.fid, f.title, f.url, f.refresh, f.checked, f.link, f.description, f.hash, f.etag, f.modified, f.image, f.block ORDER BY f.title');
@@ -33,7 +33,7 @@ function aggregator_view() {
       ($feed->checked && $feed->refresh ? t('%time left', array('%time' => format_interval($feed->checked + $feed->refresh - REQUEST_TIME))) : t('never')),
       l(t('edit'), "admin/config/services/aggregator/edit/feed/$feed->fid"),
       l(t('remove items'), "admin/config/services/aggregator/remove/$feed->fid"),
-      l(t('update items'), "admin/config/services/aggregator/update/$feed->fid"),
+      l(t('update items'), "admin/config/services/aggregator/update/$feed->fid", array('query' => array('token' => drupal_get_token("aggregator/update/$feed->fid")))),
     );
   }
   $output .= theme('table', array('header' => $header, 'rows' => $rows, 'empty' => t('No feeds available. <a href="@link">Add feed</a>.', array('@link' => url('admin/config/services/aggregator/add/feed')))));
@@ -53,7 +53,11 @@ function aggregator_view() {
 }
 
 /**
- * Form builder; Generate a form to add/edit feed sources.
+ * Form constructor for adding and editing feed sources.
+ *
+ * @param $feed
+ *   (optional) If editing a feed, the feed to edit as a PHP stdClass value; if
+ *   adding a new feed, NULL. Defaults to NULL.
  *
  * @ingroup forms
  * @see aggregator_form_feed_validate()
@@ -73,7 +77,7 @@ function aggregator_form_feed($form, &$form_state, stdClass $feed = NULL) {
   $form['url'] = array('#type' => 'textfield',
     '#title' => t('URL'),
     '#default_value' => isset($feed->url) ? $feed->url : '',
-    '#maxlength' => 255,
+    '#maxlength' => NULL,
     '#description' => t('The fully-qualified URL of the feed.'),
     '#required' => TRUE,
   );
@@ -129,7 +133,9 @@ function aggregator_form_feed($form, &$form_state, stdClass $feed = NULL) {
 }
 
 /**
- * Validate aggregator_form_feed() form submissions.
+ * Form validation handler for aggregator_form_feed().
+ *
+ * @see aggregator_form_feed_submit()
  */
 function aggregator_form_feed_validate($form, &$form_state) {
   if ($form_state['values']['op'] == t('Save')) {
@@ -156,7 +162,9 @@ function aggregator_form_feed_validate($form, &$form_state) {
 }
 
 /**
- * Process aggregator_form_feed() form submissions.
+ * Form submission handler for aggregator_form_feed().
+ *
+ * @see aggregator_form_feed_validate()
  *
  * @todo Add delete confirmation dialog.
  */
@@ -198,6 +206,14 @@ function aggregator_form_feed_submit($form, &$form_state) {
   }
 }
 
+/**
+ * Deletes a feed.
+ *
+ * @param $feed
+ *   An associative array describing the feed to be cleared.
+ *
+ * @see aggregator_admin_remove_feed_submit()
+ */
 function aggregator_admin_remove_feed($form, $form_state, $feed) {
   return confirm_form(
     array(
@@ -215,10 +231,9 @@ function aggregator_admin_remove_feed($form, $form_state, $feed) {
 }
 
 /**
- * Remove all items from a feed and redirect to the overview page.
+ * Form submission handler for aggregator_admin_remove_feed().
  *
- * @param $feed
- *   An associative array describing the feed to be cleared.
+ * Removes all items from a feed and redirects to the overview page.
  */
 function aggregator_admin_remove_feed_submit($form, &$form_state) {
   aggregator_remove($form_state['values']['feed']);
@@ -226,7 +241,7 @@ function aggregator_admin_remove_feed_submit($form, &$form_state) {
 }
 
 /**
- * Form builder; Generate a form to import feeds from OPML.
+ * Form constructor for importing feeds from OPML.
  *
  * @ingroup forms
  * @see aggregator_form_opml_validate()
@@ -280,7 +295,9 @@ function aggregator_form_opml($form, &$form_state) {
 }
 
 /**
- * Validate aggregator_form_opml form submissions.
+ * Form validation handler for aggregator_form_opml().
+ *
+ * @see aggregator_form_opml_submit()
  */
 function aggregator_form_opml_validate($form, &$form_state) {
   // If both fields are empty or filled, cancel.
@@ -295,7 +312,9 @@ function aggregator_form_opml_validate($form, &$form_state) {
 }
 
 /**
- * Process aggregator_form_opml form submissions.
+ * Form submission handler for aggregator_form_opml().
+ *
+ * @see aggregator_form_opml_validate()
  */
 function aggregator_form_opml_submit($form, &$form_state) {
   $data = '';
@@ -347,7 +366,7 @@ function aggregator_form_opml_submit($form, &$form_state) {
 }
 
 /**
- * Parse an OPML file.
+ * Parses an OPML file.
  *
  * Feeds are recognized as <outline> elements with the attributes "text" and
  * "xmlurl" set.
@@ -357,9 +376,9 @@ function aggregator_form_opml_submit($form, &$form_state) {
  *
  * @return
  *   An array of feeds, each an associative array with a "title" and a "url"
- *   element, or NULL if the OPML document failed to be parsed. An empty
- *   array will be returned if the document is valid but contains no feeds, as
- *   some OPML documents do.
+ *   element, or NULL if the OPML document failed to be parsed. An empty array
+ *   will be returned if the document is valid but contains no feeds, as some
+ *   OPML documents do.
  */
 function _aggregator_parse_opml($opml) {
   $feeds = array();
@@ -380,19 +399,23 @@ function _aggregator_parse_opml($opml) {
 }
 
 /**
- * Menu callback; refreshes a feed, then redirects to the overview page.
+ * Page callback: Refreshes a feed, then redirects to the overview page.
  *
  * @param $feed
  *   An object describing the feed to be refreshed.
  */
 function aggregator_admin_refresh_feed($feed) {
+  if (!isset($_GET['token']) || !drupal_valid_token($_GET['token'], 'aggregator/update/' . $feed->fid)) {
+    return MENU_ACCESS_DENIED;
+  }
   aggregator_refresh($feed);
   drupal_goto('admin/config/services/aggregator');
 }
 
 /**
- * Form builder; Configure the aggregator system.
+ * Form constructor for the aggregator system settings.
  *
+ * @see aggregator_admin_form_submit()
  * @ingroup forms
  */
 function aggregator_admin_form($form, $form_state) {
@@ -500,6 +523,9 @@ function aggregator_admin_form($form, $form_state) {
   return $form;
 }
 
+/**
+ * Form submission handler for aggregator_admin_form().
+ */
 function aggregator_admin_form_submit($form, &$form_state) {
   if (isset($form_state['values']['aggregator_processors'])) {
     $form_state['values']['aggregator_processors'] = array_filter($form_state['values']['aggregator_processors']);
@@ -508,7 +534,13 @@ function aggregator_admin_form_submit($form, &$form_state) {
 }
 
 /**
- * Form builder; Generate a form to add/edit/delete aggregator categories.
+ * Form constructor to add/edit/delete aggregator categories.
+ *
+ * @param $edit
+ *   An associative array containing:
+ *   - title: A string to use for the category title.
+ *   - description: A string to use for the category description.
+ *   - cid: The category ID.
  *
  * @ingroup forms
  * @see aggregator_form_category_validate()
@@ -536,7 +568,9 @@ function aggregator_form_category($form, &$form_state, $edit = array('title' => 
 }
 
 /**
- * Validate aggregator_form_feed form submissions.
+ * Form validation handler for aggregator_form_category().
+ *
+ * @see aggregator_form_category_submit()
  */
 function aggregator_form_category_validate($form, &$form_state) {
   if ($form_state['values']['op'] == t('Save')) {
@@ -554,7 +588,9 @@ function aggregator_form_category_validate($form, &$form_state) {
 }
 
 /**
- * Process aggregator_form_category form submissions.
+ * Form submission handler for aggregator_form_category().
+ *
+ * @see aggregator_form_category_validate()
  *
  * @todo Add delete confirmation dialog.
  */

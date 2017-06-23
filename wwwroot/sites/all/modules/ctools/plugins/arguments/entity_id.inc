@@ -3,7 +3,7 @@
 /**
  * @file
  *
- * Plugin to provide an argument handler for all entity ids
+ * Plugin to provide an argument handler for all entity ids.
  */
 
 /**
@@ -16,6 +16,10 @@ $plugin = array(
   'context' => 'ctools_argument_entity_id_context',
   'get child' => 'ctools_argument_entity_id_get_child',
   'get children' => 'ctools_argument_entity_id_get_children',
+  'default' => array(
+    'entity_id' => '',
+  ),
+  'placeholder form' => 'ctools_argument_entity_id_ctools_argument_placeholder',
 );
 
 function ctools_argument_entity_id_get_child($plugin, $parent, $child) {
@@ -37,6 +41,7 @@ function ctools_argument_entity_id_get_children($original_plugin, $parent) {
     $plugins[$plugin_id] = $plugin;
   }
   drupal_alter('ctools_entity_contexts', $plugins);
+
   return $plugins;
 }
 
@@ -56,15 +61,87 @@ function ctools_argument_entity_id_context($arg = NULL, $conf = NULL, $empty = F
     return ctools_context_create('entity:' . $entity_type, $arg);
   }
 
+  // Trim spaces and other garbage.
+  $arg = trim($arg);
+
   if (!is_numeric($arg)) {
+    $preg_matches = array();
+    $match = preg_match('/\[id: (\d+)\]/', $arg, $preg_matches);
+    if (!$match) {
+      $match = preg_match('/^id: (\d+)/', $arg, $preg_matches);
+    }
+
+    if ($match) {
+      $id = $preg_matches[1];
+    }
+    if (isset($id) && is_numeric($id)) {
+      return ctools_context_create('entity:' . $entity_type, $id);
+    }
     return FALSE;
   }
 
-  $entity = entity_load($entity_type, array($arg));
-  if (!$entity) {
+  $entities = entity_load($entity_type, array($arg));
+  if (empty($entities)) {
     return FALSE;
   }
 
-  return ctools_context_create('entity:' . $entity_type, $entity[$arg]);
+  return ctools_context_create('entity:' . $entity_type, reset($entities));
 }
 
+function ctools_argument_entity_id_settings_form(&$form, &$form_state, $conf) {
+  $plugin = &$form_state['plugin'];
+
+  $form['settings']['entity'] = array(
+    '#title' => t('Enter the title or ID of a @entity entity', array('@entity' => $plugin['keyword'])),
+    '#type' => 'textfield',
+    '#maxlength' => 512,
+    '#autocomplete_path' => 'ctools/autocomplete/' . $plugin['keyword'],
+    '#weight' => -10,
+  );
+
+  if (!empty($conf['entity_id'])) {
+    $info = entity_load($plugin['keyword'], array($conf['entity_id']));
+    $info = $info[$conf['entity_id']];
+    if ($info) {
+      $entity = entity_get_info($plugin['keyword']);
+      $uri = entity_uri($plugin['keyword'], $info);
+      if (is_array($uri) && $entity['entity keys']['label']) {
+        $link = l(t("'%title' [%type id %id]", array('%title' => $info->{$entity['entity keys']['label']}, '%type' => $plugin['keyword'], '%id' => $conf['entity_id'])), $uri['path'], array('attributes' => array('target' => '_blank', 'title' => t('Open in new window')), 'html' => TRUE));
+      }
+      elseif (is_array($uri)) {
+        $link = l(t("[%type id %id]", array('%type' => $plugin['keyword'], '%id' => $conf['entity_id'])), $uri['path'], array('attributes' => array('target' => '_blank', 'title' => t('Open in new window')), 'html' => TRUE));
+      }
+      elseif ($entity['entity keys']['label']) {
+        $link = l(t("'%title' [%type id %id]", array('%title' => $info->{$entity['entity keys']['label']}, '%type' => $plugin['keyword'], '%id' => $conf['entity_id'])), file_create_url($uri), array('attributes' => array('target' => '_blank', 'title' => t('Open in new window')), 'html' => TRUE));
+      }
+      else {
+        $link = t("[%type id %id]", array('%type' => $plugin['keyword'], '%id' => $conf['entity_id']));
+      }
+      $form['settings']['entity']['#description'] = t('Currently set to !link', array('!link' => $link));
+    }
+  }
+
+  $form['settings']['entity_id'] = array(
+    '#type' => 'value',
+    '#value' => isset($conf['entity_id']) ? $conf['entity_id'] : '',
+  );
+
+  $form['settings']['entity_type'] = array(
+    '#type' => 'value',
+    '#value' => $plugin['keyword'],
+  );
+
+  return $form;
+}
+
+function ctools_argument_entity_id_ctools_argument_placeholder($conf) {
+  $conf = array(
+    '#title' => t('Enter the title or ID of a @entity entity', array('@entity' => $conf['keyword'])),
+    '#type' => 'textfield',
+    '#maxlength' => 512,
+    '#autocomplete_path' => 'ctools/autocomplete/' . $conf['keyword'],
+    '#weight' => -10,
+  );
+
+  return $conf;
+}

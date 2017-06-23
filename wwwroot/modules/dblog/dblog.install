@@ -85,6 +85,7 @@ function dblog_schema() {
     'indexes' => array(
       'type' => array('type'),
       'uid' => array('uid'),
+      'severity' => array('severity'),
     ),
   );
 
@@ -138,5 +139,30 @@ function dblog_update_7001() {
 }
 
 /**
- * @} End of "addtogroup updates-6.x-to-7.x"
+ * @} End of "addtogroup updates-6.x-to-7.x".
+ */
+
+/**
+ * @addtogroup updates-7.x-extra
+ * @{
+ */
+
+/**
+ * Add an index to the severity column in the watchdog database table.
+ */
+function dblog_update_7002() {
+  db_add_index('watchdog', 'severity', array('severity'));
+}
+
+/**
+ * Account for possible legacy systems where dblog was not installed.
+ */
+function dblog_update_7003() {
+  if (!db_table_exists('watchdog')) {
+    db_create_table('watchdog', drupal_get_schema_unprocessed('dblog', 'watchdog'));
+  }
+}
+
+/**
+ * @} End of "addtogroup updates-7.x-extra".
  */

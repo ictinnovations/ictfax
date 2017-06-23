@@ -36,6 +36,7 @@ function user_pass() {
     '#size' => 60,
     '#maxlength' => max(USERNAME_MAX_LENGTH, EMAIL_MAX_LENGTH),
     '#required' => TRUE,
+    '#default_value' => isset($_GET['name']) ? $_GET['name'] : '',
   );
   // Allow logged in users to request this also.
   if ($user->uid > 0) {
@@ -43,6 +44,12 @@ function user_pass() {
     $form['name']['#value'] = $user->mail;
     $form['mail'] = array(
       '#prefix' => '<p>',
+      // As of https://www.drupal.org/node/889772 the user no longer must log
+      // out (if they are still logged in when using the password reset link,
+      // they will be logged out automatically then), but this text is kept as
+      // is to avoid breaking translations as well as to encourage the user to
+      // log out manually at a time of their own choosing (when it will not
+      // interrupt anything else they may have been in the middle of doing).
       '#markup' =>  t('Password reset instructions will be mailed to %email. You must log out to use the password reset link in the e-mail.', array('%email' => $user->mail)),
       '#suffix' => '</p>',
     );
@@ -53,6 +60,11 @@ function user_pass() {
   return $form;
 }
 
+/**
+ * Form validation handler for user_pass().
+ *
+ * @see user_pass_submit()
+ */
 function user_pass_validate($form, &$form_state) {
   $name = trim($form_state['values']['name']);
   // Try to load by email.
@@ -71,6 +83,11 @@ function user_pass_validate($form, &$form_state) {
   }
 }
 
+/**
+ * Form submission handler for user_pass().
+ *
+ * @see user_pass_validate()
+ */
 function user_pass_submit($form, &$form_state) {
   global $language;
 
@@ -95,47 +112,59 @@ function user_pass_reset($form, &$form_state, $uid, $timestamp, $hashed_pass, $a
   // When processing the one-time login link, we have to make sure that a user
   // isn't already logged in.
   if ($user->uid) {
-    // The existing user is already logged in.
+    // The existing user is already logged in. Log them out and reload the
+    // current page so the password reset process can continue.
     if ($user->uid == $uid) {
-      drupal_set_message(t('You are logged in as %user. <a href="!user_edit">Change your password.</a>', array('%user' => $user->name, '!user_edit' => url("user/$user->uid/edit"))));
+      // Preserve the current destination (if any) and ensure the redirect goes
+      // back to the current page; any custom destination set in
+      // hook_user_logout() and intended for regular logouts would not be
+      // appropriate here.
+      $destination = array();
+      if (isset($_GET['destination'])) {
+        $destination = drupal_get_destination();
+      }
+      user_logout_current_user();
+      unset($_GET['destination']);
+      drupal_goto(current_path(), array('query' => drupal_get_query_parameters() + $destination));
     }
     // A different user is already logged in on the computer.
     else {
       $reset_link_account = user_load($uid);
       if (!empty($reset_link_account)) {
         drupal_set_message(t('Another user (%other_user) is already logged into the site on this computer, but you tried to use a one-time link for user %resetting_user. Please <a href="!logout">logout</a> and try using the link again.',
-          array('%other_user' => $user->name, '%resetting_user' => $reset_link_account->name, '!logout' => url('user/logout'))));
+          array('%other_user' => $user->name, '%resetting_user' => $reset_link_account->name, '!logout' => url('user/logout'))), 'warning');
       } else {
         // Invalid one-time link specifies an unknown user.
-        drupal_set_message(t('The one-time login link you clicked is invalid.'));
+        drupal_set_message(t('The one-time login link you clicked is invalid.'), 'error');
       }
+      drupal_goto();
     }
-    drupal_goto();
   }
   else {
-    // Time out, in seconds, until login URL expires. 24 hours = 86400 seconds.
-    $timeout = 86400;
+    // Time out, in seconds, until login URL expires. Defaults to 24 hours =
+    // 86400 seconds.
+    $timeout = variable_get('user_password_reset_timeout', 86400);
     $current = REQUEST_TIME;
     // Some redundant checks for extra security ?
     $users = user_load_multiple(array($uid), array('status' => '1'));
     if ($timestamp <= $current && $account = reset($users)) {
       // No time out for first time login.
       if ($account->login && $current - $timestamp > $timeout) {
-        drupal_set_message(t('You have tried to use a one-time login link that has expired. Please request a new one using the form below.'));
+        drupal_set_message(t('You have tried to use a one-time login link that has expired. Please request a new one using the form below.'), 'error');
         drupal_goto('user/password');
       }
-      elseif ($account->uid && $timestamp >= $account->login && $timestamp <= $current && $hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login)) {
+      elseif ($account->uid && $timestamp >= $account->login && $timestamp <= $current && $hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid)) {
         // First stage is a confirmation form, then login
         if ($action == 'login') {
-          watchdog('user', 'User %name used one-time login link at time %timestamp.', array('%name' => $account->name, '%timestamp' => $timestamp));
           // Set the new user.
           $user = $account;
           // user_login_finalize() also updates the login timestamp of the
           // user, which invalidates further use of the one-time login link.
           user_login_finalize();
+          watchdog('user', 'User %name used one-time login link at time %timestamp.', array('%name' => $account->name, '%timestamp' => $timestamp));
           drupal_set_message(t('You have just used your one-time login link. It is no longer necessary to use this link to log in. Please change your password.'));
           // Let the user's password be changed without the current password check.
-          $token = drupal_hash_base64(drupal_random_bytes(55));
+          $token = drupal_random_key();
           $_SESSION['pass_reset_' . $user->uid] = $token;
           drupal_goto('user/' . $user->uid . '/edit', array('query' => array('pass-reset-token' => $token)));
         }
@@ -149,7 +178,7 @@ function user_pass_reset($form, &$form_state, $uid, $timestamp, $hashed_pass, $a
         }
       }
       else {
-        drupal_set_message(t('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.'));
+        drupal_set_message(t('You have tried to use a one-time login link that has either been used or is no longer valid. Please request a new one using the form below.'), 'error');
         drupal_goto('user/password');
       }
     }
@@ -157,6 +186,7 @@ function user_pass_reset($form, &$form_state, $uid, $timestamp, $hashed_pass, $a
       // Deny access, no more clues.
       // Everything will be in the watchdog's URL for the administrator to check.
       drupal_access_denied();
+      drupal_exit();
     }
   }
 }
@@ -165,6 +195,14 @@ function user_pass_reset($form, &$form_state, $uid, $timestamp, $hashed_pass, $a
  * Menu callback; logs the current user out, and redirects to the home page.
  */
 function user_logout() {
+  user_logout_current_user();
+  drupal_goto();
+}
+
+/**
+ * Logs the current user out.
+ */
+function user_logout_current_user() {
   global $user;
 
   watchdog('user', 'Session closed for %name.', array('%name' => $user->name));
@@ -173,15 +211,16 @@ function user_logout() {
 
   // Destroy the current session, and reset $user to the anonymous user.
   session_destroy();
-
-  drupal_goto();
 }
 
 /**
  * Process variables for user-profile.tpl.php.
  *
- * The $variables array contains the following arguments:
- * - $account
+ * @param array $variables
+ *   An associative array containing:
+ *   - elements: An associative array containing the user information and any
+ *     fields attached to the user. Properties used:
+ *     - #account: The user account of the profile being viewed.
  *
  * @see user-profile.tpl.php
  */
@@ -262,7 +301,8 @@ function user_profile_form($form, &$form_state, $account, $category = 'account')
   if ($category == 'account') {
     user_account_form($form, $form_state);
     // Attach field widgets.
-    field_attach_form('user', $account, $form, $form_state);
+    $langcode = entity_language('user', $account);
+    field_attach_form('user', $account, $form, $form_state, $langcode);
   }
 
   $form['actions'] = array('#type' => 'actions');
@@ -287,14 +327,18 @@ function user_profile_form($form, &$form_state, $account, $category = 'account')
 }
 
 /**
- * Validation function for the user account and profile editing form.
+ * Form validation handler for user_profile_form().
+ *
+ * @see user_profile_form_submit()
  */
 function user_profile_form_validate($form, &$form_state) {
   entity_form_field_validate('user', $form, $form_state);
 }
 
 /**
- * Submit function for the user account and profile editing form.
+ * Form submission handler for user_profile_form().
+ *
+ * @see user_profile_form_validate()
  */
 function user_profile_form_submit($form, &$form_state) {
   $account = $form_state['user'];
@@ -352,7 +396,6 @@ function user_cancel_confirm_form($form, &$form_state, $account) {
   $form['_account'] = array('#type' => 'value', '#value' => $account);
 
   // Display account cancellation method selection, if allowed.
-  $default_method = variable_get('user_cancel_method', 'user_cancel_block');
   $admin_access = user_access('administer users');
   $can_select_method = $admin_access || user_access('select account cancellation method');
   $form['user_cancel_method'] = array(
@@ -516,7 +559,7 @@ function user_cancel_confirm($account, $timestamp = 0, $hashed_pass = '') {
   // Basic validation of arguments.
   if (isset($account->data['user_cancel_method']) && !empty($timestamp) && !empty($hashed_pass)) {
     // Validate expiration and hashed password/login.
-    if ($timestamp <= $current && $current - $timestamp < $timeout && $account->uid && $timestamp >= $account->login && $hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login)) {
+    if ($timestamp <= $current && $current - $timestamp < $timeout && $account->uid && $timestamp >= $account->login && $hashed_pass == user_pass_rehash($account->pass, $timestamp, $account->login, $account->uid)) {
       $edit = array(
         'user_cancel_notify' => isset($account->data['user_cancel_notify']) ? $account->data['user_cancel_notify'] : variable_get('user_mail_status_canceled_notify', FALSE),
       );
@@ -527,18 +570,24 @@ function user_cancel_confirm($account, $timestamp = 0, $hashed_pass = '') {
       batch_process('');
     }
     else {
-      drupal_set_message(t('You have tried to use an account cancellation link that has expired. Please request a new one using the form below.'));
+      drupal_set_message(t('You have tried to use an account cancellation link that has expired. Please request a new one using the form below.'), 'error');
       drupal_goto("user/$account->uid/cancel");
     }
   }
-  drupal_access_denied();
+  return MENU_ACCESS_DENIED;
 }
 
 /**
- * Access callback for path /user.
+ * Page callback: Displays the user page.
  *
  * Displays user profile if user is logged in, or login form for anonymous
  * users.
+ *
+ * @return
+ *   A render array for either a user profile or a login form.
+ *
+ * @see user_view_page()
+ * @see user_login()
  */
 function user_page() {
   global $user;

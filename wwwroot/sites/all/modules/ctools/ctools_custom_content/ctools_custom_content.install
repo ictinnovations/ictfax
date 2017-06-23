@@ -17,7 +17,7 @@ function ctools_custom_content_schema_1() {
       'bulk export' => TRUE,
       'primary key' => 'cid',
       'api' => array(
-        'owner' => 'ctools',
+        'owner' => 'ctools_custom_content',
         'api' => 'ctools_content',
         'minimum_version' => 1,
         'current_version' => 1,

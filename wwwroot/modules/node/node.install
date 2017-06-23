@@ -18,12 +18,14 @@ function node_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,
       ),
+      // Defaults to NULL in order to avoid a brief period of potential
+      // deadlocks on the index.
       'vid' => array(
         'description' => 'The current {node_revision}.vid version identifier.',
         'type' => 'int',
         'unsigned' => TRUE,
-        'not null' => TRUE,
-        'default' => 0,
+        'not null' => FALSE,
+        'default' => NULL,
       ),
       'type' => array(
         'description' => 'The {node_type}.type of this node.',
@@ -112,6 +114,7 @@ function node_schema() {
       'uid'                 => array('uid'),
       'tnid'                => array('tnid'),
       'translate'           => array('translate'),
+      'language'            => array('language'),
     ),
     'unique keys' => array(
       'vid' => array('vid'),
@@ -407,6 +410,7 @@ function node_schema() {
       'nid' => array(
         'description' => 'The {node}.nid that was read.',
         'type' => 'int',
+        'unsigned' => TRUE,
         'not null' => TRUE,
         'default' => 0,
       ),
@@ -472,7 +476,7 @@ function node_update_dependencies() {
  *
  * This function is valid for a database schema version 7000.
  *
- * @ingroup update-api-6.x-to-7.x
+ * @ingroup update_api
  */
 function _update_7000_node_get_types() {
   $node_types = db_query('SELECT * FROM {node_type}')->fetchAllAssoc('type', PDO::FETCH_OBJ);
@@ -845,6 +849,15 @@ function node_update_7010() {
 }
 
 /**
+ * @} End of "addtogroup updates-6.x-to-7.x".
+ */
+
+/**
+ * @addtogroup updates-7.x-extra
+ * @{
+ */
+
+/**
  * Update the database from Drupal 6 to match the schema.
  */
 function node_update_7011() {
@@ -888,7 +901,7 @@ function node_update_7012() {
       ->execute();
 
     // Switch field languages to LANGUAGE_NONE, since initially they were
-    // assigned $node->language.
+    // assigned the node language.
     foreach (array('field_data_body', 'field_revision_body') as $table) {
       db_update($table)
         ->fields(array('language' => LANGUAGE_NONE))
@@ -900,5 +913,54 @@ function node_update_7012() {
 }
 
 /**
- * @} End of "addtogroup updates-6.x-to-7.x"
+ * Change {node}.vid default value from 0 to NULL to avoid deadlock issues on MySQL.
+ */
+function node_update_7013() {
+  db_drop_unique_key('node', 'vid');
+  db_change_field('node', 'vid', 'vid', array(
+    'description' => 'The current {node_revision}.vid version identifier.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => FALSE,
+    'default' => NULL,
+  ));
+  db_add_unique_key('node', 'vid', array('vid'));
+}
+
+/**
+ * Add an index on {node}.language.
+ */
+function node_update_7014() {
+  db_add_index('node', 'language', array('language'));
+}
+
+/**
+ * Enable node types that may have been erroneously disabled in Drupal 7.36.
+ */
+function node_update_7015() {
+  db_update('node_type')
+    ->fields(array('disabled' => 0))
+    ->condition('base', 'node_content')
+    ->execute();
+}
+
+/**
+ * Change {history}.nid to an unsigned int in order to match {node}.nid.
+ */
+function node_update_7016() {
+  db_drop_primary_key('history');
+  db_drop_index('history', 'nid');
+  db_change_field('history', 'nid', 'nid', array(
+    'description' => 'The {node}.nid that was read.',
+    'type' => 'int',
+    'unsigned' => TRUE,
+    'not null' => TRUE,
+    'default' => 0,
+  ));
+  db_add_primary_key('history', array('uid', 'nid'));
+  db_add_index('history', 'nid', array('nid'));
+}
+
+/**
+ * @} End of "addtogroup updates-7.x-extra".
  */

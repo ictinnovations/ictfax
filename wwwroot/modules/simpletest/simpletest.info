@@ -11,10 +11,12 @@ configure = admin/config/development/testing/settings
 files[] = tests/actions.test
 files[] = tests/ajax.test
 files[] = tests/batch.test
+files[] = tests/boot.test
 files[] = tests/bootstrap.test
 files[] = tests/cache.test
 files[] = tests/common.test
 files[] = tests/database_test.test
+files[] = tests/entity_crud.test
 files[] = tests/entity_crud_hook_test.test
 files[] = tests/entity_query.test
 files[] = tests/error.test
@@ -27,6 +29,7 @@ files[] = tests/lock.test
 files[] = tests/mail.test
 files[] = tests/menu.test
 files[] = tests/module.test
+files[] = tests/pager.test
 files[] = tests/password.test
 files[] = tests/path.test
 files[] = tests/registry.test
@@ -45,12 +48,17 @@ files[] = tests/upgrade/upgrade.locale.test
 files[] = tests/upgrade/upgrade.menu.test
 files[] = tests/upgrade/upgrade.node.test
 files[] = tests/upgrade/upgrade.taxonomy.test
+files[] = tests/upgrade/upgrade.trigger.test
 files[] = tests/upgrade/upgrade.translatable.test
 files[] = tests/upgrade/upgrade.upload.test
 files[] = tests/upgrade/upgrade.user.test
+files[] = tests/upgrade/update.aggregator.test
+files[] = tests/upgrade/update.trigger.test
+files[] = tests/upgrade/update.field.test
+files[] = tests/upgrade/update.user.test
 
-; Information added by drupal.org packaging script on 2011-12-05
-version = "7.10"
+; Information added by Drupal.org packaging script on 2017-06-21
+version = "7.56"
 project = "drupal"
-datestamp = "1323125439"
+datestamp = "1498069849"
 

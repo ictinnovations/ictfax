@@ -25,7 +25,7 @@
  *   the template.
  *
  * Default keys within $info_split:
- * - $info_split['type']: Node type (or item type string supplied by module).
+ * - $info_split['module']: The module that implemented the search query.
  * - $info_split['user']: Author of the node linked to users profile. Depends
  *   on permission.
  * - $info_split['date']: Last update of the node. Short formatted.
@@ -60,6 +60,8 @@
  * @see template_preprocess()
  * @see template_preprocess_search_result()
  * @see template_process()
+ *
+ * @ingroup themeable
  */
 ?>
 <li class="<?php print $classes; ?>"<?php print $attributes; ?>>

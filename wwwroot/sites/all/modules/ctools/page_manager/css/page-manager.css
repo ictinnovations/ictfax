@@ -57,13 +57,12 @@ body form#page-manager-list-pages-form {
    a specific background color. */
 #page-manager-list-pages td.page-manager-page-operations {
   vertical-align: top;
-  background-color: inherit;
+  position: relative;
+  text-align: right;
 }
 
 #page-manager-list-pages td.page-manager-page-operations .ctools-dropbutton {
   text-align: left; /* LTR */
-  position: absolute;
-  right: 10px;
 }
 
 

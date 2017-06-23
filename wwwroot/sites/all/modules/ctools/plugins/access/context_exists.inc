@@ -11,7 +11,7 @@ $plugin = array(
   'callback' => 'ctools_context_exists_ctools_access_check',
   'settings form' => 'ctools_context_exists_ctools_access_settings',
   'summary' => 'ctools_context_exists_ctools_access_summary',
-  'required context' => new ctools_context_required(t('Context'), 'any'),
+  'required context' => new ctools_context_required(t('Context'), 'any', TRUE),
   'defaults' => array('exists' => TRUE),
 );
 

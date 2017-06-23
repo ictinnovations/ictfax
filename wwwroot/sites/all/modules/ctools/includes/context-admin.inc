@@ -246,7 +246,7 @@ function ctools_context_add_item_table($type, &$form, $available_contexts, $item
 }
 
 function ctools_context_add_item_table_buttons($type, $module, &$form, $available_contexts) {
-  drupal_add_js('misc/ajax.js');
+  drupal_add_library('system', 'drupal.ajax');
   $form['buttons'] = array(
     '#tree' => TRUE,
   );
@@ -345,7 +345,7 @@ function ctools_context_ajax_item_add($mechanism = NULL, $type = NULL, $cache_ke
   // Set up the $conf array for this plugin
   if (empty($step) || empty($object->temporary)) {
     // Create the basis for our new context.
-    $conf = ctools_context_get_defaults($plugin_definition);
+    $conf = ctools_context_get_defaults($plugin_definition, $object, $type);
     $object->temporary = &$conf;
   }
   else {
@@ -376,11 +376,11 @@ function ctools_context_ajax_item_add($mechanism = NULL, $type = NULL, $cache_ke
     'path' => "ctools/context/ajax/add/$mechanism/$type/$cache_key/$name/%step",
     'show cancel' => TRUE,
     'default form' => 'ctools_edit_context_form_defaults',
-    'auto caching' => TRUE,
+    'auto cache' => TRUE,
     'cache mechanism' => $mechanism,
     'cache key' => $cache_key,
     // This is stating what the cache will be referred to in $form_state
-    'cache storage' => 'object',
+    'cache location' => 'object',
   );
 
   if ($type == 'requiredcontext') {
@@ -416,12 +416,20 @@ function ctools_context_ajax_item_add($mechanism = NULL, $type = NULL, $cache_ke
     ctools_cache_operation($mechanism, $cache_key, 'finalize', $object);
 
     // Very irritating way to update the form for our contexts.
-    $arg_form_state = array('values' => array());
+    $arg_form_state = form_state_defaults() + array(
+      'values' => array(),
+      'process_input' => FALSE,
+      'complete form' => array(),
+    );
+
+    $rel_form_state = $arg_form_state;
 
     $arg_form = array(
       '#post' => array(),
       '#programmed' => FALSE,
       '#tree' => FALSE,
+      '#parents' => array(),
+      '#array_parents' => array(),
     );
 
     // Build a chunk of the form to merge into the displayed form
@@ -446,6 +454,8 @@ function ctools_context_ajax_item_add($mechanism = NULL, $type = NULL, $cache_ke
       '#post' => array(),
       '#programmed' => FALSE,
       '#tree' => FALSE,
+      '#parents' => array(),
+      '#array_parents' => array(),
     );
 
     $rel_form['relationship'] = array(
@@ -460,7 +470,7 @@ function ctools_context_ajax_item_add($mechanism = NULL, $type = NULL, $cache_ke
     $output = array();
     if (!empty($available_relationships)) {
       ctools_context_add_item_table_buttons('relationship', $mechanism, $rel_form, $available_relationships);
-      $rel_form = form_builder('dummy_form_id', $rel_form, $arg_form_state);
+      $rel_form = form_builder('dummy_form_id', $rel_form, $rel_form_state);
       $output[] = ajax_command_replace('div#ctools-relationships-table div.buttons', drupal_render($rel_form));
     }
 
@@ -551,11 +561,11 @@ function ctools_context_ajax_item_edit($mechanism = NULL, $type = NULL, $cache_k
     'path' => "ctools/context/ajax/configure/$mechanism/$type/$cache_key/$position/%step",
     'show cancel' => TRUE,
     'default form' => 'ctools_edit_context_form_defaults',
-    'auto caching' => TRUE,
+    'auto cache' => TRUE,
     'cache mechanism' => $mechanism,
     'cache key' => $cache_key,
     // This is stating what the cache will be referred to in $form_state
-    'cache storage' => 'object',
+    'cache location' => 'object',
   );
 
   if ($type == 'requiredcontext') {
@@ -582,8 +592,16 @@ function ctools_context_ajax_item_edit($mechanism = NULL, $type = NULL, $cache_k
     $output = array();
     $output[] = ctools_modal_command_dismiss();
 
+    $arg_form_state = form_state_defaults() + array(
+      'values' => array(),
+      'process_input' => FALSE,
+      'complete form' => array(),
+    );
+
     $arg_form = array(
       '#post' => array(),
+      '#parents' => array(),
+      '#array_parents' => array(),
       '#programmed' => FALSE,
       '#tree' => FALSE,
     );
@@ -614,15 +632,30 @@ function ctools_context_ajax_item_edit($mechanism = NULL, $type = NULL, $cache_k
   exit;
 }
 
-function ctools_context_get_defaults($plugin_definition) {
+/**
+ * Get the defaults for a new instance of a context plugin.
+ *
+ * @param $plugin_definition
+ *   The metadata definition of the plugin from ctools_get_plugins().
+ * @param $object
+ *   The object the context plugin will be added to.
+ * @param $type
+ *   The type of context plugin. i.e, context, requiredcontext, relationship
+ */
+function ctools_context_get_defaults($plugin_definition, $object, $type) {
+  // Fetch the potential id of the plugin so we can append
+  // title and keyword information for new ones.
+  $type_info = ctools_context_info($type);
+  $id = ctools_context_next_id($object->{$type_info['key']}, $plugin_definition['name']);
+
   $conf = array(
     'identifier' => $plugin_definition['title'] . ($id > 1 ? ' ' . $id : ''),
     'keyword' => ctools_get_keyword($object, $plugin_definition['keyword']),
     'name' => $plugin_definition['name'],
   );
 
-  if (isset($plugin['defaults'])) {
-    $defaults = $plugin['defaults'];
+  if (isset($plugin_definition['defaults'])) {
+    $defaults = $plugin_definition['defaults'];
   }
   else if (isset($subtype['defaults'])) {
     $defaults = $subtype['defaults'];
@@ -652,7 +685,6 @@ function ctools_edit_context_form_defaults($form, &$form_state) {
   $object            = $form_state['object'];
   $plugin_definition = $form_state['plugin'];
   $type_info         = $form_state['type info'];
-  $position          = $form_state['position'];
   $contexts          = $form_state['contexts'];
   $conf             = $form_state['conf'];
 
@@ -704,6 +736,15 @@ function ctools_edit_context_form_defaults($form, &$form_state) {
     '#default_value' => $conf['keyword'],
   );
 
+  if ($type_info['key'] == 'requiredcontexts') {
+    $form['optional'] = array(
+      '#type' => 'checkbox',
+      '#title' => t('Context is optional'),
+      '#default_value' => !empty($form_state['conf']['optional']),
+      '#description' => t('This context need not be present for the component to function.'),
+    );
+  }
+
   $form['#submit'][] = 'ctools_edit_context_form_defaults_submit';
 
   return $form;
@@ -719,6 +760,9 @@ function ctools_edit_context_form_defaults_submit(&$form, &$form_state) {
   if ($form_state['type info']['key'] == 'arguments') {
     $form_state['conf']['default'] = $form_state['values']['default'];
     $form_state['conf']['title'] = $form_state['values']['title'];
+  }
+  if ($form_state['type info']['key'] == 'requiredcontexts') {
+    $form_state['conf']['optional'] = $form_state['values']['optional'];
   }
 
   $form_state['conf']['identifier'] = $form_state['values']['identifier'];
@@ -796,7 +840,7 @@ function ctools_get_keyword($page, $word) {
   }
 
   $keyword = $word;
-  $count = 0;
+  $count = 1;
   while (!empty($keywords[$keyword])) {
     $keyword = $word . '_' . ++$count;
   }

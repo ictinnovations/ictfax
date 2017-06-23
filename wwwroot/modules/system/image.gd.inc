@@ -6,7 +6,7 @@
  */
 
 /**
- * @ingroup image
+ * @addtogroup image
  * @{
  */
 
@@ -56,13 +56,8 @@ function image_gd_settings_validate($form, &$form_state) {
  *   A boolean indicating if the GD toolkit is available on this machine.
  */
 function image_gd_check_settings() {
-  if ($check = get_extension_funcs('gd')) {
-    if (in_array('imagegd2', $check)) {
-      // GD2 support is available.
-      return TRUE;
-    }
-  }
-  return FALSE;
+  // GD2 support is available.
+  return function_exists('imagegd2');
 }
 
 /**
@@ -121,38 +116,62 @@ function image_gd_rotate(stdClass $image, $degrees, $background = NULL) {
     return FALSE;
   }
 
-  $width = $image->info['width'];
-  $height = $image->info['height'];
+  // PHP 5.5 GD bug: https://bugs.php.net/bug.php?id=65148: To prevent buggy
+  // behavior on negative multiples of 90 degrees we convert any negative
+  // angle to a positive one between 0 and 360 degrees.
+  $degrees -= floor($degrees / 360) * 360;
 
-  // Convert the hexadecimal background value to a color index value.
+  // Convert the hexadecimal background value to a RGBA array.
   if (isset($background)) {
-    $rgb = array();
-    for ($i = 16; $i >= 0; $i -= 8) {
-      $rgb[] = (($background >> $i) & 0xFF);
-    }
-    $background = imagecolorallocatealpha($image->resource, $rgb[0], $rgb[1], $rgb[2], 0);
+    $background = array(
+      'red' => $background >> 16 & 0xFF,
+      'green' => $background >> 8 & 0xFF,
+      'blue' => $background & 0xFF,
+      'alpha' => 0,
+    );
   }
-  // Set the background color as transparent if $background is NULL.
   else {
-    // Get the current transparent color.
-    $background = imagecolortransparent($image->resource);
-
-    // If no transparent colors, use white.
-    if ($background == 0) {
-      $background = imagecolorallocatealpha($image->resource, 255, 255, 255, 0);
-    }
+    // Background color is not specified: use transparent white as background.
+    $background = array(
+      'red' => 255,
+      'green' => 255,
+      'blue' => 255,
+      'alpha' => 127
+    );
   }
+
+  // Store the color index for the background as that is what GD uses.
+  $background_idx = imagecolorallocatealpha($image->resource, $background['red'], $background['green'], $background['blue'], $background['alpha']);
 
   // Images are assigned a new color palette when rotating, removing any
   // transparency flags. For GIF images, keep a record of the transparent color.
   if ($image->info['extension'] == 'gif') {
-    $transparent_index = imagecolortransparent($image->resource);
-    if ($transparent_index != 0) {
-      $transparent_gif_color = imagecolorsforindex($image->resource, $transparent_index);
+    // GIF does not work with a transparency channel, but can define 1 color
+    // in its palette to act as transparent.
+
+    // Get the current transparent color, if any.
+    $gif_transparent_id = imagecolortransparent($image->resource);
+    if ($gif_transparent_id !== -1) {
+      // The gif already has a transparent color set: remember it to set it on
+      // the rotated image as well.
+      $transparent_gif_color = imagecolorsforindex($image->resource, $gif_transparent_id);
+
+      if ($background['alpha'] >= 127) {
+        // We want a transparent background: use the color already set to act
+        // as transparent, as background.
+        $background_idx = $gif_transparent_id;
+      }
+    }
+    else {
+      // The gif does not currently have a transparent color set.
+      if ($background['alpha'] >= 127) {
+        // But as the background is transparent, it should get one.
+        $transparent_gif_color = $background;
+      }
     }
   }
 
-  $image->resource = imagerotate($image->resource, 360 - $degrees, $background);
+  $image->resource = imagerotate($image->resource, 360 - $degrees, $background_idx);
 
   // GIFs need to reassign the transparent color after performing the rotate.
   if (isset($transparent_gif_color)) {
@@ -234,7 +253,24 @@ function image_gd_desaturate(stdClass $image) {
 function image_gd_load(stdClass $image) {
   $extension = str_replace('jpg', 'jpeg', $image->info['extension']);
   $function = 'imagecreatefrom' . $extension;
-  return (function_exists($function) && $image->resource = $function($image->source));
+  if (function_exists($function) && $image->resource = $function($image->source)) {
+    if (imageistruecolor($image->resource)) {
+      return TRUE;
+    }
+    else {
+      // Convert indexed images to truecolor, copying the image to a new
+      // truecolor resource, so that filters work correctly and don't result
+      // in unnecessary dither.
+      $resource = image_gd_create_tmp($image, $image->info['width'], $image->info['height']);
+      if ($resource) {
+        imagecopy($resource, $image->resource, 0, 0, 0, 0, imagesx($resource), imagesy($resource));
+        imagedestroy($image->resource);
+        $image->resource = $resource;
+      }
+    }
+    return (bool) $image->resource;
+  }
+  return FALSE;
 }
 
 /**
@@ -302,17 +338,31 @@ function image_gd_create_tmp(stdClass $image, $width, $height) {
   $res = imagecreatetruecolor($width, $height);
 
   if ($image->info['extension'] == 'gif') {
-    // Grab transparent color index from image resource.
+    // Find out if a transparent color is set, will return -1 if no
+    // transparent color has been defined in the image.
     $transparent = imagecolortransparent($image->resource);
 
     if ($transparent >= 0) {
-      // The original must have a transparent color, allocate to the new image.
-      $transparent_color = imagecolorsforindex($image->resource, $transparent);
-      $transparent = imagecolorallocate($res, $transparent_color['red'], $transparent_color['green'], $transparent_color['blue']);
+      // Find out the number of colors in the image palette. It will be 0 for
+      // truecolor images.
+      $palette_size = imagecolorstotal($image->resource);
+      if ($palette_size == 0 || $transparent < $palette_size) {
+        // Set the transparent color in the new resource, either if it is a
+        // truecolor image or if the transparent color is part of the palette.
+        // Since the index of the transparency color is a property of the
+        // image rather than of the palette, it is possible that an image
+        // could be created with this index set outside the palette size (see
+        // http://stackoverflow.com/a/3898007).
+        $transparent_color = imagecolorsforindex($image->resource, $transparent);
+        $transparent = imagecolorallocate($res, $transparent_color['red'], $transparent_color['green'], $transparent_color['blue']);
 
-      // Flood with our new transparent color.
-      imagefill($res, 0, 0, $transparent);
-      imagecolortransparent($res, $transparent);
+        // Flood with our new transparent color.
+        imagefill($res, 0, 0, $transparent);
+        imagecolortransparent($res, $transparent);
+      }
+      else {
+        imagefill($res, 0, 0, imagecolorallocate($res, 255, 255, 255));
+      }
     }
   }
   elseif ($image->info['extension'] == 'png') {
@@ -346,7 +396,7 @@ function image_gd_create_tmp(stdClass $image, $width, $height) {
  */
 function image_gd_get_info(stdClass $image) {
   $details = FALSE;
-  $data = getimagesize($image->source);
+  $data = @getimagesize($image->source);
 
   if (isset($data) && is_array($data)) {
     $extensions = array('1' => 'gif', '2' => 'jpg', '3' => 'png');
@@ -363,5 +413,5 @@ function image_gd_get_info(stdClass $image) {
 }
 
 /**
- * @} End of "ingroup image".
+ * @} End of "addtogroup image".
  */

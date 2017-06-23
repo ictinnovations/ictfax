@@ -37,6 +37,7 @@ function page_manager_search_page_manager_tasks() {
     'handler type' => 'context',
     'get arguments' => 'page_manager_search_get_arguments',
     'get context placeholders' => 'page_manager_search_get_contexts',
+    'access callback' => 'page_manager_search_access_check',
 
   );
 }
@@ -109,6 +110,9 @@ function page_manager_search_page($type) {
 
   // And implode() it all back together.
   $keys = $args ? implode('/', $args) : '';
+
+  // Allow other modules to alter the search keys
+  drupal_alter(array('search_keys', 'search_'. $type .'_keys'), $keys);
 
   // Load my task plugin
   $task = page_manager_get_task('search');
@@ -225,4 +229,21 @@ function page_manager_search_build_subtask($task, $module) {
   );
 
   return $subtask;
+}
+
+/**
+ * Callback to determine if a page is accessible.
+ *
+ * @param $task
+ *   The task plugin.
+ * @param $subtask_id
+ *   The subtask id
+ * @param $contexts
+ *   The contexts loaded for the task.
+ * @return
+ *   TRUE if the current user can access the page.
+ */
+function page_manager_search_access_check($task, $subtask_id, $contexts) {
+  $context = reset($contexts);
+  return _search_menu_access($context->data);
 }

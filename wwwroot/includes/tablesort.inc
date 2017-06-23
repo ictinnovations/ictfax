@@ -46,16 +46,15 @@ class TableSort extends SelectQueryExtender {
       // Based on code from db_escape_table(), but this can also contain a dot.
       $field = preg_replace('/[^A-Za-z0-9_.]+/', '', $ts['sql']);
 
-      // Sort order can only be ASC or DESC.
-      $sort = drupal_strtoupper($ts['sort']);
-      $sort = in_array($sort, array('ASC', 'DESC')) ? $sort : '';
-      $this->orderBy($field, $sort);
+      // orderBy() will ensure that only ASC/DESC values are accepted, so we
+      // don't need to sanitize that here.
+      $this->orderBy($field, $ts['sort']);
     }
     return $this;
   }
 
   /**
-   * Initialize the table sort context.
+   * Initializes the table sort context.
    */
   protected function init() {
     $ts = $this->order();
@@ -115,7 +114,7 @@ function tablesort_init($header) {
 }
 
 /**
- * Format a column header.
+ * Formats a column header.
  *
  * If the cell in question is the column header for the current sort criterion,
  * it gets special formatting. All possible sort criteria become links.
@@ -126,6 +125,7 @@ function tablesort_init($header) {
  *   An array of column headers in the format described in theme_table().
  * @param $ts
  *   The current table sort context as returned from tablesort_init().
+ *
  * @return
  *   A properly formatted cell, ready for _theme_table_cell().
  */
@@ -151,7 +151,7 @@ function tablesort_header($cell, $header, $ts) {
 }
 
 /**
- * Format a table cell.
+ * Formats a table cell.
  *
  * Adds a class attribute to all cells in the currently active column.
  *
@@ -163,6 +163,7 @@ function tablesort_header($cell, $header, $ts) {
  *   The current table sort context as returned from tablesort_init().
  * @param $i
  *   The index of the cell's table column.
+ *
  * @return
  *   A properly formatted cell, ready for _theme_table_cell().
  */
@@ -179,7 +180,7 @@ function tablesort_cell($cell, $header, $ts, $i) {
 }
 
 /**
- * Compose a URL query parameter array for table sorting links.
+ * Composes a URL query parameter array for table sorting links.
  *
  * @return
  *   A URL query parameter array that consists of all components of the current
@@ -190,10 +191,11 @@ function tablesort_get_query_parameters() {
 }
 
 /**
- * Determine the current sort criterion.
+ * Determines the current sort criterion.
  *
  * @param $headers
  *   An array of column headers in the format described in theme_table().
+ *
  * @return
  *   An associative array describing the criterion, containing the keys:
  *   - "name": The localized title of the table column.
@@ -226,10 +228,11 @@ function tablesort_get_order($headers) {
 }
 
 /**
- * Determine the current sort direction.
+ * Determines the current sort direction.
  *
  * @param $headers
  *   An array of column headers in the format described in theme_table().
+ *
  * @return
  *   The current sort direction ("asc" or "desc").
  */

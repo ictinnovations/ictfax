@@ -51,7 +51,7 @@ function field_ui_fields_list() {
 }
 
 /**
- * Helper function to display a message about inactive fields.
+ * Displays a message listing the inactive fields of a given bundle.
  */
 function field_ui_inactive_message($entity_type, $bundle) {
   $inactive_instances = field_ui_inactive_instances($entity_type, $bundle);
@@ -72,9 +72,9 @@ function field_ui_inactive_message($entity_type, $bundle) {
 }
 
 /**
- * Helper function: determines the rendering order of a tree array.
+ * Determines the rendering order of an array representing a tree.
  *
- * This is intended as a callback for array_reduce().
+ * Callback for array_reduce() within field_ui_table_pre_render().
  */
 function _field_ui_reduce_order($array, $a) {
   $array = !isset($array) ? array() : $array;
@@ -91,8 +91,9 @@ function _field_ui_reduce_order($array, $a) {
 /**
  * Returns the region to which a row in the 'Manage fields' screen belongs.
  *
- * This function is used as a #row_callback in field_ui_field_overview_form(),
- * and is called during field_ui_table_pre_render().
+ * This function is used as a #region_callback in
+ * field_ui_field_overview_form(). It is called during
+ * field_ui_table_pre_render().
  */
 function field_ui_field_overview_row_region($row) {
   switch ($row['#row_type']) {
@@ -109,8 +110,9 @@ function field_ui_field_overview_row_region($row) {
 /**
  * Returns the region to which a row in the 'Manage display' screen belongs.
  *
- * This function is used as a #row_callback in field_ui_field_overview_form(),
- * and is called during field_ui_table_pre_render().
+ * This function is used as a #region_callback in
+ * field_ui_field_overview_form(), and is called during
+ * field_ui_table_pre_render().
  */
 function field_ui_display_overview_row_region($row) {
   switch ($row['#row_type']) {
@@ -160,7 +162,8 @@ function field_ui_table_pre_render($elements) {
 
         // Add tabledrag indentation to the first row cell.
         if ($depth = count($parents[$name])) {
-          $cell = current(element_children($row));
+          $children = element_children($row);
+          $cell = current($children);
           $row[$cell]['#prefix'] = theme('indentation', array('size' => $depth)) . (isset($row[$cell]['#prefix']) ? $row[$cell]['#prefix'] : '');
         }
 
@@ -215,9 +218,9 @@ function theme_field_ui_table($variables) {
 
   // Determine the colspan to use for region rows, by checking the number of
   // columns in the headers.
-  $colums_count = 0;
+  $columns_count = 0;
   foreach ($table['header'] as $header) {
-    $colums_count += (is_array($header) && isset($header['colspan']) ? $header['colspan'] : 1);
+    $columns_count += (is_array($header) && isset($header['colspan']) ? $header['colspan'] : 1);
   }
 
   // Render rows, region by region.
@@ -230,7 +233,7 @@ function theme_field_ui_table($variables) {
         'class' => array('region-title', 'region-' . $region_name_class . '-title'),
         'no_striping' => TRUE,
         'data' => array(
-          array('data' => $region['title'], 'colspan' => $colums_count),
+          array('data' => $region['title'], 'colspan' => $columns_count),
         ),
       );
     }
@@ -240,7 +243,7 @@ function theme_field_ui_table($variables) {
         'class' => array('region-message', 'region-' . $region_name_class . '-message', $class),
         'no_striping' => TRUE,
         'data' => array(
-          array('data' => $region['message'], 'colspan' => $colums_count),
+          array('data' => $region['message'], 'colspan' => $columns_count),
         ),
       );
     }
@@ -274,9 +277,13 @@ function theme_field_ui_table($variables) {
 }
 
 /**
- * Menu callback; listing of fields for a bundle.
+ * Form constructor for the 'Manage fields' form of a bundle.
  *
  * Allows fields and pseudo-fields to be re-ordered.
+ *
+ * @see field_ui_field_overview_form_validate()
+ * @see field_ui_field_overview_form_submit()
+ * @ingroup forms
  */
 function field_ui_field_overview_form($form, &$form_state, $entity_type, $bundle) {
   $bundle = field_extract_bundle($entity_type, $bundle);
@@ -310,8 +317,8 @@ function field_ui_field_overview_form($form, &$form_state, $entity_type, $bundle
       t('Label'),
       t('Weight'),
       t('Parent'),
-      t('Name'),
-      t('Field'),
+      t('Machine name'),
+      t('Field type'),
       t('Widget'),
       array('data' => t('Operations'), 'colspan' => 2),
     ),
@@ -492,16 +499,24 @@ function field_ui_field_overview_form($form, &$form_state, $entity_type, $bundle
         ),
       ),
       'field_name' => array(
-        '#type' => 'textfield',
+        '#type' => 'machine_name',
         '#title' => t('New field name'),
         '#title_display' => 'invisible',
         // This field should stay LTR even for RTL languages.
         '#field_prefix' => '<span dir="ltr">field_',
         '#field_suffix' => '</span>&lrm;',
-        '#attributes' => array('dir'=>'ltr'),
-        '#size' => 10,
-        '#description' => t('Field name (a-z, 0-9, _)'),
+        '#size' => 15,
+        '#description' => t('A unique machine-readable name containing letters, numbers, and underscores.'),
+        // 32 characters minus the 'field_' prefix.
+        '#maxlength' => 26,
         '#prefix' => '<div class="add-new-placeholder">&nbsp;</div>',
+        '#machine_name' => array(
+          'source' => array('fields', $name, 'label'),
+          'exists' => '_field_ui_field_name_exists',
+          'standalone' => TRUE,
+          'label' => '',
+        ),
+        '#required' => FALSE,
       ),
       'type' => array(
         '#type' => 'select',
@@ -534,8 +549,19 @@ function field_ui_field_overview_form($form, &$form_state, $entity_type, $bundle
   }
 
   // Additional row: add existing field.
-  $existing_field_options = field_ui_existing_field_options($entity_type, $bundle);
-  if ($existing_field_options && $widget_type_options) {
+  $existing_fields = field_ui_existing_field_options($entity_type, $bundle);
+  if ($existing_fields && $widget_type_options) {
+    // Build list of options.
+    $existing_field_options = array();
+    foreach ($existing_fields as $field_name => $info) {
+      $text = t('@type: @field (@label)', array(
+        '@type' => $info['type_label'],
+        '@label' => $info['label'],
+        '@field' => $info['field'],
+      ));
+      $existing_field_options[$field_name] = truncate_utf8($text, 80, FALSE, TRUE);
+    }
+    asort($existing_field_options);
     $name = '_add_existing_field';
     $table[$name] = array(
       '#attributes' => array('class' => array('draggable', 'tabledrag-leaf', 'add-new')),
@@ -611,10 +637,8 @@ function field_ui_field_overview_form($form, &$form_state, $entity_type, $bundle
 
   // Add settings for the update selects behavior.
   $js_fields = array();
-  foreach ($existing_field_options as $field_name => $fields) {
-    $field = field_info_field($field_name);
-    $instance = field_info_instance($form['#entity_type'], $field_name, $form['#bundle']);
-    $js_fields[$field_name] = array('label' => $instance['label'], 'type' => $field['type'], 'widget' => $instance['widget']['type']);
+  foreach ($existing_fields as $field_name => $info) {
+    $js_fields[$field_name] = array('label' => $info['label'], 'type' => $info['type'], 'widget' => $info['widget_type']);
   }
 
   $form['#attached']['js'][] = array(
@@ -630,7 +654,9 @@ function field_ui_field_overview_form($form, &$form_state, $entity_type, $bundle
 }
 
 /**
- * Validate handler for the field overview form.
+ * Form validation handler for field_ui_field_overview_form().
+ *
+ * @see field_ui_field_overview_form_submit()
  */
 function field_ui_field_overview_form_validate($form, &$form_state) {
   _field_ui_field_overview_form_validate_add_new($form, $form_state);
@@ -638,9 +664,9 @@ function field_ui_field_overview_form_validate($form, &$form_state) {
 }
 
 /**
- * Helper function for field_ui_field_overview_form_validate.
+ * Validates the 'add new field' row of field_ui_field_overview_form().
  *
- * Validate the 'add new field' row.
+ * @see field_ui_field_overview_form_validate()
  */
 function _field_ui_field_overview_form_validate_add_new($form, &$form_state) {
   $field = $form_state['values']['fields']['_add_new_field'];
@@ -661,25 +687,8 @@ function _field_ui_field_overview_form_validate_add_new($form, &$form_state) {
       $field_name = $field['field_name'];
 
       // Add the 'field_' prefix.
-      if (substr($field_name, 0, 6) != 'field_') {
-        $field_name = 'field_' . $field_name;
-        form_set_value($form['fields']['_add_new_field']['field_name'], $field_name, $form_state);
-      }
-
-      // Invalid field name.
-      if (!preg_match('!^field_[a-z0-9_]+$!', $field_name)) {
-        form_set_error('fields][_add_new_field][field_name', t('Add new field: the field name %field_name is invalid. The name must include only lowercase unaccentuated letters, numbers, and underscores.', array('%field_name' => $field_name)));
-      }
-      if (strlen($field_name) > 32) {
-        form_set_error('fields][_add_new_field][field_name', t("Add new field: the field name %field_name is too long. The name is limited to 32 characters, including the 'field_' prefix.", array('%field_name' => $field_name)));
-      }
-
-      // Field name already exists. We need to check inactive fields as well, so
-      // we can't use field_info_fields().
-      $fields = field_read_fields(array('field_name' => $field_name), array('include_inactive' => TRUE));
-      if ($fields) {
-        form_set_error('fields][_add_new_field][field_name', t('Add new field: the field name %field_name already exists.', array('%field_name' => $field_name)));
-      }
+      $field_name = 'field_' . $field_name;
+      form_set_value($form['fields']['_add_new_field']['field_name'], $field_name, $form_state);
     }
 
     // Missing field type.
@@ -702,9 +711,27 @@ function _field_ui_field_overview_form_validate_add_new($form, &$form_state) {
 }
 
 /**
- * Helper function for field_ui_field_overview_form_validate.
+ * Render API callback: Checks if a field machine name is taken.
  *
- * Validate the 'add existing field' row.
+ * @param $value
+ *   The machine name, not prefixed with 'field_'.
+ *
+ * @return
+ *   Whether or not the field machine name is taken.
+ */
+function _field_ui_field_name_exists($value) {
+  // Prefix with 'field_'.
+  $field_name = 'field_' . $value;
+
+  // We need to check inactive fields as well, so we can't use
+  // field_info_fields().
+  return (bool) field_read_fields(array('field_name' => $field_name), array('include_inactive' => TRUE));
+}
+
+/**
+ * Validates the 'add existing field' row of field_ui_field_overview_form().
+ *
+ * @see field_ui_field_overview_form_validate()
  */
 function _field_ui_field_overview_form_validate_add_existing($form, &$form_state) {
   // The form element might be absent if no existing fields can be added to
@@ -740,7 +767,9 @@ function _field_ui_field_overview_form_validate_add_existing($form, &$form_state
 }
 
 /**
- * Submit handler for the field overview form.
+ * Form submission handler for field_ui_field_overview_form().
+ *
+ * @see field_ui_field_overview_form_validate()
  */
 function field_ui_field_overview_form_submit($form, &$form_state) {
   $form_values = $form_state['values']['fields'];
@@ -846,7 +875,11 @@ function field_ui_field_overview_form_submit($form, &$form_state) {
 }
 
 /**
- * Menu callback; presents field display settings for a given view mode.
+ * Form constructor for the field display settings for a given view mode.
+ *
+ * @see field_ui_display_overview_multistep_submit()
+ * @see field_ui_display_overview_form_submit()
+ * @ingroup forms
  */
 function field_ui_display_overview_form($form, &$form_state, $entity_type, $bundle, $view_mode) {
   $bundle = field_extract_bundle($entity_type, $bundle);
@@ -903,7 +936,7 @@ function field_ui_display_overview_form($form, &$form_state, $entity_type, $bund
   $field_label_options = array(
     'above' => t('Above'),
     'inline' => t('Inline'),
-    'hidden' => t('<Hidden>'),
+    'hidden' => '<' . t('Hidden') . '>',
   );
   $extra_visibility_options = array(
     'visible' => t('Visible'),
@@ -959,7 +992,7 @@ function field_ui_display_overview_form($form, &$form_state, $entity_type, $bund
     );
 
     $formatter_options = field_ui_formatter_options($field['type']);
-    $formatter_options['hidden'] = t('<Hidden>');
+    $formatter_options['hidden'] = '<' . t('Hidden') . '>';
     $table[$name]['format'] = array(
       'type' => array(
         '#type' => 'select',
@@ -1198,7 +1231,7 @@ function field_ui_display_overview_form($form, &$form_state, $entity_type, $bund
 
 
 /**
- * Form submit handler for multistep buttons on the 'Manage display' screen.
+ * Form submission handler for buttons in field_ui_display_overview_form().
  */
 function field_ui_display_overview_multistep_submit($form, &$form_state) {
   $trigger = $form_state['triggering_element'];
@@ -1244,7 +1277,7 @@ function field_ui_display_overview_multistep_js($form, &$form_state) {
   $trigger = $form_state['triggering_element'];
   $op = $trigger['#op'];
 
-  // Pick the elements that need ro receive the ajax-new-content effect.
+  // Pick the elements that need to receive the ajax-new-content effect.
   switch ($op) {
     case 'edit':
       $updated_rows = array($trigger['#field_name']);
@@ -1276,7 +1309,7 @@ function field_ui_display_overview_multistep_js($form, &$form_state) {
 }
 
 /**
- * Submit handler for the display overview form.
+ * Form submission handler for field_ui_display_overview_form().
  */
 function field_ui_display_overview_form_submit($form, &$form_state) {
   $form_values = $form_state['values'];
@@ -1354,7 +1387,7 @@ function field_ui_display_overview_form_submit($form, &$form_state) {
 }
 
 /**
- * Helper function for field_ui_display_overview_form_submit().
+ * Populates display settings for a new view mode from the default view mode.
  *
  * When an administrator decides to use custom display settings for a view mode,
  * that view mode needs to be initialized with the display settings for the
@@ -1362,8 +1395,6 @@ function field_ui_display_overview_form_submit($form, &$form_state) {
  * adds the new custom display settings to this bundle's instances, and saves
  * them. It also modifies the passed-in $settings array, which the caller can
  * then save using field_bundle_settings().
- *
- * @see field_bundle_settings()
  *
  * @param $entity_type
  *   The bundle's entity type.
@@ -1374,6 +1405,9 @@ function field_ui_display_overview_form_submit($form, &$form_state) {
  * @param $settings
  *   An associative array of bundle settings, as expected by
  *   field_bundle_settings().
+ *
+ * @see field_ui_display_overview_form_submit().
+ * @see field_bundle_settings()
  */
 function _field_ui_add_default_view_mode_settings($entity_type, $bundle, $view_mode, &$settings) {
   // Update display settings for field instances.
@@ -1398,7 +1432,7 @@ function _field_ui_add_default_view_mode_settings($entity_type, $bundle, $view_m
 }
 
 /**
- * Return an array of field_type options.
+ * Returns an array of field_type options.
  */
 function field_ui_field_type_options() {
   $options = &drupal_static(__FUNCTION__);
@@ -1420,7 +1454,7 @@ function field_ui_field_type_options() {
 }
 
 /**
- * Return an array of widget type options for a field type.
+ * Returns an array of widget type options for a field type.
  *
  * If no field type is provided, returns a nested array of all widget types,
  * keyed by field type human name.
@@ -1456,7 +1490,7 @@ function field_ui_widget_type_options($field_type = NULL, $by_label = FALSE) {
 }
 
 /**
- * Return an array of formatter options for a field type.
+ * Returns an array of formatter options for a field type.
  *
  * If no field type is provided, returns a nested array of all formatters, keyed
  * by field type.
@@ -1484,10 +1518,10 @@ function field_ui_formatter_options($field_type = NULL) {
 }
 
 /**
- * Return an array of existing field to be added to a bundle.
+ * Returns an array of existing fields to be added to a bundle.
  */
 function field_ui_existing_field_options($entity_type, $bundle) {
-  $options = array();
+  $info = array();
   $field_types = field_info_field_types();
 
   foreach (field_info_instances() as $existing_entity_type => $bundles) {
@@ -1500,29 +1534,32 @@ function field_ui_existing_field_options($entity_type, $bundle) {
           // - locked fields,
           // - fields already in the current bundle,
           // - fields that cannot be added to the entity type,
-          // - fields that that shoud not be added via user interface.
+          // - fields that should not be added via user interface.
 
           if (empty($field['locked'])
             && !field_info_instance($entity_type, $field['field_name'], $bundle)
             && (empty($field['entity_types']) || in_array($entity_type, $field['entity_types']))
             && empty($field_types[$field['type']]['no_ui'])) {
-            $text = t('@type: @field (@label)', array(
-              '@type' => $field_types[$field['type']]['label'],
-              '@label' => t($instance['label']), '@field' => $instance['field_name'],
-            ));
-            $options[$instance['field_name']] = (drupal_strlen($text) > 80 ? truncate_utf8($text, 77) . '...' : $text);
+            $info[$instance['field_name']] = array(
+              'type' => $field['type'],
+              'type_label' => $field_types[$field['type']]['label'],
+              'field' => $field['field_name'],
+              'label' => $instance['label'],
+              'widget_type' => $instance['widget']['type'],
+            );
           }
         }
       }
     }
   }
-  // Sort the list by field name.
-  asort($options);
-  return $options;
+  return $info;
 }
 
 /**
- * Menu callback; presents the field settings edit page.
+ * Form constructor for the field settings edit page.
+ *
+ * @see field_ui_field_settings_form_submit()
+ * @ingroup forms
  */
 function field_ui_field_settings_form($form, &$form_state, $instance) {
   $bundle = $instance['bundle'];
@@ -1576,7 +1613,7 @@ function field_ui_field_settings_form($form, &$form_state, $instance) {
 }
 
 /**
- * Save a field's settings after editing.
+ * Form submission handler for field_ui_field_settings_form().
  */
 function field_ui_field_settings_form_submit($form, &$form_state) {
   $form_values = $form_state['values'];
@@ -1603,7 +1640,15 @@ function field_ui_field_settings_form_submit($form, &$form_state) {
 }
 
 /**
- * Menu callback; select a widget for the field.
+ * Form constructor for the widget selection form.
+ *
+ * Path: BUNDLE_ADMIN_PATH/fields/%field/widget-type, where BUNDLE_ADMIN_PATH is
+ * the path stored in the ['admin']['info'] property in the return value of
+ * hook_entity_info().
+ *
+ * @see field_ui_menu()
+ * @see field_ui_widget_type_form_submit()
+ * @ingroup forms
  */
 function field_ui_widget_type_form($form, &$form_state, $instance) {
   drupal_set_title($instance['label']);
@@ -1647,7 +1692,7 @@ function field_ui_widget_type_form($form, &$form_state, $instance) {
 }
 
 /**
- * Submit the change in widget type.
+ * Form submission handler for field_ui_widget_type_form().
  */
 function field_ui_widget_type_form_submit($form, &$form_state) {
   $form_values = $form_state['values'];
@@ -1677,7 +1722,10 @@ function field_ui_widget_type_form_submit($form, &$form_state) {
 }
 
 /**
- * Menu callback; present a form for removing a field instance from a bundle.
+ * Form constructor for removing a field instance from a bundle.
+ *
+ * @see field_ui_field_delete_form_submit()
+ * @ingroup forms
  */
 function field_ui_field_delete_form($form, &$form_state, $instance) {
   $bundle = $instance['bundle'];
@@ -1707,9 +1755,10 @@ function field_ui_field_delete_form($form, &$form_state, $instance) {
 }
 
 /**
- * Removes a field instance from a bundle.
+ * Form submission handler for field_ui_field_delete_form().
  *
- * If the field has no more instances, it will be marked as deleted too.
+ * Removes a field instance from a bundle. If the field has no more instances,
+ * it will be marked as deleted too.
  */
 function field_ui_field_delete_form_submit($form, &$form_state) {
   $form_values = $form_state['values'];
@@ -1743,7 +1792,11 @@ function field_ui_field_delete_form_submit($form, &$form_state) {
 }
 
 /**
- * Menu callback; presents the field instance edit page.
+ * Form constructor for the field instance settings form.
+ *
+ * @see field_ui_field_edit_form_validate()
+ * @see field_ui_field_edit_form_submit()
+ * @ingroup forms
  */
 function field_ui_field_edit_form($form, &$form_state, $instance) {
   $bundle = $instance['bundle'];
@@ -1924,7 +1977,7 @@ function field_ui_field_edit_instance_pre_render($element) {
 }
 
 /**
- * Build default value fieldset.
+ * Builds the default value fieldset for a given field instance.
  */
 function field_ui_default_value_widget($field, $instance, &$form, &$form_state) {
   $field_name = $field['field_name'];
@@ -1947,13 +2000,15 @@ function field_ui_default_value_widget($field, $instance, &$form, &$form_state) 
   $instance['description'] = '';
 
   // @todo Allow multiple values (requires more work on 'add more' JS handler).
-  $element += field_default_form(NULL, NULL, $field, $instance, LANGUAGE_NONE, $items, $element, $form_state, 0);
+  $element += field_default_form($instance['entity_type'], NULL, $field, $instance, LANGUAGE_NONE, $items, $element, $form_state, 0);
 
   return $element;
 }
 
 /**
- * Form validation handler for field instance settings form.
+ * Form validation handler for field_ui_field_edit_form().
+ *
+ * @see field_ui_field_edit_form_submit().
  */
 function field_ui_field_edit_form_validate($form, &$form_state) {
   // Take the incoming values as the $instance definition, so that the 'default
@@ -1988,7 +2043,9 @@ function field_ui_field_edit_form_validate($form, &$form_state) {
 }
 
 /**
- * Form submit handler for field instance settings form.
+ * Form submission handler for field_ui_field_edit_form().
+ *
+ * @see field_ui_field_edit_form_validate().
  */
 function field_ui_field_edit_form_submit($form, &$form_state) {
   $instance = $form_state['values']['instance'];
@@ -2028,7 +2085,9 @@ function field_ui_field_edit_form_submit($form, &$form_state) {
 }
 
 /**
- * Helper functions to handle multipage redirects.
+ * Extracts next redirect path from an array of multiple destinations.
+ *
+ * @see field_ui_next_destination()
  */
 function field_ui_get_destinations($destinations) {
   $path = array_shift($destinations);
@@ -2040,12 +2099,16 @@ function field_ui_get_destinations($destinations) {
 }
 
 /**
- * Return the next redirect path in a multipage sequence.
+ * Returns the next redirect path in a multipage sequence.
  */
 function field_ui_next_destination($entity_type, $bundle) {
   $destinations = !empty($_REQUEST['destinations']) ? $_REQUEST['destinations'] : array();
   if (!empty($destinations)) {
     unset($_REQUEST['destinations']);
+  }
+  // Remove any external URLs.
+  $destinations = array_diff($destinations, array_filter($destinations, 'url_is_external'));
+  if ($destinations) {
     return field_ui_get_destinations($destinations);
   }
   $admin_path = _field_ui_bundle_admin_path($entity_type, $bundle);

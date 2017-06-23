@@ -22,7 +22,7 @@ class MailTestCase extends DrupalWebTestCase implements MailSystemInterface {
   }
 
   function setUp() {
-    parent::setUp();
+    parent::setUp(array('simpletest'));
 
     // Set MailTestCase (i.e. this class) as the SMTP library
     variable_set('mail_system', array('default-system' => 'MailTestCase'));
@@ -35,10 +35,28 @@ class MailTestCase extends DrupalWebTestCase implements MailSystemInterface {
     global $language;
 
     // Use MailTestCase for sending a message.
-    $message = drupal_mail('simpletest', 'mail_test', 'testing@drupal.org', $language);
+    $message = drupal_mail('simpletest', 'mail_test', 'testing@example.com', $language);
 
     // Assert whether the message was sent through the send function.
-    $this->assertEqual(self::$sent_message['to'], 'testing@drupal.org', t('Pluggable mail system is extendable.'));
+    $this->assertEqual(self::$sent_message['to'], 'testing@example.com', 'Pluggable mail system is extendable.');
+  }
+
+  /**
+   * Test that message sending may be canceled.
+   *
+   * @see simpletest_mail_alter()
+   */
+  function testCancelMessage() {
+    global $language;
+
+    // Reset the class variable holding a copy of the last sent message.
+    self::$sent_message = NULL;
+
+    // Send a test message that simpletest_mail_alter should cancel.
+    $message = drupal_mail('simpletest', 'cancel_test', 'cancel@example.com', $language);
+
+    // Assert that the message was not actually sent.
+    $this->assertNull(self::$sent_message, 'Message was canceled.');
   }
 
   /**
@@ -132,7 +150,7 @@ class DrupalHtmlToTextTestCase extends DrupalWebTestCase {
     $tests = array(
       // @todo Trailing linefeeds should be trimmed.
       '<a href = "http://drupal.org">Drupal.org</a>' => "Drupal.org [1]\n\n[1] http://drupal.org\n",
-      // @todo Footer urls should be absolute.
+      // @todo Footer URLs should be absolute.
       "<a href = \"$base_path\">Homepage</a>" => "Homepage [1]\n\n[1] $base_url/\n",
       '<address>Drupal</address>' => "Drupal\n",
       // @todo The <address> tag is currently not supported.
@@ -250,6 +268,31 @@ class DrupalHtmlToTextTestCase extends DrupalWebTestCase {
   }
 
   /**
+   * Tests that drupal_wrap_mail() removes trailing whitespace before newlines.
+   */
+  function testDrupalHtmltoTextRemoveTrailingWhitespace() {
+    $text = "Hi there! \nHerp Derp";
+    $mail_lines = explode("\n", drupal_wrap_mail($text));
+    $this->assertNotEqual(" ", substr($mail_lines[0], -1), 'Trailing whitespace removed.');
+  }
+
+  /**
+   * Tests drupal_wrap_mail() retains whitespace from Usenet style signatures.
+   *
+   * RFC 3676 says, "This is a special case; an (optionally quoted or quoted and
+   * stuffed) line consisting of DASH DASH SP is neither fixed nor flowed."
+   */
+  function testDrupalHtmltoTextUsenetSignature() {
+    $text = "Hi there!\n-- \nHerp Derp";
+    $mail_lines = explode("\n", drupal_wrap_mail($text));
+    $this->assertEqual("-- ", $mail_lines[1], 'Trailing whitespace not removed for dash-dash-space signatures.');
+
+    $text = "Hi there!\n--  \nHerp Derp";
+    $mail_lines = explode("\n", drupal_wrap_mail($text));
+    $this->assertEqual("--", $mail_lines[1], 'Trailing whitespace removed for incorrect dash-dash-space signatures.');
+  }
+
+  /**
    * Test that whitespace is collapsed.
    */
   function testDrupalHtmltoTextCollapsesWhitespace() {
@@ -349,7 +392,7 @@ class DrupalHtmlToTextTestCase extends DrupalWebTestCase {
       . '<br /><a href="http://www.example.com">Host, no path</a>'
       . '<br /><a href="' . $base_path . 'node/1">Path, no host</a>'
       . '<br /><a href="node/1">Relative path</a>';
-    // @todo Footnote urls should be absolute.
+    // @todo Footnote URLs should be absolute.
     $tt = "Host and path [1]"
       . "\nHost, no path [2]"
       // @todo The following two references should be combined.
@@ -398,7 +441,7 @@ class DrupalHtmlToTextTestCase extends DrupalWebTestCase {
    * <CRLF> is 1000 characters."
    */
   function testVeryLongLineWrap() {
-    $input = 'Drupal<br /><p>' . str_repeat('x', 2100) . '</><br />Drupal';
+    $input = 'Drupal<br /><p>' . str_repeat('x', 2100) . '</p><br />Drupal';
     $output = drupal_html_to_text($input);
     // This awkward construct comes from includes/mail.inc lines 8-13.
     $eol = variable_get('mail_line_endings', MAIL_LINE_ENDINGS);
@@ -412,7 +455,6 @@ class DrupalHtmlToTextTestCase extends DrupalWebTestCase {
       $maximum_line_length = max($maximum_line_length, strlen($line . $eol));
     }
     $verbose = 'Maximum line length found was ' . $maximum_line_length . ' octets.';
-    // @todo This should assert that $maximum_line_length <= 1000.
-    $this->pass($verbose);
+    $this->assertTrue($maximum_line_length <= 1000, $verbose);
   }
 }

@@ -16,59 +16,87 @@
  *   '#attributes' => array('class' => array('ctools-auto-submit-full-form')),
  * @endcode
  *
+ * If you want to exclude a field from the ctool-auto-submit-full-form auto submission,
+ * add the class ctools-auto-submit-exclude to the form element. With FAPI, add:
+ * @code
+ *   '#attributes' => array('class' => array('ctools-auto-submit-exclude')),
+ * @endcode
+ *
  * Finally, you have to identify which button you want clicked for autosubmit.
  * The behavior of this button will be honored if it's ajaxy or not:
  * @code
  *  '#attributes' => array('class' => array('ctools-use-ajax', 'ctools-auto-submit-click')),
  * @endcode
  *
- * Currently only 'select' and 'textfield' types are supported. We probably
- * could use additional support for radios and checkboxes.
+ * Currently only 'select', 'radio', 'checkbox' and 'textfield' types are supported. We probably
+ * could use additional support for HTML5 input types.
  */
 
 Drupal.behaviors.CToolsAutoSubmit = {
-  attach: function() {
-    var timeoutID = 0;
+  attach: function(context) {
+    // 'this' references the form element
+    function triggerSubmit (e) {
+      if ($.contains(document.body, this)) {
+        var $this = $(this);
+        if (!$this.hasClass('ctools-ajaxing')) {
+          $this.find('.ctools-auto-submit-click').click();
+        }
+      }
+    }
 
-    // Bind to any select widgets that will be auto submitted.
-    $('select.ctools-auto-submit:not(.ctools-auto-submit-processed),.ctools-auto-submit-full-form *[type!=input]:not(.ctools-auto-submit-processed)')
-      .addClass('.ctools-auto-submit-processed')
-      .change(function() {
-        $(this.form).find('.ctools-auto-submit-click').click();
+    // the change event bubbles so we only need to bind it to the outer form
+    $('form.ctools-auto-submit-full-form', context)
+      .add('.ctools-auto-submit', context)
+      .filter('form, select, input:not(:text, :submit)')
+      .once('ctools-auto-submit')
+      .change(function (e) {
+        // don't trigger on text change for full-form
+        if ($(e.target).is(':not(:text, :submit, .ctools-auto-submit-exclude)')) {
+          triggerSubmit.call(e.target.form);
+        }
       });
 
-    // Bind to any textfield widgets that will be auto submitted.
-    $('input[type=text].ctools-auto-submit:not(.ctools-auto-submit-processed),.ctools-auto-submit-full-form input[type=text]:not(.ctools-auto-submit-processed)')
-      .addClass('.ctools-auto-submit-processed')
-      .keyup(function(e) {
-        var form = this.form;
-        switch (e.keyCode) {
-          case 16: // shift
-          case 17: // ctrl
-          case 18: // alt
-          case 20: // caps lock
-          case 33: // page up
-          case 34: // page down
-          case 35: // end
-          case 36: // home
-          case 37: // left arrow
-          case 38: // up arrow
-          case 39: // right arrow
-          case 40: // down arrow
-          case 9:  // tab
-          case 13: // enter
-          case 27: // esc
-            return false;
-          default:
-            if (!$(form).hasClass('ctools-ajaxing')) {
-              if ((timeoutID)) {
-                clearTimeout(timeoutID);
-              }
-
-              timeoutID = setTimeout(function() { $(form).find('.ctools-auto-submit-click').click(); }, 300);
-          }
-        }
-    });
+    // e.keyCode: key
+    var discardKeyCode = [
+      16, // shift
+      17, // ctrl
+      18, // alt
+      20, // caps lock
+      33, // page up
+      34, // page down
+      35, // end
+      36, // home
+      37, // left arrow
+      38, // up arrow
+      39, // right arrow
+      40, // down arrow
+       9, // tab
+      13, // enter
+      27  // esc
+    ];
+    // Don't wait for change event on textfields
+    $('.ctools-auto-submit-full-form input:text, input:text.ctools-auto-submit', context)
+      .filter(':not(.ctools-auto-submit-exclude)')
+      .once('ctools-auto-submit', function () {
+        // each textinput element has his own timeout
+        var timeoutID = 0;
+        $(this)
+          .bind('keydown keyup', function (e) {
+            if ($.inArray(e.keyCode, discardKeyCode) === -1) {
+              timeoutID && clearTimeout(timeoutID);
+            }
+          })
+          .keyup(function(e) {
+            if ($.inArray(e.keyCode, discardKeyCode) === -1) {
+              timeoutID = setTimeout($.proxy(triggerSubmit, this.form), 500);
+            }
+          })
+          .bind('change', function (e) {
+            if ($.inArray(e.keyCode, discardKeyCode) === -1) {
+              timeoutID = setTimeout($.proxy(triggerSubmit, this.form), 500);
+            }
+          });
+      });
   }
 }
 })(jQuery);

@@ -12,6 +12,7 @@
  *   The variable to export.
  * @param $prefix
  *   A prefix that will be added at the beginning of every lines of the output.
+ *
  * @return
  *   The variable exported in a way compatible to Drupal's coding standards.
  */
@@ -51,7 +52,7 @@ function drupal_var_export($var, $prefix = '') {
     // magic method __set_state() leaving the export broken. This
     // workaround avoids this by casting the object as an array for
     // export and casting it back to an object when evaluated.
-    $output .= '(object) ' . drupal_var_export((array) $var, $prefix);
+    $output = '(object) ' . drupal_var_export((array) $var, $prefix);
   }
   else {
     $output = var_export($var, TRUE);

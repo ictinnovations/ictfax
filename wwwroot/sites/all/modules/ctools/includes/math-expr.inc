@@ -95,10 +95,11 @@ class ctools_math_expr {
         'sin','sinh','arcsin','asin','arcsinh','asinh',
         'cos','cosh','arccos','acos','arccosh','acosh',
         'tan','tanh','arctan','atan','arctanh','atanh',
+        'pow', 'exp',
         'sqrt','abs','ln','log',
         'time', 'ceil', 'floor', 'min', 'max', 'round');
 
-    function ctools_math_expr() {
+    function __construct() {
         // make the variables a little more accurate
         $this->v['pi'] = pi();
         $this->v['e'] = exp(1);
@@ -270,7 +271,7 @@ class ctools_math_expr {
             } elseif (in_array($op, $ops) and !$expecting_op) {
                 return $this->trigger("unexpected operator '$op'");
             } else { // I don't even want to know what you did to get here
-                return $this->trigger("an unexpected error occured");
+                return $this->trigger("an unexpected error occurred");
             }
             if ($index == strlen($expr)) {
                 if (in_array($op, $ops)) { // did we end with an operator? bad.

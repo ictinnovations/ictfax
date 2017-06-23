@@ -46,6 +46,13 @@ define('DRUPAL_OPTIONAL', 1);
 define('DRUPAL_REQUIRED', 2);
 
 /**
+ * Maximum number of values in a weight select element.
+ *
+ * If the number of values is over the maximum, a text field is used instead.
+ */
+define('DRUPAL_WEIGHT_SELECT_MAX', 100);
+
+/**
  * Return only visible regions.
  *
  * @see system_region_list()
@@ -69,7 +76,7 @@ function system_help($path, $arg) {
     case 'admin/help#system':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The System module is integral to the site, and provides basic but extensible functionality for use by other modules and themes. Some integral elements of Drupal are contained in and managed by the System module, including caching, enabling and disabling modules and themes, preparing and displaying the administrative page, and configuring fundamental site settings. A number of key system maintenance operations are also part of the System module. For more information, see the online handbook entry for <a href="@system">System module</a>.', array('@system' => 'http://drupal.org/handbook/modules/system')) . '</p>';
+      $output .= '<p>' . t('The System module is integral to the site, and provides basic but extensible functionality for use by other modules and themes. Some integral elements of Drupal are contained in and managed by the System module, including caching, enabling and disabling modules and themes, preparing and displaying the administrative page, and configuring fundamental site settings. A number of key system maintenance operations are also part of the System module. For more information, see the online handbook entry for <a href="@system">System module</a>.', array('@system' => 'http://drupal.org/documentation/modules/system')) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Managing modules') . '</dt>';
@@ -235,6 +242,7 @@ function system_permission() {
     ),
     'access site reports' => array(
       'title' => t('View site reports'),
+      'restrict access' => TRUE,
     ),
     'block IP addresses' => array(
       'title' => t('Block IP addresses'),
@@ -351,7 +359,7 @@ function system_element_info() {
     '#size' => 60,
     '#maxlength' => 128,
     '#autocomplete_path' => FALSE,
-    '#process' => array('ajax_process_form'),
+    '#process' => array('form_process_autocomplete', 'ajax_process_form'),
     '#theme' => 'textfield',
     '#theme_wrappers' => array('form_element'),
   );
@@ -366,6 +374,9 @@ function system_element_info() {
     '#element_validate' => array('form_validate_machine_name'),
     '#theme' => 'textfield',
     '#theme_wrappers' => array('form_element'),
+    // Use the same value callback as for textfields; this ensures that we only
+    // get string values.
+    '#value_callback' => 'form_type_textfield_value',
   );
   $types['password'] = array(
     '#input' => TRUE,
@@ -374,6 +385,9 @@ function system_element_info() {
     '#process' => array('ajax_process_form'),
     '#theme' => 'password',
     '#theme_wrappers' => array('form_element'),
+    // Use the same value callback as for textfields; this ensures that we only
+    // get string values.
+    '#value_callback' => 'form_type_textfield_value',
   );
   $types['password_confirm'] = array(
     '#input' => TRUE,
@@ -969,7 +983,7 @@ function system_menu() {
   );
   $items['admin/config/system/site-information'] = array(
     'title' => 'Site information',
-    'description' => t('Change site name, e-mail address, slogan, default front page, and number of posts per page, error pages.'),
+    'description' => 'Change site name, e-mail address, slogan, default front page, and number of posts per page, error pages.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('system_site_information_settings'),
     'access arguments' => array('administer site configuration'),
@@ -977,8 +991,8 @@ function system_menu() {
     'weight' => -20,
   );
   $items['admin/config/system/cron'] = array(
-    'title' => t('Cron'),
-    'description' => t('Manage automatic site maintenance tasks.'),
+    'title' => 'Cron',
+    'description' => 'Manage automatic site maintenance tasks.',
     'page callback' => 'drupal_get_form',
     'page arguments' => array('system_cron_settings'),
     'access arguments' => array('administer site configuration'),
@@ -1108,7 +1122,7 @@ function system_library() {
     'title' => 'Drupal progress indicator',
     'version' => VERSION,
     'js' => array(
-      'misc/progress.js' => array('group' => JS_DEFAULT, 'cache' => FALSE),
+      'misc/progress.js' => array('group' => JS_DEFAULT),
     ),
   );
 
@@ -1733,16 +1747,27 @@ function _system_themes_access($theme) {
 /**
  * Setup a given callback to run via authorize.php with elevated privileges.
  *
- * To use authorize.php, certain variables must be stashed into $_SESSION.
- * This function sets up all the necessary $_SESSION variables, then returns
- * the full path to authorize.php so the caller can redirect to authorize.php.
- * That initiates the workflow that will eventually lead to the callback being
- * invoked. The callback will be invoked at a low bootstrap level, without all
- * modules being invoked, so it needs to be careful not to assume any code
- * exists.
+ * To use authorize.php, certain variables must be stashed into $_SESSION. This
+ * function sets up all the necessary $_SESSION variables. The calling function
+ * should then redirect to authorize.php, using the full path returned by
+ * system_authorized_get_url(). That initiates the workflow that will eventually
+ * lead to the callback being invoked. The callback will be invoked at a low
+ * bootstrap level, without all modules being invoked, so it needs to be careful
+ * not to assume any code exists. Example (system_authorized_run()):
+ * @code
+ *   system_authorized_init($callback, $file, $arguments, $page_title);
+ *   drupal_goto(system_authorized_get_url());
+ * @endcode
+ * Example (update_manager_install_form_submit()):
+ * @code
+ *  system_authorized_init('update_authorize_run_install',
+ *    drupal_get_path('module', 'update') . '/update.authorize.inc',
+ *    $arguments, t('Update manager'));
+ *  $form_state['redirect'] = system_authorized_get_url();
+ * @endcode
  *
  * @param $callback
- *   The name of the function to invoke one the user authorizes the operation.
+ *   The name of the function to invoke once the user authorizes the operation.
  * @param $file
  *   The full path to the file where the callback function is implemented.
  * @param $arguments
@@ -1778,11 +1803,13 @@ function system_authorized_init($callback, $file, $arguments = array(), $page_ti
  * @param array $options
  *   Optional array of options to pass to url().
  * @return
- *   The full URL to authorize.php, using https if available.
+ *   The full URL to authorize.php, using HTTPS if available.
+ *
+ * @see system_authorized_init()
  */
 function system_authorized_get_url(array $options = array()) {
   global $base_url;
-  // Force https if available, regardless of what the caller specifies.
+  // Force HTTPS if available, regardless of what the caller specifies.
   $options['https'] = TRUE;
   // We prefix with $base_url so we get a full path even if clean URLs are
   // disabled.
@@ -1887,17 +1914,18 @@ function system_init() {
 
   // Ignore slave database servers for this request.
   //
-  // In Drupal's distributed database structure, new data is written to the master
-  // and then propagated to the slave servers.  This means there is a lag
-  // between when data is written to the master and when it is available on the slave.
-  // At these times, we will want to avoid using a slave server temporarily.
-  // For example, if a user posts a new node then we want to disable the slave
-  // server for that user temporarily to allow the slave server to catch up.
-  // That way, that user will see their changes immediately while for other
-  // users we still get the benefits of having a slave server, just with slightly
-  // stale data.  Code that wants to disable the slave server should use the
-  // db_set_ignore_slave() function to set $_SESSION['ignore_slave_server'] to
-  // the timestamp after which the slave can be re-enabled.
+  // In Drupal's distributed database structure, new data is written to the
+  // master and then propagated to the slave servers.  This means there is a
+  // lag between when data is written to the master and when it is available on
+  // the slave. At these times, we will want to avoid using a slave server
+  // temporarily. For example, if a user posts a new node then we want to
+  // disable the slave server for that user temporarily to allow the slave
+  // server to catch up. That way, that user will see their changes immediately
+  // while for other users we still get the benefits of having a slave server,
+  // just with slightly stale data.  Code that wants to disable the slave
+  // server should use the db_ignore_slave() function to set
+  // $_SESSION['ignore_slave_server'] to the timestamp after which the slave
+  // can be re-enabled.
   if (isset($_SESSION['ignore_slave_server'])) {
     if ($_SESSION['ignore_slave_server'] >= REQUEST_TIME) {
       Database::ignoreTarget('default', 'slave');
@@ -2002,7 +2030,6 @@ function system_user_timezone(&$form, &$form_state) {
     '#description' => t('Select the desired local time and time zone. Dates and times throughout this site will be displayed using this time zone.'),
   );
   if (!isset($account->timezone) && $account->uid == $user->uid && empty($form_state['input']['timezone'])) {
-    $form['timezone']['#description'] = t('Your time zone setting will be automatically detected if possible. Confirm the selection and click save.');
     $form['timezone']['timezone']['#attributes'] = array('class' => array('timezone-detect'));
     drupal_add_js('misc/timezone.js');
   }
@@ -2016,6 +2043,10 @@ function system_block_info() {
     'info' => t('Main page content'),
      // Cached elsewhere.
     'cache' => DRUPAL_NO_CACHE,
+    // Auto-enable in 'content' region by default, which always exists.
+    // @see system_themes_page(), drupal_render_page()
+    'status' => 1,
+    'region' => 'content',
   );
   $blocks['powered-by'] = array(
     'info' => t('Powered by Drupal'),
@@ -2026,6 +2057,9 @@ function system_block_info() {
     'info' => t('System help'),
     'weight' => '5',
     'cache' => DRUPAL_NO_CACHE,
+    // Auto-enable in 'help' region by default, if the theme defines one.
+    'status' => 1,
+    'region' => 'help',
   );
   // System-defined menu blocks.
   foreach (menu_list_system_menus() as $menu_name => $title) {
@@ -2334,14 +2368,14 @@ function _system_rebuild_module_data() {
   // Find modules
   $modules = drupal_system_listing('/^' . DRUPAL_PHP_FUNCTION_PATTERN . '\.module$/', 'modules', 'name', 0);
 
-  // Include the install profile in modules that are loaded.
+  // Include the installation profile in modules that are loaded.
   $profile = drupal_get_profile();
   $modules[$profile] = new stdClass();
   $modules[$profile]->name = $profile;
   $modules[$profile]->uri = 'profiles/' . $profile . '/' . $profile . '.profile';
   $modules[$profile]->filename = $profile . '.profile';
 
-  // Install profile hooks are always executed last.
+  // Installation profile hooks are always executed last.
   $modules[$profile]->weight = 1000;
 
   // Set defaults for module info.
@@ -2370,8 +2404,16 @@ function _system_rebuild_module_data() {
       continue;
     }
 
+    // Add the info file modification time, so it becomes available for
+    // contributed modules to use for ordering module lists.
+    $module->info['mtime'] = filemtime(dirname($module->uri) . '/' . $module->name . '.info');
+
     // Merge in defaults and save.
     $modules[$key]->info = $module->info + $defaults;
+
+    // The "name" key is required, but to avoid a fatal error in the menu system
+    // we set a reasonable default if it is not provided.
+    $modules[$key]->info += array('name' => $key);
 
     // Prefix stylesheets and scripts with module path.
     $path = dirname($module->uri);
@@ -2382,7 +2424,7 @@ function _system_rebuild_module_data() {
       $module->info['scripts'] = _system_info_add_path($module->info['scripts'], $path);
     }
 
-    // Install profiles are hidden by default, unless explicitly specified
+    // Installation profiles are hidden by default, unless explicitly specified
     // otherwise in the .info file.
     if ($key == $profile && !isset($modules[$key]->info['hidden'])) {
       $modules[$key]->info['hidden'] = TRUE;
@@ -2395,7 +2437,7 @@ function _system_rebuild_module_data() {
   }
 
   if (isset($modules[$profile])) {
-    // The install profile is required, if it's a valid module.
+    // The installation profile is required, if it's a valid module.
     $modules[$profile]->info['required'] = TRUE;
     // Add a default distribution name if the profile did not provide one. This
     // matches the default value used in install_profile_info().
@@ -2465,8 +2507,30 @@ function _system_update_bootstrap_status() {
 function _system_rebuild_theme_data() {
   // Find themes
   $themes = drupal_system_listing('/^' . DRUPAL_PHP_FUNCTION_PATTERN . '\.info$/', 'themes');
+  // Allow modules to add further themes.
+  if ($module_themes = module_invoke_all('system_theme_info')) {
+    foreach ($module_themes as $name => $uri) {
+      // @see file_scan_directory()
+      $themes[$name] = (object) array(
+        'uri' => $uri,
+        'filename' => pathinfo($uri, PATHINFO_FILENAME),
+        'name' => $name,
+      );
+    }
+  }
+
   // Find theme engines
   $engines = drupal_system_listing('/^' . DRUPAL_PHP_FUNCTION_PATTERN . '\.engine$/', 'themes/engines');
+  // Allow modules to add further theme engines.
+  if ($module_engines = module_invoke_all('system_theme_engine_info')) {
+    foreach ($module_engines as $name => $theme_engine_path) {
+      $engines[$name] = (object) array(
+        'uri' => $theme_engine_path,
+        'filename' => basename($theme_engine_path),
+        'name' => $name,
+      );
+    }
+  }
 
   // Set defaults for theme info.
   $defaults = array(
@@ -2495,6 +2559,14 @@ function _system_rebuild_theme_data() {
   foreach ($themes as $key => $theme) {
     $themes[$key]->filename = $theme->uri;
     $themes[$key]->info = drupal_parse_info_file($theme->uri) + $defaults;
+
+    // The "name" key is required, but to avoid a fatal error in the menu system
+    // we set a reasonable default if it is not provided.
+    $themes[$key]->info += array('name' => $key);
+
+    // Add the info file modification time, so it becomes available for
+    // contributed modules to use for ordering theme lists.
+    $themes[$key]->info['mtime'] = filemtime($theme->uri);
 
     // Invoke hook_system_info_alter() to give installed modules a chance to
     // modify the data in the .info files if necessary.
@@ -2534,7 +2606,7 @@ function _system_rebuild_theme_data() {
   // Now that we've established all our master themes, go back and fill in data
   // for subthemes.
   foreach ($sub_themes as $key) {
-    $themes[$key]->base_themes = system_find_base_themes($themes, $key);
+    $themes[$key]->base_themes = drupal_find_base_themes($themes, $key);
     // Don't proceed if there was a problem with the root base theme.
     if (!current($themes[$key]->base_themes)) {
       continue;
@@ -2629,42 +2701,10 @@ function _system_default_theme_features() {
 /**
  * Find all the base themes for the specified theme.
  *
- * Themes can inherit templates and function implementations from earlier themes.
- *
- * @param $themes
- *   An array of available themes.
- * @param $key
- *   The name of the theme whose base we are looking for.
- * @param $used_keys
- *   A recursion parameter preventing endless loops.
- * @return
- *   Returns an array of all of the theme's ancestors; the first element's value
- *   will be NULL if an error occurred.
+ * This function has been deprecated in favor of drupal_find_base_themes().
  */
 function system_find_base_themes($themes, $key, $used_keys = array()) {
-  $base_key = $themes[$key]->info['base theme'];
-  // Does the base theme exist?
-  if (!isset($themes[$base_key])) {
-    return array($base_key => NULL);
-  }
-
-  $current_base_theme = array($base_key => $themes[$base_key]->info['name']);
-
-  // Is the base theme itself a child of another theme?
-  if (isset($themes[$base_key]->info['base theme'])) {
-    // Do we already know the base themes of this theme?
-    if (isset($themes[$base_key]->base_themes)) {
-      return $themes[$base_key]->base_themes + $current_base_theme;
-    }
-    // Prevent loops.
-    if (!empty($used_keys[$base_key])) {
-      return array($base_key => NULL);
-    }
-    $used_keys[$base_key] = TRUE;
-    return system_find_base_themes($themes, $base_key, $used_keys) + $current_base_theme;
-  }
-  // If we get here, then this is our parent theme.
-  return $current_base_theme;
+  return drupal_find_base_themes($themes, $key, $used_keys);
 }
 
 /**
@@ -2675,10 +2715,17 @@ function system_find_base_themes($themes, $key, $used_keys = array()) {
  * @param $show
  *   Possible values: REGIONS_ALL or REGIONS_VISIBLE. Visible excludes hidden
  *   regions.
- * @return
- *   An array of regions in the form $region['name'] = 'description'.
+ * @param bool $labels
+ *   (optional) Boolean to specify whether the human readable machine names
+ *   should be returned or not. Defaults to TRUE, but calling code can set
+ *   this to FALSE for better performance, if it only needs machine names.
+ *
+ * @return array
+ *   An associative array of regions in the form $region['name'] = 'description'
+ *   if $labels is set to TRUE, or $region['name'] = 'name', if $labels is set
+ *   to FALSE.
  */
-function system_region_list($theme_key, $show = REGIONS_ALL) {
+function system_region_list($theme_key, $show = REGIONS_ALL, $labels = TRUE) {
   $themes = list_themes();
   if (!isset($themes[$theme_key])) {
     return array();
@@ -2689,10 +2736,14 @@ function system_region_list($theme_key, $show = REGIONS_ALL) {
   // If requested, suppress hidden regions. See block_admin_display_form().
   foreach ($info['regions'] as $name => $label) {
     if ($show == REGIONS_ALL || !isset($info['regions_hidden']) || !in_array($name, $info['regions_hidden'])) {
-      $list[$name] = t($label);
+      if ($labels) {
+        $list[$name] = t($label);
+      }
+      else {
+        $list[$name] = $name;
+      }
     }
   }
-
   return $list;
 }
 
@@ -2700,8 +2751,8 @@ function system_region_list($theme_key, $show = REGIONS_ALL) {
  * Implements hook_system_info_alter().
  */
 function system_system_info_alter(&$info, $file, $type) {
-  // Remove page-top from the blocks UI since it is reserved for modules to
-  // populate from outside the blocks system.
+  // Remove page-top and page-bottom from the blocks UI since they are reserved for
+  // modules to populate from outside the blocks system.
   if ($type == 'theme') {
     $info['regions_hidden'][] = 'page_top';
     $info['regions_hidden'][] = 'page_bottom';
@@ -2713,16 +2764,27 @@ function system_system_info_alter(&$info, $file, $type) {
  *
  * @param $theme
  *   The name of a theme.
+ *
  * @return
  *   A string that is the region name.
  */
 function system_default_region($theme) {
-  $regions = array_keys(system_region_list($theme, REGIONS_VISIBLE));
-  return isset($regions[0]) ? $regions[0] : '';
+  $regions = system_region_list($theme, REGIONS_VISIBLE, FALSE);
+  return $regions ? reset($regions) : '';
 }
 
 /**
- * Add default buttons to a form and set its prefix.
+ * Sets up a form to save information automatically.
+ *
+ * This function adds a submit handler and a submit button to a form array. The
+ * submit function saves all the data in the form, using variable_set(), to
+ * variables named the same as the keys in the form array. Note that this means
+ * you should normally prefix your form array keys with your module name, so
+ * that they are unique when passed into variable_set().
+ *
+ * If you need to manipulate the data in a custom manner, you can either put
+ * your own submission handler in the form array before calling this function,
+ * or just use your own submission handler instead of calling this function.
  *
  * @param $form
  *   An associative array containing the structure of the form.
@@ -2731,6 +2793,7 @@ function system_default_region($theme) {
  *   The form structure.
  *
  * @see system_settings_form_submit()
+ *
  * @ingroup forms
  */
 function system_settings_form($form) {
@@ -2749,7 +2812,7 @@ function system_settings_form($form) {
 }
 
 /**
- * Execute the system_settings_form.
+ * Form submission handler for system_settings_form().
  *
  * If you want node type configure style handling of your checkboxes,
  * add an array_filter value to your form.
@@ -2774,7 +2837,7 @@ function system_settings_form_submit($form, &$form_state) {
 function _system_sort_requirements($a, $b) {
   if (!isset($a['weight'])) {
     if (!isset($b['weight'])) {
-      return strcmp($a['title'], $b['title']);
+      return strcasecmp($a['title'], $b['title']);
     }
     return -$b['weight'];
   }
@@ -2830,7 +2893,7 @@ function confirm_form($form, $question, $path, $description = NULL, $yes = NULL,
 
   // Prepare cancel link.
   if (isset($_GET['destination'])) {
-    $options = drupal_parse_url(urldecode($_GET['destination']));
+    $options = drupal_parse_url($_GET['destination']);
   }
   elseif (is_array($path)) {
     $options = $path;
@@ -2864,7 +2927,18 @@ function confirm_form($form, $question, $path, $description = NULL, $yes = NULL,
 }
 
 /**
- * Determines if the current user is in compact mode.
+ * Determines whether the current user is in compact mode.
+ *
+ * Compact mode shows certain administration pages with less description text,
+ * such as the configuration page and the permissions page.
+ *
+ * Whether the user is in compact mode is determined by a cookie, which is set
+ * for the user by system_admin_compact_page().
+ *
+ * If the user does not have the cookie, the default value is given by the
+ * system variable 'admin_compact_mode', which itself defaults to FALSE. This
+ * does not have a user interface to set it: it is a hidden variable which can
+ * be set in the settings.php file.
  *
  * @return
  *   TRUE when in compact mode, FALSE when in expanded mode.
@@ -3004,8 +3078,20 @@ function system_cron() {
     }
   }
 
-  $core = array('cache', 'cache_path', 'cache_filter', 'cache_page', 'cache_form', 'cache_menu');
-  $cache_tables = array_merge(module_invoke_all('flush_caches'), $core);
+  // Delete expired cache entries.
+  // Avoid invoking hook_flush_cashes() on every cron run because some modules
+  // use this hook to perform expensive rebuilding operations (which are only
+  // designed to happen on full cache clears), rather than just returning a
+  // list of cache tables to be cleared.
+  $cache_object = cache_get('system_cache_tables');
+  if (empty($cache_object)) {
+    $core = array('cache', 'cache_path', 'cache_filter', 'cache_page', 'cache_form', 'cache_menu');
+    $cache_tables = array_merge(module_invoke_all('flush_caches'), $core);
+    cache_set('system_cache_tables', $cache_tables);
+  }
+  else {
+    $cache_tables = $cache_object->data;
+  }
   foreach ($cache_tables as $table) {
     cache_clear_all(NULL, $table);
   }
@@ -3253,7 +3339,7 @@ function system_goto_action_form($context) {
   $form['url'] = array(
     '#type' => 'textfield',
     '#title' => t('URL'),
-    '#description' => t('The URL to which the user should be redirected. This can be an internal URL like node/1234 or an external URL like http://drupal.org.'),
+    '#description' => t('The URL to which the user should be redirected. This can be an internal path like node/1234 or an external URL like http://example.com.'),
     '#default_value' => isset($context['url']) ? $context['url'] : '',
     '#required' => TRUE,
   );
@@ -3290,7 +3376,8 @@ function system_goto_action($entity, $context) {
  */
 function system_block_ip_action() {
   $ip = ip_address();
-  db_insert('blocked_ips')
+  db_merge('blocked_ips')
+    ->key(array('ip' => $ip))
     ->fields(array('ip' => $ip))
     ->execute();
   watchdog('action', 'Banned IP address %ip', array('%ip' => $ip));
@@ -3355,7 +3442,7 @@ function system_timezone($abbreviation = '', $offset = -1, $is_daylight_saving_t
  * @ingroup themeable
  */
 function theme_system_powered_by() {
-  return '<span>' . t('Powered by <a href="@poweredby">Drupal</a>', array('@poweredby' => 'http://drupal.org')) . '</span>';
+  return '<span>' . t('Powered by <a href="@poweredby">Drupal</a>', array('@poweredby' => 'https://www.drupal.org')) . '</span>';
 }
 
 /**
@@ -3392,40 +3479,42 @@ function system_image_toolkits() {
 /**
  * Attempts to get a file using drupal_http_request and to store it locally.
  *
- * @param $url
+ * @param string $url
  *   The URL of the file to grab.
- *
- * @param $destination
+ * @param string $destination
  *   Stream wrapper URI specifying where the file should be placed. If a
  *   directory path is provided, the file is saved into that directory under
  *   its original name. If the path contains a filename as well, that one will
  *   be used instead.
  *   If this value is omitted, the site's default files scheme will be used,
  *   usually "public://".
- *
- * @param $managed boolean
+ * @param bool $managed
  *   If this is set to TRUE, the file API hooks will be invoked and the file is
  *   registered in the database.
- *
- * @param $replace boolean
+ * @param int $replace
  *   Replace behavior when the destination file already exists:
  *   - FILE_EXISTS_REPLACE: Replace the existing file.
  *   - FILE_EXISTS_RENAME: Append _{incrementing number} until the filename is
  *     unique.
  *   - FILE_EXISTS_ERROR: Do nothing and return FALSE.
  *
- * @return
- *   On success the location the file was saved to, FALSE on failure.
+ * @return mixed
+ *   One of these possibilities:
+ *   - If it succeeds and $managed is FALSE, the location where the file was
+ *     saved.
+ *   - If it succeeds and $managed is TRUE, a \Drupal\file\FileInterface
+ *     object which describes the file.
+ *   - If it fails, FALSE.
  */
 function system_retrieve_file($url, $destination = NULL, $managed = FALSE, $replace = FILE_EXISTS_RENAME) {
   $parsed_url = parse_url($url);
   if (!isset($destination)) {
-    $path = file_build_uri(basename($parsed_url['path']));
+    $path = file_build_uri(drupal_basename($parsed_url['path']));
   }
   else {
     if (is_dir(drupal_realpath($destination))) {
       // Prevent URIs with triple slashes when glueing parts together.
-      $path = str_replace('///', '//', "$destination/") . basename($parsed_url['path']);
+      $path = str_replace('///', '//', "$destination/") . drupal_basename($parsed_url['path']);
     }
     else {
       $path = $destination;
@@ -3450,8 +3539,7 @@ function system_retrieve_file($url, $destination = NULL, $managed = FALSE, $repl
 function system_page_alter(&$page) {
   // Find all non-empty page regions, and add a theme wrapper function that
   // allows them to be consistently themed.
-  $regions = system_region_list($GLOBALS['theme']);
-  foreach (array_keys($regions) as $region) {
+  foreach (system_region_list($GLOBALS['theme'], REGIONS_ALL, FALSE) as $region) {
     if (!empty($page[$region])) {
       $page[$region]['#theme_wrappers'][] = 'region';
       $page[$region]['#region'] = $region;
@@ -3754,7 +3842,7 @@ function _system_date_formats_build() {
   }
 
   // Get custom formats added to the database by the end user.
-  $result = db_query('SELECT df.dfid, df.format, df.type, df.locked, dfl.language FROM {date_formats} df LEFT JOIN {date_format_type} dft ON df.type = dft.type LEFT JOIN {date_format_locale} dfl ON df.format = dfl.format AND df.type = dfl.type ORDER BY df.type, df.format');
+  $result = db_query('SELECT df.dfid, df.format, df.type, df.locked, dfl.language FROM {date_formats} df LEFT JOIN {date_format_locale} dfl ON df.format = dfl.format AND df.type = dfl.type ORDER BY df.type, df.format');
   foreach ($result as $record) {
     // If this date type isn't set, initialise the array.
     if (!isset($date_formats[$record->type])) {
@@ -3860,7 +3948,10 @@ function system_date_format_save($date_format, $dfid = 0) {
     drupal_write_record('date_formats', $info, $keys);
   }
 
+  // Retrieve an array of language objects for enabled languages.
   $languages = language_list('enabled');
+  // This list is keyed off the value of $language->enabled; we want the ones
+  // that are enabled (value of 1).
   $languages = $languages[1];
 
   $locale_format = array();

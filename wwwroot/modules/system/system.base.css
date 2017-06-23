@@ -27,15 +27,17 @@
   color: #000;
   cursor: default;
   white-space: pre;
+  zoom: 1; /* IE7 */
 }
 /* Animated throbber */
 html.js input.form-autocomplete {
-  background-image: url(../../misc/throbber.gif);
-  background-position: 100% 2px; /* LTR */
+  background-image: url(../../misc/throbber-inactive.png);
+  background-position: 100% center; /* LTR */
   background-repeat: no-repeat;
 }
 html.js input.throbbing {
-  background-position: 100% -18px; /* LTR */
+  background-image: url(../../misc/throbber-active.gif);
+  background-position: 100% center; /* LTR */
 }
 
 /**
@@ -93,21 +95,22 @@ body.drag {
   cursor: move;
   float: left; /* LTR */
   height: 1.7em;
-  margin: -0.4em 0 -0.4em -0.5em; /* LTR */
-  padding: 0.42em 1.5em 0.42em 0.5em; /* LTR */
+  margin-left: -1em; /* LTR */
+  overflow: hidden;
   text-decoration: none;
 }
 a.tabledrag-handle:hover {
   text-decoration: none;
 }
 a.tabledrag-handle .handle {
-  background: url(../../misc/draggable.png) no-repeat 0 0;
+  background: url(../../misc/draggable.png) no-repeat 6px 9px;
   height: 13px;
-  margin-top: 4px;
+  margin: -0.4em 0.5em; /* LTR */
+  padding: 0.42em 0.5em; /* LTR */
   width: 13px;
 }
 a.tabledrag-handle-hover .handle {
-  background-position: 0 -20px;
+  background-position: 6px -11px;
 }
 div.indentation {
   float: left; /* LTR */
@@ -162,7 +165,7 @@ table.sticky-header {
   display: inline-block;
 }
 .ajax-progress .throbber {
-  background: transparent url(../../misc/throbber.gif) no-repeat 0px -18px;
+  background: transparent url(../../misc/throbber-active.gif) no-repeat 0px center;
   float: left; /* LTR */
   height: 15px;
   margin: 2px;
@@ -229,6 +232,8 @@ html.js .js-hide {
   position: absolute !important;
   clip: rect(1px 1px 1px 1px); /* IE6, IE7 */
   clip: rect(1px, 1px, 1px, 1px);
+  overflow: hidden;
+  height: 1px;
 }
 
 /**
@@ -239,6 +244,8 @@ html.js .js-hide {
 .element-invisible.element-focusable:focus {
   position: static !important;
   clip: auto;
+  overflow: visible;
+  height: auto;
 }
 
 /**

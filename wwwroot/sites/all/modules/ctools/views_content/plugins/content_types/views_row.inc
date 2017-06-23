@@ -9,7 +9,7 @@ $plugin = array(
   'title' => t('View row'),
   'category' => t('View context'),
   'icon' => 'icon_views_page.png',
-  'description' => t('Display one or more rows from a loaded view context.'),
+  'description' => t('Display all or a specific amount of rows from a loaded view context.'),
   'required context' => new ctools_context_required(t('View'), 'view'),
   'defaults' => array(
     'rows' => array(),
@@ -44,13 +44,28 @@ function views_content_views_row_content_type_render($subtype, $conf, $panel_arg
   // This guarantees the view is rendered normally which must happen.
   $view = views_content_context_get_view($context);
   $output = views_content_context_get_output($context);
-  // Rows are keyed by result id value and need to be reset.
-  $output['rows'] = array_values($output['rows']);
-  if (empty($conf['use_fields']) || empty($view->style_plugin->row_plugin)) {
-    foreach ($conf['rows'] as $row) {
-      // We store the row number 1-indexed but they are 0-indexed internally.
-      if (isset($output['rows'][$row - 1])) {
-        $block->content .= $output['rows'][$row - 1];
+
+  $sets = array();
+  $plugin = $view->style_plugin;
+
+  // If all rows have to be displayed then simply get the key of all rows.
+  $row_indexes = array();
+  if (empty($conf['rows'])) {
+    if (is_array($output['rows'])) {
+      $row_indexes = array_keys($output['rows']);
+    }
+  }
+  else {
+    // If a subset of rows is requested collect the list of row keys.
+    foreach ($conf['rows'] as $index) {
+      $row_indexes[] = $index - 1;
+    }
+  }
+
+  if (empty($conf['use_fields']) || empty($plugin->row_plugin)) {
+    foreach ($row_indexes as $row_index) {
+      if (isset($output['rows'][$row_index])) {
+        $sets[$plugin->groups[$row_index]][$row_index] = $output['rows'][$row_index];
       }
     }
   }
@@ -61,12 +76,24 @@ function views_content_views_row_content_type_render($subtype, $conf, $panel_arg
     }
 
     // Rerender just the rows we need.
-    foreach ($conf['rows'] as $row) {
-      $view->row_index = $row - 1;
-      if (!empty($view->result[$row - 1])) {
-        $block->content .= $view->style_plugin->row_plugin->render($view->result[$row - 1]);
+    foreach ($row_indexes as $row_index) {
+      $view->row_index = $row_index;
+      if (!empty($view->result[$view->row_index])) {
+        $sets[$plugin->groups[$view->row_index]][$view->row_index] = $plugin->row_plugin->render($view->result[$view->row_index]);
       }
+      unset($view->row_index);
     }
+  }
+
+  foreach ($sets as $title => $rows) {
+    $block->content .= theme($plugin->theme_functions(),
+      array(
+        'view' => $view,
+        'options' => $plugin->options,
+        'rows' => $rows,
+        'title' => $title
+      )
+    );
   }
 
   return $block;
@@ -106,29 +133,32 @@ function views_content_views_row_edit($form, &$form_state) {
     return $form;
   }
 
-  // Support Views 2 and Views 3.
-  if (method_exists($view, 'get_items_per_page')) {
-    $view->init_pager();
-    $rows = $view->get_items_per_page();
+  ctools_include('dependent');
+  $form['limit_rows'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Limit rows'),
+    '#default_value' => (int) !empty($conf['rows']),
+  );
+
+  $view->init_pager();
+  $rows = $view->get_items_per_page();
+
+  if (!empty($rows)) {
+    foreach (range(1, $rows) as $row) {
+      $options[$row] = t('Row @number', array('@number' => $row));
+    }
+    $form['rows'] = array(
+      '#type' => 'checkboxes',
+      '#title' => t('Select rows'),
+      '#options' => $options,
+      '#default_value' => $conf['rows'],
+      '#dependency' => array('edit-limit-rows' => array(TRUE)),
+    );
   }
   else {
-    $rows = $view->display_handler->get_option('items_per_page');
-  }
-  if (empty($rows)) {
-    $form['markup'] = array('#markup' => '<p>' . t('The view must have a maximum number of items set to use this content type.') . '</p>');
+    $form['rows'] = array('#markup' => '<p>' . t('The view must have a maximum number of items set to use this setting.') . '</p>');
     return $form;
   }
-
-  foreach (range(1, $rows) as $row) {
-    $options[$row] = t('Row @number', array('@number' => $row));
-  }
-
-  $form['rows'] = array(
-    '#type' => 'checkboxes',
-    '#title' => t('Display'),
-    '#options' => $options,
-    '#default_value' => $conf['rows'],
-  );
 
   if ($view->display_handler->uses_fields()) {
     $form['use_fields'] = array(
@@ -137,7 +167,6 @@ function views_content_views_row_edit($form, &$form_state) {
       '#default_value' => $conf['use_fields'],
     );
 
-    ctools_include('dependent');
     $form['fields'] = array(
       '#type' => 'checkboxes',
       '#options' => $view->display_handler->get_field_labels(),
@@ -151,9 +180,6 @@ function views_content_views_row_edit($form, &$form_state) {
 }
 
 function views_content_views_row_edit_validate(&$form, &$form_state) {
-  if (!array_filter($form_state['values']['rows'])) {
-    form_error($form['rows'], t('You must select at least one row to display.'));
-  }
 }
 
 function views_content_views_row_edit_submit(&$form, &$form_state) {
@@ -168,6 +194,7 @@ function views_content_views_row_content_type_admin_info($subtype, $conf, $conte
   $plugin = ctools_get_content_type('views_row');
   $context = ctools_content_select_context($plugin, $subtype, $conf, $contexts);
 
+  $block = new stdClass();
   $block->title = t('Row information');
 
   if (!empty($conf['use_fields'])) {
@@ -201,9 +228,10 @@ function views_content_views_row_content_type_admin_info($subtype, $conf, $conte
 
 function views_content_views_row_content_type_admin_title($subtype, $conf, $context) {
   $rows = array_filter($conf['rows']);
+  $rows = empty($rows) ? t('Show all') : implode(', ', $rows);
   return format_plural(count($rows),
     '"@context" row @rows',
     '"@context" rows @rows',
-    array('@context' => $context->identifier, '@rows' => implode(', ', $rows))
+    array('@context' => $context->identifier, '@rows' => $rows)
   );
 }

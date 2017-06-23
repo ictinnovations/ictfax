@@ -9,7 +9,9 @@
  * Invokes XML-RPC methods on this server.
  *
  * @param array $callbacks
- *   Array of external XML-RPC method names with the callbacks they map to.
+ *   Either an associative array of external XML-RPC method names as keys with
+ *   the callbacks they map to as values, or a more complex structure
+ *   describing XML-RPC callbacks as returned from hook_xmlrpc().
  */
 function xmlrpc_server($callbacks) {
   $xmlrpc_server = new stdClass();
@@ -262,6 +264,10 @@ function xmlrpc_server_call($xmlrpc_server, $methodname, $args) {
  */
 function xmlrpc_server_multicall($methodcalls) {
   // See http://www.xmlrpc.com/discuss/msgReader$1208
+  // To avoid multicall expansion attacks, limit the number of duplicate method
+  // calls allowed with a default of 1. Set to -1 for unlimited.
+  $duplicate_method_limit = variable_get('xmlrpc_multicall_duplicate_method_limit', 1);
+  $method_count = array();
   $return = array();
   $xmlrpc_server = xmlrpc_server_get();
   foreach ($methodcalls as $call) {
@@ -271,9 +277,13 @@ function xmlrpc_server_multicall($methodcalls) {
       $ok = FALSE;
     }
     $method = $call['methodName'];
+    $method_count[$method] = isset($method_count[$method]) ? $method_count[$method] + 1 : 1;
     $params = $call['params'];
     if ($method == 'system.multicall') {
       $result = xmlrpc_error(-32600, t('Recursive calls to system.multicall are forbidden.'));
+    }
+    elseif ($duplicate_method_limit > 0 && $method_count[$method] > $duplicate_method_limit) {
+      $result = xmlrpc_error(-156579, t('Too many duplicate method calls in system.multicall.'));
     }
     elseif ($ok) {
       $result = xmlrpc_server_call($xmlrpc_server, $method, $params);
@@ -382,4 +392,3 @@ function xmlrpc_server_method_help($method) {
   $xmlrpc_server = xmlrpc_server_get();
   return $xmlrpc_server->help[$method];
 }
-

@@ -70,6 +70,13 @@ function ctools_search_result_content_type_render($subtype, $conf, $panel_args, 
 
     // Collect the search results.
     $results = search_data($keys, $info['module'], $conditions);
+
+    // A workaround for ApacheSolr.
+    // @todo see http://drupal.org/node/1343142#comment-5495248
+    // This workaround is to be removed when a better one can be written.
+    if (!empty($results['search_results']['#results'])) {
+      $results['#results'] = $results['search_results']['#results'];
+    }
   }
 
   if (!empty($conf['log'])) {

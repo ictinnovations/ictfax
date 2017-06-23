@@ -28,6 +28,7 @@ function page_manager_blog_page_manager_tasks() {
     // Allow this to be enabled or disabled:
     'disabled' => variable_get('page_manager_blog_disabled', TRUE),
     'enable callback' => 'page_manager_blog_enable',
+    'access callback' => 'page_manager_blog_access_check',
   );
 }
 
@@ -101,4 +102,20 @@ function page_manager_blog_enable($cache, $status) {
   if (!$status) {
     $GLOBALS['page_manager_enabling_blog'] = TRUE;
   }
+}
+
+/**
+ * Callback to determine if a page is accessible.
+ *
+ * @param $task
+ *   The task plugin.
+ * @param $subtask_id
+ *   The subtask id
+ * @param $contexts
+ *   The contexts loaded for the task.
+ * @return
+ *   TRUE if the current user can access the page.
+ */
+function page_manager_blog_access_check($task, $subtask_id, $contexts) {
+  return user_access('access content');
 }

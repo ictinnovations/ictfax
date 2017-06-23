@@ -140,7 +140,6 @@ function page_manager_menu() {
 
   // Provide menu items for each task.
   foreach ($tasks as $task_id => $task) {
-    $handlers = page_manager_get_task_handler_plugins($task);
     // Allow the task to add its own menu items.
     if ($function = ctools_plugin_get_function($task, 'hook menu')) {
       $function($items, $task);
@@ -212,6 +211,30 @@ function page_manager_menu_alter(&$items) {
         $function($items, $subtask);
       }
     }
+  }
+
+  // Override the core node revisions display to use the configured Page
+  // display handler.
+  if (!variable_get('page_manager_node_view_disabled', TRUE) && isset($items['node/%node/revisions/%/view'])) {
+    // Abstract the basic settings.
+    $item = array(
+      // Handle the page arguments.
+      'load arguments' => array(3),
+      'page arguments' => array(1, TRUE),
+
+      // Replace the normal node_show call with Page Manager's node view.
+      'page callback' => 'page_manager_node_view_page',
+
+      // Provide the correct path to the Page Manager file.
+      'file' => 'node_view.inc',
+      'file path' => drupal_get_path('module', 'page_manager') . '/plugins/tasks',
+    );
+    // Re-build the menu item using the normal values from node.module.
+    $items['node/%node/revisions/%/view'] = array(
+      'title' => 'Revisions',
+      'access callback' => '_node_revision_access',
+      'access arguments' => array(1),
+    ) + $item;
   }
 
   return $items;
@@ -417,16 +440,22 @@ function page_manager_cache_load($task_name) {
  */
 function page_manager_handler_get_name($task_name, $handlers, $handler) {
   $base = str_replace('-', '_', $task_name);
-  // Generate a unique name. Unlike most named objects, we don't let people choose
-  // names for task handlers because they mostly don't make sense.
-  $base .= '_' . $handler->handler;
+  $name = '';
 
-  // Once we have a base, check to see if it is used. If it is, start counting up.
-  $name = $base;
-  $count = 1;
-  // If taken
-  while (isset($handlers[$name])) {
-    $name = $base . '_' . ++$count;
+  // Optional machine name.
+  if (!empty($handler->conf['name'])) {
+    $name = $base . '__' . $handler->conf['name'];
+    if (count(ctools_export_load_object('page_manager_handlers', 'names', array($name)))) {
+      $name = '';
+    }
+  }
+
+  // If no machine name was provided or the name is in use, generate a unique name.
+  if (empty($name)) {
+    $base .= '__' . $handler->handler;
+
+    // Use the ctools uuid generator to generate a unique id.
+    $name = $base . '_' . ctools_uuid_generate();
   }
 
   return $name;
@@ -448,6 +477,10 @@ function page_manager_handler_add_to_page(&$page, &$handler, $title = NULL) {
 
   if ($title) {
     $handler->conf['title'] = $title;
+    $handler->conf['name'] = trim(preg_replace('/[^a-z0-9_]+/', '-', strtolower($title)), '-');
+  }
+  else {
+    $handler->conf['name'] = '';
   }
 
   $name = page_manager_handler_get_name($page->task_name, $page->handlers, $handler);
@@ -697,6 +730,44 @@ function page_manager_export_task_handler($handler, $indent = '') {
 }
 
 /**
+ * Loads page manager handler for export.
+ *
+ * Callback to load page manager handler within ctools_export_crud_load().
+ *
+ * @param string $name
+ *   The name of the handler to load.
+ *
+ * @return
+ *   Loaded page manager handler object, extended with external properties.
+ */
+function page_manager_export_task_handler_load($name) {
+  $table = 'page_manager_handlers';
+  $schema = ctools_export_get_schema($table);
+  $export = $schema['export'];
+
+  $result = ctools_export_load_object($table, 'names', array($name));
+  if (isset($result[$name])) {
+    $handler = $result[$name];
+
+    // Weight is stored in additional table so that in-code task handlers
+    // don't need to get written to the database just because they have their
+    // weight changed. Therefore, handler could have no correspondent database
+    // entry. Revert will not be performed for this handler and the weight
+    // will not be reverted. To make possible revert of the weight field
+    // export_type must simulate that the handler is stored in the database.
+    $handler->export_type = EXPORT_IN_DATABASE;
+
+    // Also, page manager handler weight should be overriden with correspondent
+    // weight from page_manager_weights table, if there is one.
+    $result = db_query('SELECT weight FROM {page_manager_weights} WHERE name = (:names)', array(':names' => $handler->name))->fetchField();
+    if (is_numeric($result)) {
+      $handler->weight = $result;
+    }
+    return $handler;
+  }
+}
+
+/**
  * Create a new task handler object.
  *
  * @param $plugin
@@ -800,9 +871,6 @@ function page_manager_get_task_subtasks($task) {
     $retval = $function($task);
     if (is_array($retval)) {
       return $retval;
-    }
-    else {
-      dsm($retval);
     }
   }
 
@@ -1105,7 +1173,15 @@ function page_manager_page_manager_handlers_list() {
   $handlers = ctools_export_load_object('page_manager_handlers');
   foreach ($handlers as $handler) {
     if (in_array($handler->task, $types)) {
-      $list[$handler->name] = check_plain("$handler->task: " . $handler->conf['title'] . " ($handler->name)");
+      $plugin = page_manager_get_task_handler($handler->handler);
+      $title = page_manager_get_handler_title($plugin, $handler, $tasks[$handler->task], $handler->subtask);
+
+      if ($title) {
+        $list[$handler->name] = check_plain("$handler->task: $title ($handler->name)");
+      }
+      else {
+        $list[$handler->name] = check_plain("$handler->task: ($handler->name)");
+      }
     }
   }
   return $list;
@@ -1126,9 +1202,9 @@ function page_manager_page_manager_pages_to_hook_code($names = array(), $name = 
     foreach ($objects as $object) {
       // Have to implement our own because this export func sig requires it
       $code .= $export['export callback']($object, TRUE, '  ');
-      $code .= "  \${$export['identifier']}s['" . check_plain($object->$export['key']) . "'] = \${$export['identifier']};\n\n";
+      $code .= "  \${$export['identifier']}s['" . check_plain($object->{$export['key']}) . "'] = \${$export['identifier']};\n\n";
     }
-    $code .= " return \${$export['identifier']}s;\n";
+    $code .= "  return \${$export['identifier']}s;\n";
     $code .= "}\n";
     return $code;
   }
@@ -1204,4 +1280,70 @@ function page_manager_panels_dashboard_blocks(&$vars) {
     'class' => 'dashboard-pages',
     'section' => 'right',
   );
+}
+
+/**
+ * Implement pseudo-hook to fetch addressable content.
+ *
+ * For Page Manager, the address will be an array. The first
+ * element will be the $task and the second element will be the
+ * $task_handler. The third elements will be the arguments
+ * provided.
+ */
+function page_manager_addressable_content($address, $type) {
+  if (count($address) < 3) {
+    return;
+  }
+
+  $task_name = array_shift($address);
+  $subtask_name = array_shift($address);
+  $handler_name = array_shift($address);
+  if ($address) {
+    $arguments = array_shift($address);
+  }
+
+  // Since $arguments is an array of arbitrary size, we need to implode it:
+  if (!empty($arguments)) {
+    // The only choices we have for separators since :: is already
+    // used involve ., - or _. Since - and _ are more common than .
+    // in URLs, let's try .. as an argument separator.
+    $arguments = explode('..', $arguments);
+  }
+  else {
+    // implode does not return an empty array on an empty
+    // string so do it specifically.
+    $arguments = array();
+  }
+
+  $task = page_manager_get_task($task_name);
+  if (!$task) {
+    return;
+  }
+
+  $handler = page_manager_load_task_handler($task, $subtask_name, $handler_name);
+  if (!$handler) {
+    return;
+  }
+
+  $handler_plugin = page_manager_get_task_handler($handler->handler);
+  if (!$handler_plugin) {
+    return;
+  }
+
+  // Load the contexts for the task.
+  ctools_include('context');
+  ctools_include('context-task-handler');
+  $contexts = ctools_context_handler_get_task_contexts($task, $subtask_name, $arguments);
+
+  // With contexts loaded, ensure the task is accessible. Tasks without a callback
+  // are automatically accessible.
+  $function = ctools_plugin_get_function($task, 'access callback');
+  if ($function && !$function($task, $subtask_name, $contexts)) {
+    return;
+  }
+
+  $function = ctools_plugin_get_function($handler_plugin, 'addressable callback');
+  if ($function) {
+    return $function($task, $subtask_name, $handler, $address, $contexts, $arguments, $type);
+  }
 }

@@ -5,7 +5,7 @@
 
   Drupal.CTools.Stylizer.addFarbtastic = function(context) {
     // This behavior attaches by ID, so is only valid once on a page.
-    if ($('ctools_stylizer_color_scheme_form .color-form.Stylizer-processed').size()) {
+    if ($('#ctools_stylizer_color_scheme_form .color-form.Stylizer-processed').size()) {
       return;
     }
 
@@ -183,11 +183,12 @@
       };
 
       // Add hook
+      var $this = $(this);
       var hook = $('<div class="hook"></div>');
-      $(this).after(hook);
+      $this.after(hook);
       hooks.push(hook);
 
-      $(this).parent().find('.lock').click();
+      $this.parent().find('.lock').click();
       this.i = i;
       inputs.push(this);
     })

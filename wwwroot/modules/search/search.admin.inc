@@ -95,7 +95,8 @@ function search_admin_settings($form) {
     '#default_value' => variable_get('minimum_word_size', 3),
     '#size' => 5,
     '#maxlength' => 3,
-    '#description' => t('The number of characters a word has to be to be indexed. A lower setting means better search result ranking, but also a larger database. Each search query must contain at least one keyword that is this size (or longer).')
+    '#description' => t('The number of characters a word has to be to be indexed. A lower setting means better search result ranking, but also a larger database. Each search query must contain at least one keyword that is this size (or longer).'),
+    '#element_validate' => array('element_validate_integer_positive'),
   );
   $form['indexing_settings']['overlap_cjk'] = array(
     '#type' => 'checkbox',
@@ -123,6 +124,16 @@ function search_admin_settings($form) {
     '#default_value' => variable_get('search_default_module', 'node'),
     '#options' => $module_options,
     '#description' => t('Choose which search module is the default.')
+  );
+  $form['logging'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Logging')
+  );
+  $form['logging']['search_logging'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Log searches'),
+    '#default_value' => variable_get('search_logging', 1),
+    '#description' => t('If checked, all searches will be logged. Uncheck to skip logging. Logging may affect performance.'),
   );
   $form['#validate'][] = 'search_admin_settings_validate';
   $form['#submit'][] = 'search_admin_settings_submit';

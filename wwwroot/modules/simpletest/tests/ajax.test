@@ -127,31 +127,7 @@ class AJAXFrameworkTestCase extends AJAXTestCase {
       'css' => drupal_get_path('module', 'system') . '/system.admin.css',
       'js' => drupal_get_path('module', 'system') . '/system.js',
     );
-
-    // Get the base page.
-    $this->drupalGet('ajax_forms_test_lazy_load_form');
-    $original_settings = $this->drupalGetSettings();
-    $original_css = $original_settings['ajaxPageState']['css'];
-    $original_js = $original_settings['ajaxPageState']['js'];
-
-    // Verify that the base page doesn't have the settings and files that are to
-    // be lazy loaded as part of the next request.
-    $this->assertTrue(!isset($original_settings[$expected['setting_name']]), t('Page originally lacks the %setting, as expected.', array('%setting' => $expected['setting_name'])));
-    $this->assertTrue(!isset($original_settings[$expected['css']]), t('Page originally lacks the %css file, as expected.', array('%css' => $expected['css'])));
-    $this->assertTrue(!isset($original_settings[$expected['js']]), t('Page originally lacks the %js file, as expected.', array('%js' => $expected['js'])));
-
-    // Submit the AJAX request.
-    $commands = $this->drupalPostAJAX(NULL, array(), array('op' => t('Submit')));
-    $new_settings = $this->drupalGetSettings();
-    $new_css = $new_settings['ajaxPageState']['css'];
-    $new_js = $new_settings['ajaxPageState']['js'];
-
-    // Verify the expected setting was added.
-    $this->assertIdentical($new_settings[$expected['setting_name']], $expected['setting_value'], t('Page now has the %setting.', array('%setting' => $expected['setting_name'])));
-
-    // Verify the expected CSS file was added, both to Drupal.settings, and as
-    // an AJAX command for inclusion into the HTML.
-    // @todo A drupal_css_defaults() function in Drupal 8 would be nice.
+    // @todo D8: Add a drupal_css_defaults() helper function.
     $expected_css_html = drupal_get_css(array($expected['css'] => array(
       'type' => 'file',
       'group' => CSS_DEFAULT,
@@ -162,6 +138,52 @@ class AJAXFrameworkTestCase extends AJAXTestCase {
       'data' => $expected['css'],
       'browsers' => array('IE' => TRUE, '!IE' => TRUE),
     )), TRUE);
+    $expected_js_html = drupal_get_js('header', array($expected['js'] => drupal_js_defaults($expected['js'])), TRUE);
+
+    // Get the base page.
+    $this->drupalGet('ajax_forms_test_lazy_load_form');
+    $original_settings = $this->drupalGetSettings();
+    $original_css = $original_settings['ajaxPageState']['css'];
+    $original_js = $original_settings['ajaxPageState']['js'];
+
+    // Verify that the base page doesn't have the settings and files that are to
+    // be lazy loaded as part of the next requests.
+    $this->assertTrue(!isset($original_settings[$expected['setting_name']]), t('Page originally lacks the %setting, as expected.', array('%setting' => $expected['setting_name'])));
+    $this->assertTrue(!isset($original_settings[$expected['css']]), t('Page originally lacks the %css file, as expected.', array('%css' => $expected['css'])));
+    $this->assertTrue(!isset($original_settings[$expected['js']]), t('Page originally lacks the %js file, as expected.', array('%js' => $expected['js'])));
+
+    // Submit the AJAX request without triggering files getting added.
+    $commands = $this->drupalPostAJAX(NULL, array('add_files' => FALSE), array('op' => t('Submit')));
+    $new_settings = $this->drupalGetSettings();
+
+    // Verify the setting was not added when not expected.
+    $this->assertTrue(!isset($new_settings['setting_name']), t('Page still lacks the %setting, as expected.', array('%setting' => $expected['setting_name'])));
+    // Verify a settings command does not add CSS or scripts to Drupal.settings
+    // and no command inserts the corresponding tags on the page.
+    $found_settings_command = FALSE;
+    $found_markup_command = FALSE;
+    foreach ($commands as $command) {
+      if ($command['command'] == 'settings' && (array_key_exists('css', $command['settings']['ajaxPageState']) || array_key_exists('js', $command['settings']['ajaxPageState']))) {
+        $found_settings_command = TRUE;
+      }
+      if (isset($command['data']) && ($command['data'] == $expected_js_html || $command['data'] == $expected_css_html)) {
+        $found_markup_command = TRUE;
+      }
+    }
+    $this->assertFalse($found_settings_command, t('Page state still lacks the %css and %js files, as expected.', array('%css' => $expected['css'], '%js' => $expected['js'])));
+    $this->assertFalse($found_markup_command, t('Page still lacks the %css and %js files, as expected.', array('%css' => $expected['css'], '%js' => $expected['js'])));
+
+    // Submit the AJAX request and trigger adding files.
+    $commands = $this->drupalPostAJAX(NULL, array('add_files' => TRUE), array('op' => t('Submit')));
+    $new_settings = $this->drupalGetSettings();
+    $new_css = $new_settings['ajaxPageState']['css'];
+    $new_js = $new_settings['ajaxPageState']['js'];
+
+    // Verify the expected setting was added.
+    $this->assertIdentical($new_settings[$expected['setting_name']], $expected['setting_value'], t('Page now has the %setting.', array('%setting' => $expected['setting_name'])));
+
+    // Verify the expected CSS file was added, both to Drupal.settings, and as
+    // an AJAX command for inclusion into the HTML.
     $this->assertEqual($new_css, $original_css + array($expected['css'] => 1), t('Page state now has the %css file.', array('%css' => $expected['css'])));
     $this->assertCommand($commands, array('data' => $expected_css_html), t('Page now has the %css file.', array('%css' => $expected['css'])));
 
@@ -170,9 +192,29 @@ class AJAXFrameworkTestCase extends AJAXTestCase {
     // string containing the SCRIPT tag, we also ensure that unexpected
     // JavaScript code, such as a jQuery.extend() that would potentially clobber
     // rather than properly merge settings, didn't accidentally get added.
-    $expected_js_html = drupal_get_js('header', array($expected['js'] => drupal_js_defaults($expected['js'])), TRUE);
     $this->assertEqual($new_js, $original_js + array($expected['js'] => 1), t('Page state now has the %js file.', array('%js' => $expected['js'])));
     $this->assertCommand($commands, array('data' => $expected_js_html), t('Page now has the %js file.', array('%js' => $expected['js'])));
+  }
+
+  /**
+   * Tests that overridden CSS files are not added during lazy load.
+   */
+  function testLazyLoadOverriddenCSS() {
+    // The test theme overrides system.base.css without an implementation,
+    // thereby removing it.
+    theme_enable(array('test_theme'));
+    variable_set('theme_default', 'test_theme');
+
+    // This gets the form, and emulates an Ajax submission on it, including
+    // adding markup to the HEAD and BODY for any lazy loaded JS/CSS files.
+    $this->drupalPostAJAX('ajax_forms_test_lazy_load_form', array('add_files' => TRUE), array('op' => t('Submit')));
+
+    // Verify that the resulting HTML does not load the overridden CSS file.
+    // We add a "?" to the assertion, because Drupal.settings may include
+    // information about the file; we only really care about whether it appears
+    // in a LINK or STYLE tag, for which Drupal always adds a query string for
+    // cache control.
+    $this->assertNoText('system.base.css?', 'Ajax lazy loading does not add overridden CSS files.');
   }
 }
 
@@ -251,7 +293,7 @@ class AJAXCommandsTestCase extends AJAXTestCase {
     $this->assertCommand($commands, $expected, "'changed' AJAX command (with asterisk) issued with correct selector");
 
     // Tests the 'css' command.
-    $commands = $this->drupalPostAJAX($form_path, $edit, array('op' => t("Set the the '#box' div to be blue.")));
+    $commands = $this->drupalPostAJAX($form_path, $edit, array('op' => t("Set the '#box' div to be blue.")));
     $expected = array(
       'command' => 'css',
       'selector' => '#css_div',
@@ -326,6 +368,14 @@ class AJAXCommandsTestCase extends AJAXTestCase {
       'settings' => array('ajax_forms_test' => array('foo' => 42)),
     );
     $this->assertCommand($commands, $expected, "'settings' AJAX command issued with correct data");
+
+    // Tests the 'add_css' command.
+    $commands = $this->drupalPostAJAX($form_path, $edit, array('op' => t("AJAX 'add_css' command")));
+    $expected = array(
+      'command' => 'add_css',
+      'data' => 'my/file.css',
+    );
+    $this->assertCommand($commands, $expected, "'add_css' AJAX command issued with correct data");
   }
 }
 
@@ -456,6 +506,85 @@ class AJAXMultiFormTestCase extends AJAXTestCase {
 }
 
 /**
+ * Test Ajax forms when page caching for anonymous users is turned on.
+ */
+class AJAXFormPageCacheTestCase extends AJAXTestCase {
+  protected $profile = 'testing';
+
+  public static function getInfo() {
+    return array(
+      'name' => 'AJAX forms on cached pages',
+      'description' => 'Tests that AJAX forms work properly for anonymous users on cached pages.',
+      'group' => 'AJAX',
+    );
+  }
+
+  public function setUp() {
+    parent::setUp();
+
+    variable_set('cache', TRUE);
+  }
+
+  /**
+   * Return the build id of the current form.
+   */
+  protected function getFormBuildId() {
+    $build_id_fields = $this->xpath('//input[@name="form_build_id"]');
+    $this->assertEqual(count($build_id_fields), 1, 'One form build id field on the page');
+    return (string) $build_id_fields[0]['value'];
+  }
+
+  /**
+   * Create a simple form, then POST to system/ajax to change to it.
+   */
+  public function testSimpleAJAXFormValue() {
+    $this->drupalGet('ajax_forms_test_get_form');
+    $this->assertEqual($this->drupalGetHeader('X-Drupal-Cache'), 'MISS', 'Page was not cached.');
+    $build_id_initial = $this->getFormBuildId();
+
+    $edit = array('select' => 'green');
+    $commands = $this->drupalPostAJAX(NULL, $edit, 'select');
+    $build_id_first_ajax = $this->getFormBuildId();
+    $this->assertNotEqual($build_id_initial, $build_id_first_ajax, 'Build id is changed in the simpletest-DOM on first AJAX submission');
+    $expected = array(
+      'command' => 'updateBuildId',
+      'old' => $build_id_initial,
+      'new' => $build_id_first_ajax,
+    );
+    $this->assertCommand($commands, $expected, 'Build id change command issued on first AJAX submission');
+
+    $edit = array('select' => 'red');
+    $commands = $this->drupalPostAJAX(NULL, $edit, 'select');
+    $build_id_second_ajax = $this->getFormBuildId();
+    $this->assertEqual($build_id_first_ajax, $build_id_second_ajax, 'Build id remains the same on subsequent AJAX submissions');
+
+    // Repeat the test sequence but this time with a page loaded from the cache.
+    $this->drupalGet('ajax_forms_test_get_form');
+    $this->assertEqual($this->drupalGetHeader('X-Drupal-Cache'), 'HIT', 'Page was cached.');
+    $build_id_from_cache_initial = $this->getFormBuildId();
+    $this->assertEqual($build_id_initial, $build_id_from_cache_initial, 'Build id is the same as on the first request');
+
+    $edit = array('select' => 'green');
+    $commands = $this->drupalPostAJAX(NULL, $edit, 'select');
+    $build_id_from_cache_first_ajax = $this->getFormBuildId();
+    $this->assertNotEqual($build_id_from_cache_initial, $build_id_from_cache_first_ajax, 'Build id is changed in the simpletest-DOM on first AJAX submission');
+    $this->assertNotEqual($build_id_first_ajax, $build_id_from_cache_first_ajax, 'Build id from first user is not reused');
+    $expected = array(
+      'command' => 'updateBuildId',
+      'old' => $build_id_from_cache_initial,
+      'new' => $build_id_from_cache_first_ajax,
+    );
+    $this->assertCommand($commands, $expected, 'Build id change command issued on first AJAX submission');
+
+    $edit = array('select' => 'red');
+    $commands = $this->drupalPostAJAX(NULL, $edit, 'select');
+    $build_id_from_cache_second_ajax = $this->getFormBuildId();
+    $this->assertEqual($build_id_from_cache_first_ajax, $build_id_from_cache_second_ajax, 'Build id remains the same on subsequent AJAX submissions');
+  }
+}
+
+
+/**
  * Miscellaneous Ajax tests using ajax_test module.
  */
 class AJAXElementValidation extends AJAXTestCase {
@@ -482,7 +611,7 @@ class AJAXElementValidation extends AJAXTestCase {
     // Post with 'drivertext' as the triggering element.
     $post_result = $this->drupalPostAJAX('ajax_validation_test', $edit, 'drivertext');
     // Look for a validation failure in the resultant JSON.
-    $this->assertNoText(t('Error message'), t("No error message in resultant JSON"));
-    $this->assertText('ajax_forms_test_validation_form_callback invoked', t('The correct callback was invoked'));
+    $this->assertNoText(t('Error message'), "No error message in resultant JSON");
+    $this->assertText('ajax_forms_test_validation_form_callback invoked', 'The correct callback was invoked');
   }
 }

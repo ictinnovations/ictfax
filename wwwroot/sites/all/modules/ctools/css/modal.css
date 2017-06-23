@@ -23,7 +23,6 @@ div.ctools-modal-content .modal-header {
 
 div.ctools-modal-content .modal-header a {
   color: white;
-  float: right;
 }
 
 div.ctools-modal-content .modal-content {
@@ -37,6 +36,7 @@ div.ctools-modal-content .modal-form {
 
 div.ctools-modal-content a.close {
   color: white;
+  float: right;
 }
 
 div.ctools-modal-content a.close:hover {
@@ -87,6 +87,10 @@ div.ctools-modal-content fieldset,
 div.ctools-modal-content .form-radios,
 div.ctools-modal-content .form-checkboxes {
   clear: left;
+}
+
+div.ctools-modal-content .vertical-tabs-panes > fieldset {
+  clear: none;
 }
 
 div.ctools-modal-content .resizable-textarea {

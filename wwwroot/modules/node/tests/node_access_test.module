@@ -2,7 +2,9 @@
 
 /**
  * @file
- * Dummy module implementing node access related hooks to test API interaction
+ * A dummy module implementing node access related hooks for testing purposes.
+ *
+ * A dummy module implementing node access related hooks to test API interaction
  * with the Node module. This module restricts view permission to those with
  * a special 'node test view' permission.
  */
@@ -15,7 +17,7 @@ function node_access_test_node_grants($account, $op) {
   // First grant a grant to the author for own content.
   $grants['node_access_test_author'] = array($account->uid);
   if ($op == 'view' && user_access('node test view', $account)) {
-    $grants['node_access_test'] = array(8888);
+    $grants['node_access_test'] = array(8888, 8889);
   }
   if ($op == 'view' && $account->uid == variable_get('node_test_node_access_all_uid', 0)) {
     $grants['node_access_all'] = array(0);
@@ -33,6 +35,14 @@ function node_access_test_node_access_records($node) {
     $grants[] = array(
       'realm' => 'node_access_test',
       'gid' => 8888,
+      'grant_view' => 1,
+      'grant_update' => 0,
+      'grant_delete' => 0,
+      'priority' => 0,
+    );
+    $grants[] = array(
+      'realm' => 'node_access_test',
+      'gid' => 8889,
       'grant_view' => 1,
       'grant_update' => 0,
       'grant_delete' => 0,
@@ -132,6 +142,8 @@ function node_access_test_page() {
  * database query is shown, and a list of the node IDs, for debugging purposes.
  * And if there is a query exception, the page says "Exception" and gives the
  * error.
+ *
+ * @see node_access_test_menu()
  */
 function node_access_entity_test_page() {
   $output = '';
@@ -159,7 +171,7 @@ function node_access_entity_test_page() {
 }
 
 /**
- * Implements hook_form_node_form_alter().
+ * Implements hook_form_BASE_FORM_ID_alter().
  */
 function node_access_test_form_node_form_alter(&$form, $form_state) {
   // Only show this checkbox for NodeAccessBaseTableTestCase.
@@ -199,7 +211,7 @@ function node_access_test_node_insert($node) {
 }
 
 /**
- * Implements hook_nodeapi_update().
+ * Implements hook_node_update().
  */
 function node_access_test_node_update($node) {
   _node_access_test_node_write($node);

@@ -1,13 +1,13 @@
 
 (function($) {
-  Drupal.behaviors.CToolsJumpMenu = { 
+  Drupal.behaviors.CToolsJumpMenu = {
     attach: function(context) {
-      $('.ctools-jump-menu-hide:not(.ctools-jump-menu-processed)')
-        .addClass('ctools-jump-menu-processed')
+      $('.ctools-jump-menu-hide')
+        .once('ctools-jump-menu')
         .hide();
 
-      $('.ctools-jump-menu-change:not(.ctools-jump-menu-processed)')
-        .addClass('ctools-jump-menu-processed')
+      $('.ctools-jump-menu-change')
+        .once('ctools-jump-menu')
         .change(function() {
           var loc = $(this).val();
           var urlArray = loc.split('::');
@@ -20,8 +20,8 @@
           return false;
         });
 
-      $('.ctools-jump-menu-button:not(.ctools-jump-menu-processed)')
-        .addClass('ctools-jump-menu-processed')
+      $('.ctools-jump-menu-button')
+        .once('ctools-jump-menu')
         .click(function() {
           // Instead of submitting the form, just perform the redirect.
 

@@ -1,4 +1,3 @@
-
 /**
  * @file
  * Provides JavaScript additions to the managed file field type.
@@ -74,10 +73,17 @@ Drupal.file = Drupal.file || {
       var acceptableMatch = new RegExp('\\.(' + extensionPattern + ')$', 'gi');
       if (!acceptableMatch.test(this.value)) {
         var error = Drupal.t("The selected file %filename cannot be uploaded. Only files with the following extensions are allowed: %extensions.", {
-          '%filename': this.value,
+          // According to the specifications of HTML5, a file upload control
+          // should not reveal the real local path to the file that a user
+          // has selected. Some web browsers implement this restriction by
+          // replacing the local path with "C:\fakepath\", which can cause
+          // confusion by leaving the user thinking perhaps Drupal could not
+          // find the file because it messed up the file path. To avoid this
+          // confusion, therefore, we strip out the bogus fakepath string.
+          '%filename': this.value.replace('C:\\fakepath\\', ''),
           '%extensions': extensionPattern.replace(/\|/g, ', ')
         });
-        $(this).parents('div.form-managed-file').prepend('<div class="messages error file-upload-js-error">' + error + '</div>');
+        $(this).closest('div.form-managed-file').prepend('<div class="messages error file-upload-js-error" aria-live="polite">' + error + '</div>');
         this.value = '';
         return false;
       }
@@ -96,8 +102,8 @@ Drupal.file = Drupal.file || {
 
     // Check if we're working with an "Upload" button.
     var $enabledFields = [];
-    if ($(this).parents('div.form-managed-file').size() > 0) {
-      $enabledFields = $(this).parents('div.form-managed-file').find('input.form-file');
+    if ($(this).closest('div.form-managed-file').length > 0) {
+      $enabledFields = $(this).closest('div.form-managed-file').find('input.form-file');
     }
 
     // Temporarily disable upload fields other than the one we're currently
@@ -111,7 +117,7 @@ Drupal.file = Drupal.file || {
     var $fieldsToTemporarilyDisable = $('div.form-managed-file input.form-file').not($enabledFields).not(':disabled');
     $fieldsToTemporarilyDisable.attr('disabled', 'disabled');
     setTimeout(function (){
-      $fieldsToTemporarilyDisable.attr('disabled', '');
+      $fieldsToTemporarilyDisable.attr('disabled', false);
     }, 1000);
   },
   /**
@@ -119,8 +125,8 @@ Drupal.file = Drupal.file || {
    */
   progressBar: function (event) {
     var clickedButton = this;
-    var $progressId = $(clickedButton).parents('div.form-managed-file').find('input.file-progress');
-    if ($progressId.size()) {
+    var $progressId = $(clickedButton).closest('div.form-managed-file').find('input.file-progress');
+    if ($progressId.length) {
       var originalName = $progressId.attr('name');
 
       // Replace the name with the required identifier.
@@ -133,7 +139,7 @@ Drupal.file = Drupal.file || {
     }
     // Show the progress bar if the upload takes longer than half a second.
     setTimeout(function () {
-      $(clickedButton).parents('div.form-managed-file').find('div.ajax-progress-bar').slideDown();
+      $(clickedButton).closest('div.form-managed-file').find('div.ajax-progress-bar').slideDown();
     }, 500);
   },
   /**

@@ -14,7 +14,7 @@ function poll_help($path, $arg) {
     case 'admin/help#poll':
       $output = '';
       $output .= '<h3>' . t('About') . '</h3>';
-      $output .= '<p>' . t('The Poll module can be used to create simple surveys or questionnaires that display cumulative results. A poll is a good way to receive feedback from site users and community members. For more information, see the online handbook entry for the <a href="@poll">Poll module</a>.', array('@poll' => 'http://drupal.org/handbook/modules/poll/')) . '</p>';
+      $output .= '<p>' . t('The Poll module can be used to create simple surveys or questionnaires that display cumulative results. A poll is a good way to receive feedback from site users and community members. For more information, see the online handbook entry for the <a href="@poll">Poll module</a>.', array('@poll' => 'http://drupal.org/documentation/modules/poll/')) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Creating a poll') . '</dt>';
@@ -76,7 +76,7 @@ function poll_permission() {
       'title' => t('Cancel and change own votes'),
     ),
     'inspect all votes' => array(
-      'title' => t('View voting results'),
+      'title' => t('View details for all votes'),
     ),
   );
 
@@ -191,7 +191,6 @@ function poll_node_info() {
       'base' => 'poll',
       'description' => t('A <em>poll</em> is a question with a set of possible responses. A <em>poll</em>, once created, automatically provides a simple running count of the number of votes received for each response.'),
       'title_label' => t('Question'),
-      'has_body' => FALSE,
     )
   );
 }
@@ -249,6 +248,7 @@ function poll_form($node, &$form_state) {
     '#title' => check_plain($type->title_label),
     '#required' => TRUE,
     '#default_value' => $node->title,
+    '#maxlength' => 255,
     '#weight' => -5,
   );
 
@@ -288,9 +288,10 @@ function poll_form($node, &$form_state) {
 
   // Add initial or additional choices.
   $existing_delta = $delta;
-  $weight++;
   for ($delta; $delta < $choice_count; $delta++) {
     $key = 'new:' . ($delta - $existing_delta);
+    // Increase the weight of each new choice.
+    $weight++;
     $form['choice_wrapper']['choice'][$key] = _poll_choice_form($key, NULL, '', 0, $weight, $choice_count);
   }
 
@@ -408,6 +409,7 @@ function _poll_choice_form($key, $chid = NULL, $value = '', $votes = 0, $weight 
     '#maxlength' => 7,
     '#parents' => array('choice', $key, 'chvotes'),
     '#access' => user_access('administer nodes'),
+    '#element_validate' => array('element_validate_integer'),
   );
 
   $form['weight'] = array(
@@ -451,10 +453,8 @@ function poll_node_form_submit(&$form, &$form_state) {
  */
 function poll_validate($node, $form) {
   if (isset($node->title)) {
-    // Check for at least two options and validate amount of votes:
+    // Check for at least two options and validate amount of votes.
     $realchoices = 0;
-    // Renumber fields
-    $node->choice = array_values($node->choice);
     foreach ($node->choice as $i => $choice) {
       if ($choice['chtext'] != '') {
         $realchoices++;
@@ -476,6 +476,9 @@ function poll_validate($node, $form) {
 function poll_field_attach_prepare_translation_alter(&$entity, $context) {
   if ($context['entity_type'] == 'node' && $entity->type == 'poll') {
     $entity->choice = $context['source_entity']->choice;
+    foreach ($entity->choice as $i => $options) {
+      $entity->choice[$i]['chvotes'] = 0;
+    }
   }
 }
 
@@ -586,8 +589,10 @@ function poll_update($node) {
           'weight' => $choice['weight'],
         ))
         ->insertFields(array(
-           'nid' => $node->nid,
-           'chtext' => $choice['chtext'],
+          'nid' => $node->nid,
+          'chtext' => $choice['chtext'],
+          'chvotes' => (int) $choice['chvotes'],
+          'weight' => $choice['weight'],
         ))
         ->execute();
     }
@@ -626,9 +631,6 @@ function poll_delete($node) {
  *   The node object to load.
  */
 function poll_block_latest_poll_view($node) {
-  global $user;
-  $output = '';
-
   // This is necessary for shared objects because PHP doesn't copy objects, but
   // passes them by reference.  So when the objects are cached it can result in
   // the wrong output being displayed on subsequent calls.  The cloning and
@@ -669,9 +671,6 @@ function poll_block_latest_poll_view($node) {
  * Implements hook_view().
  */
 function poll_view($node, $view_mode) {
-  global $user;
-  $output = '';
-
   if (!empty($node->allowvotes) && empty($node->show_results)) {
     $node->content['poll_view_voting'] = drupal_get_form('poll_view_voting', $node);
   }
@@ -689,7 +688,7 @@ function poll_view($node, $view_mode) {
 function poll_teaser($node) {
   $teaser = NULL;
   if (is_array($node->choice)) {
-    foreach ($node->choice as $k => $choice) {
+    foreach ($node->choice as $choice) {
       if ($choice['chtext'] != '') {
         $teaser .= '* ' . check_plain($choice['chtext']) . "\n";
       }
@@ -715,7 +714,6 @@ function poll_view_voting($form, &$form_state, $node, $block = FALSE) {
       '#type' => 'radios',
       '#title' => t('Choices'),
       '#title_display' => 'invisible',
-      '#default_value' => -1,
       '#options' => $list,
     );
   }
@@ -743,7 +741,7 @@ function poll_view_voting($form, &$form_state, $node, $block = FALSE) {
  * Validation function for processing votes
  */
 function poll_view_voting_validate($form, &$form_state) {
-  if ($form_state['values']['choice'] == -1) {
+  if (empty($form_state['values']['choice'])) {
     form_set_error( 'choice', t('Your vote could not be recorded because you did not select any of the choices.'));
   }
 }
@@ -812,7 +810,7 @@ function poll_view_results($node, $view_mode, $block = FALSE) {
   // Make sure that choices are ordered by their weight.
   uasort($node->choice, 'drupal_sort_weight');
 
-  // Count the votes and find the maximum
+  // Count the votes and find the maximum.
   $total_votes = 0;
   $max_votes = 0;
   foreach ($node->choice as $choice) {
@@ -920,7 +918,6 @@ function template_preprocess_poll_results(&$variables) {
  *
  * @see poll-bar.tpl.php
  * @see poll-bar--block.tpl.php
- * @see theme_poll_bar()
  */
 function template_preprocess_poll_bar(&$variables) {
   if ($variables['block']) {

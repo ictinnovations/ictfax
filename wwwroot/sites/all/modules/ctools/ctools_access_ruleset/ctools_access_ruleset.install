@@ -17,7 +17,7 @@ function ctools_access_ruleset_schema_1() {
       'bulk export' => TRUE,
       'primary key' => 'rsid',
       'api' => array(
-        'owner' => 'ctools',
+        'owner' => 'ctools_access_ruleset',
         'api' => 'ctools_rulesets',
         'minimum_version' => 1,
         'current_version' => 1,

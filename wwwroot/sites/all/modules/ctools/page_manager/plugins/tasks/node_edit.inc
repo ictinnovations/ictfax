@@ -27,6 +27,7 @@ function page_manager_node_edit_page_manager_tasks() {
     // Allow this to be enabled or disabled:
     'disabled' => variable_get('page_manager_node_edit_disabled', TRUE),
     'enable callback' => 'page_manager_node_edit_enable',
+    'access callback' => 'page_manager_node_edit_access_check',
   );
 }
 
@@ -107,7 +108,7 @@ function page_manager_node_edit($node) {
  * Callback to handle the process of adding a node.
  *
  * This creates a basic $node and passes that off to page_manager_node_edit().
- * It is modeled after Drupal's node_add() function.
+ * It is modelled after Drupal's node_add() function.
  *
  * Unlike node_add() we do not need to check node_access because that was
  * already checked by the menu system.
@@ -125,7 +126,7 @@ function page_manager_node_add($type) {
     'language' => LANGUAGE_NONE,
   );
 
-  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)));
+  drupal_set_title(t('Create @name', array('@name' => $types[$type]->name)), PASS_THROUGH);
   return page_manager_node_edit($node);
 }
 
@@ -164,4 +165,21 @@ function page_manager_node_edit_enable($cache, $status) {
   if (!$status) {
     $GLOBALS['page_manager_enabling_node_edit'] = TRUE;
   }
+}
+
+/**
+ * Callback to determine if a page is accessible.
+ *
+ * @param $task
+ *   The task plugin.
+ * @param $subtask_id
+ *   The subtask id
+ * @param $contexts
+ *   The contexts loaded for the task.
+ * @return
+ *   TRUE if the current user can access the page.
+ */
+function page_manager_node_edit_access_check($task, $subtask_id, $contexts) {
+  $context = reset($contexts);
+  return node_access('update', $context->data);
 }

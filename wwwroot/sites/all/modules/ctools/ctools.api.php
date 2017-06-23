@@ -14,6 +14,22 @@
  */
 
 /**
+ * Inform CTools about plugin types.
+ *
+ * @return array
+ *  An array of plugin types, keyed by the type name.
+ *  See the advanced help topic 'plugins-creating' for details of the array
+ *  properties.
+ */
+function hook_ctools_plugin_type() {
+  $plugins['my_type'] = array(
+    'load themes' => TRUE,
+  );
+
+  return $plugins;
+}
+
+/**
  * This hook is used to inform the CTools plugin system about the location of a
  * directory that should be searched for files containing plugins of a
  * particular type. CTools invokes this same hook for all plugins, using the
@@ -117,11 +133,25 @@ function hook_ctools_plugin_post_alter(&$plugin, &$info) {
   }
 }
 
+/**
+ * Alter the list of modules/themes which implement a certain api.
+ *
+ * The hook named here is just an example, as the real existing hooks are named
+ * for example 'hook_views_api_alter'.
+ *
+ * @param array $list
+ *   An array of informations about the implementors of a certain api.
+ *   The key of this array are the module names/theme names.
+ */
+function hook_ctools_api_hook_alter(&$list) {
+  // Alter the path of the node implementation.
+  $list['node']['path'] = drupal_get_path('module', 'node');
+}
 
 /**
  * Alter the available functions to be used in ctools math expression api.
  *
- * One usecase would be to create your own function in your module and 
+ * One usecase would be to create your own function in your module and
  * allow to use it in the math expression api.
  *
  * @param $functions
@@ -130,6 +160,110 @@ function hook_ctools_plugin_post_alter(&$plugin, &$info) {
 function hook_ctools_math_expression_functions_alter(&$functions) {
   // Allow to convert from degrees to radiant.
   $functions[] = 'deg2rad';
+}
+
+/**
+ * Alter everything.
+ *
+ * @param $info
+ *   An associative array containing the following keys:
+ *   - content: The rendered content.
+ *   - title: The content's title.
+ *   - no_blocks: A boolean to decide if blocks should be displayed.
+ * @param $page
+ *   If TRUE then this renderer owns the page and can use theme('page')
+ *   for no blocks; if false, output is returned regardless of any no
+ *   blocks settings.
+ * @param $context
+ *   An associative array containing the following keys:
+ *   - args: The raw arguments behind the contexts.
+ *   - contexts: The context objects in use.
+ *   - task: The task object in use.
+ *   - subtask: The subtask object in use.
+ *   - handler: The handler object in use.
+ */
+function hook_ctools_render_alter(&$info, &$page, &$context) {
+  if ($context['handler']->name == 'my_handler') {
+    ctools_add_css('my_module.theme', 'my_module');
+  }
+}
+
+/**
+ * Alter a content plugin subtype.
+ *
+ * While content types can be altered via hook_ctools_plugin_pre_alter() or
+ * hook_ctools_plugin_post_alter(), the subtypes that content types rely on
+ * are special and require their own hook.
+ *
+ * This hook can be used to add things like 'render last' or change icons
+ * or categories or to rename content on specific sites.
+ */
+function hook_ctools_content_subtype_alter($subtype, $plugin) {
+  // Force a particular subtype of a particular plugin to render last.
+  if ($plugin['module'] == 'some_plugin_module' && $plugin['name'] == 'some_plugin_name' && $subtype['subtype_id'] == 'my_subtype_id') {
+    $subtype['render last'] = TRUE;
+  }
+}
+
+/**
+ * Alter the definition of an entity context plugin.
+ *
+ * @param array $plugin
+ *   An associative array defining a plugin.
+ * @param array $entity
+ *   The entity info array of a specific entity type.
+ * @param string $plugin_id
+ *   The plugin ID, in the format NAME:KEY.
+ */
+function hook_ctools_entity_context_alter(&$plugin, &$entity, $plugin_id) {
+  ctools_include('context');
+  switch ($plugin_id) {
+    case 'entity_id:taxonomy_term':
+      $plugin['no ui'] = TRUE;
+    case 'entity:user':
+      $plugin = ctools_get_context('user');
+      unset($plugin['no ui']);
+      unset($plugin['no required context ui']);
+      break;
+  }
+}
+
+/**
+ * Alter the definition of entity context plugins.
+ *
+ * @param array $plugins
+ *   An associative array of plugin definitions, keyed by plugin ID.
+ *
+ * @see hook_ctools_entity_context_alter()
+ */
+function hook_ctools_entity_contexts_alter(&$plugins) {
+  $plugins['entity_id:taxonomy_term']['no ui'] = TRUE;
+}
+
+/**
+ * Change cleanstring settings.
+ *
+ * @param array $settings
+ *   An associative array of cleanstring settings.
+ *
+ * @see ctools_cleanstring()
+ */
+function hook_ctools_cleanstring_alter(&$settings) {
+  // Convert all strings to lower case.
+  $settings['lower case'] = TRUE;
+}
+
+/**
+ * Change cleanstring settings for a specific clean ID.
+ *
+ * @param array $settings
+ *   An associative array of cleanstring settings.
+ *
+ * @see ctools_cleanstring()
+ */
+function hook_ctools_cleanstring_CLEAN_ID_alter(&$settings) {
+  // Convert all strings to lower case.
+  $settings['lower case'] = TRUE;
 }
 
 /**

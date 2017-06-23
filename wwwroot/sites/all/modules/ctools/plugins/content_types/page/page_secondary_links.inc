@@ -30,3 +30,11 @@ function ctools_page_secondary_links_content_type_render($subtype, $conf, $panel
 
   return $block;
 }
+
+/**
+ * Returns an edit form for custom type settings.
+ */
+function ctools_page_secondary_links_content_type_edit_form($form, &$form_state) {
+  // Empty so that we can have title override.
+  return $form;
+}

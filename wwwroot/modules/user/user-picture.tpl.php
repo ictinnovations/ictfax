@@ -12,10 +12,12 @@
  *   check_plain() before use.
  *
  * @see template_preprocess_user_picture()
+ *
+ * @ingroup themeable
  */
 ?>
 <?php if ($user_picture): ?>
-  <div class="user-picture">
+  <div class="<?php print $classes; ?>">
     <?php print $user_picture; ?>
   </div>
 <?php endif; ?>

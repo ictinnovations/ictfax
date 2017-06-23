@@ -105,7 +105,7 @@ function simplecontext_content_type_render($subtype, $conf, $args, $context) {
  * This example just returns a form.
  *
  */
-function simplecontext_content_type_edit_form(&$form, &$form_state) {
+function simplecontext_content_type_edit_form($form, &$form_state) {
   $conf = $form_state['conf'];
   $form['config_item_1'] = array(
     '#type' => 'textfield',
@@ -120,7 +120,7 @@ function simplecontext_content_type_edit_form(&$form, &$form_state) {
   return $form;
 }
 
-function simplecontext_content_type_edit_form_submit(&$form, &$form_state) {
+function simplecontext_content_type_edit_form_submit($form, &$form_state) {
   foreach (element_children($form) as $key) {
     if (!empty($form_state['values'][$key])) {
       $form_state['conf'][$key] = $form_state['values'][$key];

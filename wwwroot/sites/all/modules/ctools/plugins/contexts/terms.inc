@@ -81,7 +81,7 @@ function ctools_context_terms_convert($context, $type) {
           $context->names = '';
         }
         else {
-          $result = db_query('SELECT tid, name FROM {taxonomy_term_data} WHERE tid IN :tids', array(':tids' => $context->tids));
+          $result = db_query('SELECT tid, name FROM {taxonomy_term_data} WHERE tid IN (:tids)', array(':tids' => $context->tids));
           foreach ($result as $term) {
             $names[$term->tid] = $term->name;
             if ($type == 'names_dashed') {

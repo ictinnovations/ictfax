@@ -20,7 +20,7 @@ if (module_exists('comment')) {
 }
 
 function ctools_node_comments_content_type_render($subtype, $conf, $panel_args, $context) {
-  $node = isset($context->data) ? clone($context->data) : NULL;
+  $node = isset($context->data) ? clone $context->data : NULL;
   $block = new stdClass();
   $block->module = 'comments';
   $block->delta  = $node->nid;
@@ -84,37 +84,7 @@ function ctools_comment_render($node, $conf) {
   $mode = $conf['mode'];
   $comments_per_page = $conf['comments_per_page'];
 
-  // Multiple comment view
-  $query = db_select('comment', 'c')->extend('PagerDefault');
-  $query->addField('c', 'cid');
-  $query
-    ->condition('c.nid', $node->nid)
-    ->addTag('node_access')
-    ->limit($comments_per_page);
-
-  $count_query = db_select('comment', 'c');
-  $count_query->addExpression('COUNT(*)');
-  $count_query
-    ->condition('c.nid', $node->nid)
-    ->addTag('node_access');
-
-  if (!user_access('administer comments')) {
-    $query->condition('c.status', COMMENT_PUBLISHED);
-    $count_query->condition('c.status', COMMENT_PUBLISHED);
-  }
-  if ($mode === COMMENT_MODE_FLAT) {
-    $query->orderBy('c.cid', 'ASC');
-  }
-  else {
-    // See comment above. Analysis reveals that this doesn't cost too
-    // much. It scales much much better than having the whole comment
-    // structure.
-    $query->orderBy('SUBSTRING(c.thread, 1, (LENGTH(c.thread) - 1))', 'ASC');
-  }
-
-  $query->setCountQuery($count_query);
-  $cids = $query->execute()->fetchCol();
-
+  $cids = comment_get_thread($node, $mode, $comments_per_page);
   $comments = comment_load_multiple($cids);
 
   if ($comments) {
@@ -126,4 +96,3 @@ function ctools_comment_render($node, $conf) {
   }
   return;
 }
-

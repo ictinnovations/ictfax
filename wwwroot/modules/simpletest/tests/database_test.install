@@ -28,6 +28,7 @@ function database_test_schema() {
         'length' => 255,
         'not null' => TRUE,
         'default' => '',
+        'binary' => TRUE,
       ),
       'age' => array(
         'description' => "The person's age",
@@ -85,6 +86,9 @@ function database_test_schema() {
       'ages' => array('age'),
     ),
   );
+
+  $schema['test_people_copy'] = $schema['test_people'];
+  $schema['test_people_copy']['description'] = 'A duplicate version of the test_people table, used for additional tests.';
 
   $schema['test_one_blob'] = array(
     'description' => 'A simple table including a BLOB field for testing BLOB behavior.',

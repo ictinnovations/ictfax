@@ -29,7 +29,7 @@ $plugin = array(
 function ctools_vid_context($arg = NULL, $conf = NULL, $empty = FALSE) {
   // If unset it wants a generic, unfilled context.
   if ($empty) {
-    return ctools_context_create_empty('vocabulary');
+    return ctools_context_create_empty('entity:taxonomy_vocabulary');
   }
 
   if (!is_numeric($arg)) {

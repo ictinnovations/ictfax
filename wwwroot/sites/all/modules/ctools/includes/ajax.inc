@@ -45,8 +45,36 @@ function ctools_ajax_image_button($image, $dest, $alt, $class = '') {
  *   to ctools-use-ajax.
  */
 function ctools_ajax_text_button($text, $dest, $alt, $class = '', $type = 'use-ajax') {
-  drupal_add_js('misc/ajax.js');
+  drupal_add_library('system', 'drupal.ajax');
   return l($text, $dest, array('html' => TRUE, 'attributes' => array('class' => array($type, $class), 'title' => $alt)));
+}
+
+/**
+ * Render an icon and related text as a link. This will automatically apply an AJAX class
+ * to the link and add the appropriate javascript to make this happen.
+ *
+ * Note: 'html' => true so be sure any text is vetted! Chances are these kinds of buttons will
+ * not use user input so this is a very minor concern.
+ *
+ * @param $text
+ *   The text that will be displayed as the link.
+ * @param $image
+ *   The icon image to include in the link.
+ * @param $dest
+ *   The destination of the link.
+ * @param $alt
+ *   The title text of the link.
+ * @param $class
+ *   Any class to apply to the link. @todo this should be a options array.
+ * @param $type
+ *   A type to use, in case a different behavior should be attached. Defaults
+ *   to ctools-use-ajax.
+ */
+function ctools_ajax_icon_text_button($text, $image, $dest, $alt, $class = '', $type = 'use-ajax') {
+  drupal_add_library('system', 'drupal.ajax');
+  $rendered_image = theme('image', array('path' => $image));
+  $link_content = $rendered_image . "<span>" . $text . "</span>";
+  return l($link_content, $dest, array('html' => TRUE, 'attributes' => array('class' => array($type, $class), 'title' => $alt)));
 }
 
 /**
@@ -59,8 +87,9 @@ function ctools_ajax_text_button($text, $dest, $alt, $class = '', $type = 'use-a
  * @param $value
  *  The value of the data.
  */
- function ctools_ajax_command_attr($selector, $name, $value) {
-   return array(
+function ctools_ajax_command_attr($selector, $name, $value) {
+  ctools_add_js('ajax-responder');
+  return array(
      'command' => 'attr',
      'selector' => $selector,
      'name' => $name,
@@ -80,6 +109,7 @@ function ctools_ajax_text_button($text, $dest, $alt, $class = '', $type = 'use-a
  *   An array of options to pass to the url() function.
  */
 function ctools_ajax_command_redirect($url, $delay = 0, $options = array()) {
+  ctools_add_js('ajax-responder');
   return array(
     'command' => 'redirect',
     'url' => url($url, $options),
@@ -91,6 +121,7 @@ function ctools_ajax_command_redirect($url, $delay = 0, $options = array()) {
  * Force a reload of the current page.
  */
 function ctools_ajax_command_reload() {
+  ctools_add_js('ajax-responder');
   return array(
     'command' => 'reload',
   );
@@ -107,6 +138,7 @@ function ctools_ajax_command_reload() {
  *   selector jquery uses in $().
  */
 function ctools_ajax_command_submit($selector) {
+  ctools_add_js('ajax-responder');
   return array(
     'command' => 'submit',
     'selector' => $selector,

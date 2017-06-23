@@ -43,7 +43,9 @@ function ctools_context_create_user($empty, $data = NULL, $conf = FALSE) {
     if ($data['type'] == 'current') {
       global $user;
       $data = user_load($user->uid);
-      $data->logged_in_user = TRUE;
+      if (user_is_logged_in()) {
+        $data->logged_in_user = TRUE;
+      }
     }
     else {
       $data = user_load($data['uid']);
@@ -88,7 +90,7 @@ function ctools_context_user_settings_form($form, &$form_state) {
   if (!empty($conf['uid'])) {
     $info = user_load($conf['uid']);
     if ($info) {
-      $form['user']['#description'] = t('Currently set to !link', array('!link' => theme('username', $info)));
+      $form['user']['#description'] = t('Currently set to !link', array('!link' => theme('username', array('account' => $info))));
     }
   }
 

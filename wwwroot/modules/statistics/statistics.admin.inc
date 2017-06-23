@@ -2,11 +2,18 @@
 
 /**
  * @file
- * Admin page callbacks for the statistics module.
+ * Admin page callbacks for the Statistics module.
  */
 
 /**
- * Menu callback; presents the "recent hits" page.
+ * Page callback: Displays the "recent hits" page.
+ *
+ * This displays the pages with recent hits in a given time interval that
+ * haven't been flushed yet. The flush interval is set on the statistics
+ * settings form, but is dependent on cron running.
+ *
+ * @return
+ *   A render array containing information about the most recent hits.
  */
 function statistics_recent_hits() {
   $header = array(
@@ -45,7 +52,14 @@ function statistics_recent_hits() {
 }
 
 /**
- * Menu callback; presents the "top pages" page.
+ * Page callback: Displays statistics for the "top pages" (most accesses).
+ *
+ * This displays the pages with the most hits (the "top pages") within a given
+ * time period that haven't been flushed yet. The flush interval is set on the
+ * statistics settings form, but is dependent on cron running.
+ *
+ * @return
+ *   A render array containing information about the top pages.
  */
 function statistics_top_pages() {
   $header = array(
@@ -57,7 +71,8 @@ function statistics_top_pages() {
 
   $query = db_select('accesslog', 'a', array('target' => 'slave'))->extend('PagerDefault')->extend('TableSort');
   $query->addExpression('COUNT(path)', 'hits');
-  // MAX(title) avoids having empty node titles which otherwise causes duplicates in the top pages list
+  // MAX(title) avoids having empty node titles which otherwise causes
+  // duplicates in the top pages list.
   $query->addExpression('MAX(title)', 'title');
   $query->addExpression('AVG(timer)', 'average_time');
   $query->addExpression('SUM(timer)', 'total_time');
@@ -90,7 +105,14 @@ function statistics_top_pages() {
 }
 
 /**
- * Menu callback; presents the "top visitors" page.
+ * Page callback: Displays the "top visitors" page.
+ *
+ * This displays the pages with the top number of visitors in a given time
+ * interval that haven't been flushed yet. The flush interval is set on the
+ * statistics settings form, but is dependent on cron running.
+ *
+ * @return
+ *   A render array containing the top visitors information.
  */
 function statistics_top_visitors() {
 
@@ -115,7 +137,8 @@ function statistics_top_visitors() {
     ->groupBy('u.name')
     ->groupBy('bl.iid')
     ->limit(30)
-    ->orderByHeader($header);
+    ->orderByHeader($header)
+    ->orderBy('a.hostname');
 
   $uniques_query = db_select('accesslog')->distinct();
   $uniques_query->fields('accesslog', array('uid', 'hostname'));
@@ -143,7 +166,14 @@ function statistics_top_visitors() {
 }
 
 /**
- * Menu callback; presents the "referrer" page.
+ * Page callback: Displays the "top referrers" in the access logs.
+ *
+ * This displays the pages with the top referrers in a given time interval that
+ * haven't been flushed yet. The flush interval is set on the statistics
+ * settings form, but is dependent on cron running.
+ *
+ * @return
+ *   A render array containing the top referrers information.
  */
 function statistics_top_referrers() {
   drupal_set_title(t('Top referrers in the past %interval', array('%interval' => format_interval(variable_get('statistics_flush_accesslog_timer', 259200)))), PASS_THROUGH);
@@ -189,7 +219,14 @@ function statistics_top_referrers() {
 }
 
 /**
- * Menu callback; Displays recent page accesses.
+ * Page callback: Gathers page access statistics suitable for rendering.
+ *
+ * @param $aid
+ *   The unique accesslog ID.
+ *
+ * @return
+ *   A render array containing page access statistics. If information for the
+ *   page was not found, drupal_not_found() is called.
  */
 function statistics_access_log($aid) {
   $access = db_query('SELECT a.*, u.name FROM {accesslog} a LEFT JOIN {users} u ON a.uid = u.uid WHERE aid = :aid', array(':aid' => $aid))->fetch();
@@ -227,13 +264,11 @@ function statistics_access_log($aid) {
     );
     return $build;
   }
-  else {
-    drupal_not_found();
-  }
+  return MENU_NOT_FOUND;
 }
 
 /**
- * Form builder; Configure access logging.
+ * Form constructor for the statistics administration form.
  *
  * @ingroup forms
  * @see system_settings_form()
@@ -268,6 +303,17 @@ function statistics_settings_form() {
     '#title' => t('Count content views'),
     '#default_value' => variable_get('statistics_count_content_views', 0),
     '#description' => t('Increment a counter each time content is viewed.'),
+  );
+  $form['content']['statistics_count_content_views_ajax'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Use Ajax to increment the counter'),
+    '#default_value' => variable_get('statistics_count_content_views_ajax', 0),
+    '#description' => t('Perform the count asynchronously after page load rather than during page generation.'),
+    '#states' => array(
+      'disabled' => array(
+        ':input[name="statistics_count_content_views"]' => array('checked' => FALSE),
+      ),
+    ),
   );
 
   return system_settings_form($form);

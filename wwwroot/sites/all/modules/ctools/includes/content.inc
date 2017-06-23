@@ -155,6 +155,11 @@ function ctools_content_get_subtypes($type) {
   // Walk through the subtypes and ensure minimal settings are
   // retained.
   foreach ($subtypes as $id => $subtype) {
+    // Ensure that the 'subtype_id' value exists.
+    if (!isset($subtype['subtype_id'])) {
+      $subtype['subtype_id'] = $id;
+    }
+
     // Use exact name since this is a modify by reference.
     ctools_content_prepare_subtype($subtypes[$id], $plugin);
   }
@@ -216,6 +221,9 @@ function ctools_content_prepare_subtype(&$subtype, $plugin) {
       $subtype[$key] = $plugin[$key];
     }
   }
+
+  // Trigger hook_ctools_content_subtype_alter().
+  drupal_alter('ctools_content_subtype', $subtype, $plugin);
 }
 
 /**
@@ -239,9 +247,10 @@ function ctools_content_prepare_subtype(&$subtype, $plugin) {
  *   Any incoming content, if this display is a wrapper.
  *
  * @return
- *   The content as rendered by the plugin. This content should be an array
- *   with the following possible keys:
+ *   The content as rendered by the plugin, or NULL.
+ *   This content should be an object with the following possible properties:
  *   - title: The safe to render title of the content.
+ *   - title_heading: The title heading.
  *   - content: The safe to render HTML content.
  *   - links: An array of links associated with the content suitable for
  *     theme('links').
@@ -297,6 +306,7 @@ function ctools_content_render($type, $subtype, $conf, $keywords = array(), $arg
       $keywords['%title'] = empty($content->title) ? '' : $content->title;
       $content->original_title = $keywords['%title'];
       $content->title = $conf['override_title_text'];
+      $content->title_heading = isset($conf['override_title_heading']) ? $conf['override_title_heading'] : 'h2';
     }
 
     if (!empty($content->title)) {
@@ -337,7 +347,16 @@ function ctools_content_editable($type, $subtype, $conf) {
     return FALSE;
   }
 
-  if ($function = ctools_plugin_get_function($subtype, 'check editable')) {
+  $function = FALSE;
+  
+  if (!empty($subtype['check editable'])) {
+    $function = ctools_plugin_get_function($subtype, 'check editable');
+  }
+  elseif (!empty($type['check editable'])) {
+    $function = ctools_plugin_get_function($type, 'check editable');
+  }
+
+  if ($function) {
     return $function($type, $subtype, $conf);
   }
 
@@ -456,9 +475,12 @@ function ctools_content_admin_info($type, $subtype, $conf, $context = NULL) {
   if ($function = ctools_plugin_get_function($plugin, 'admin info')) {
     $output = $function($subtype, $conf, $context);
   }
+
   if (empty($output) || !is_object($output)) {
     $output = new stdClass();
-    $output->title = t('No info');
+    // replace the _ with " " for a better output
+    $subtype = check_plain(str_replace("_", " ", $subtype));
+    $output->title = $subtype;
     $output->content = t('No info available.');
   }
   return $output;
@@ -499,8 +521,26 @@ function ctools_content_configure_form_defaults($form, &$form_state) {
       '#size' => 35,
       '#id' => 'override-title-textfield',
       '#dependency' => array('override-title-checkbox' => array(1)),
-      '#dependency_type' => 'disable',
+      '#dependency_type' => 'hidden',
     );
+    $form['override_title_heading'] = array(
+      '#type' => 'select',
+      '#default_value' => isset($conf['override_title_heading']) ? $conf['override_title_heading'] : 'h2',
+      '#options' => array(
+        'h1' => t('h1'),
+        'h2' => t('h2'),
+        'h3' => t('h3'),
+        'h4' => t('h4'),
+        'h5' => t('h5'),
+        'h6' => t('h6'),
+        'div' => t('div'),
+        'span' => t('span'),
+      ),
+      '#id' => 'override-title-heading',
+      '#dependency' => array('override-title-checkbox' => array(1)),
+      '#dependency_type' => 'hidden',
+    );
+
     $form['aligner_stop'] = array(
       '#markup' => '</div>',
     );
@@ -531,6 +571,7 @@ function ctools_content_configure_form_defaults_submit(&$form, &$form_state) {
   if (isset($form_state['values']['override_title'])) {
     $form_state['conf']['override_title'] = $form_state['values']['override_title'];
     $form_state['conf']['override_title_text'] = $form_state['values']['override_title_text'];
+    $form_state['conf']['override_title_heading'] = $form_state['values']['override_title_heading'];
   }
 }
 
@@ -682,6 +723,11 @@ function ctools_content_get_available_types($contexts = NULL, $has_content = FAL
         }
       }
 
+      // Check if the content type provides an access callback.
+      if (isset($subtype['create content access']) && function_exists($subtype['create content access']) && !$subtype['create content access']($plugin, $subtype)) {
+        continue;
+      }
+
       // If we made it through all the tests, then we can use this content.
       $available[$id][$subtype_id] = $subtype;
     }
@@ -781,4 +827,33 @@ function ctools_content_select_context($plugin, $subtype, $conf, $contexts) {
   $context = ctools_context_select($contexts, $subtype_info['required context'], $conf['context']);
 
   return $context;
+}
+
+/**
+ * Fetch a piece of content from the addressable content system.
+ *
+ * @param $address
+ *   A string or an array representing the address of the content.
+ * @param $type
+ *   The type of content to return. The type is dependent on what
+ *   the content actually is. The default, 'content' means a simple
+ *   string representing the content. However, richer systems may
+ *   offer more options. For example, Panels might allow the
+ *   fetching of 'display' and 'pane' objects. Page Manager
+ *   might allow for the fetching of 'task_handler' objects
+ *   (AKA variants).
+ */
+function ctools_get_addressable_content($address, $type = 'content') {
+  if (!is_array($address)) {
+    $address = explode('::', $address);
+  }
+
+  if (!$address) {
+    return;
+  }
+
+  // This removes the module from the address so the
+  // implementor is not responsible for that part.
+  $module = array_shift($address);
+  return module_invoke($module, 'addressable_content', $address, $type);
 }

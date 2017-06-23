@@ -28,7 +28,9 @@ function field_test_field_info() {
     'shape' => array(
       'label' => t('Shape'),
       'description' => t('Another dummy field type.'),
-      'settings' => array(),
+      'settings' => array(
+        'foreign_key_name' => 'shape',
+      ),
       'instance_settings' => array(),
       'default_widget' => 'test_field_widget',
       'default_formatter' => 'field_test_default',
@@ -58,6 +60,9 @@ function field_test_field_update_forbid($field, $prior_field, $has_data) {
  * Implements hook_field_load().
  */
 function field_test_field_load($entity_type, $entities, $field, $instances, $langcode, &$items, $age) {
+  $args = func_get_args();
+  field_test_memorize(__FUNCTION__, $args);
+
   foreach ($items as $id => $item) {
     // To keep the test non-intrusive, only act for instances with the
     // test_hook_field_load setting explicitly set to TRUE.
@@ -73,12 +78,39 @@ function field_test_field_load($entity_type, $entities, $field, $instances, $lan
 }
 
 /**
+ * Implements hook_field_insert().
+ */
+function field_test_field_insert($entity_type, $entity, $field, $instance, $items) {
+  $args = func_get_args();
+  field_test_memorize(__FUNCTION__, $args);
+}
+
+/**
+ * Implements hook_field_update().
+ */
+function field_test_field_update($entity_type, $entity, $field, $instance, $items) {
+  $args = func_get_args();
+  field_test_memorize(__FUNCTION__, $args);
+}
+
+/**
+ * Implements hook_field_delete().
+ */
+function field_test_field_delete($entity_type, $entity, $field, $instance, $items) {
+  $args = func_get_args();
+  field_test_memorize(__FUNCTION__, $args);
+}
+
+/**
  * Implements hook_field_validate().
  *
  * Possible error codes:
  * - 'field_test_invalid': The value is invalid.
  */
 function field_test_field_validate($entity_type, $entity, $field, $instance, $langcode, $items, &$errors) {
+  $args = func_get_args();
+  field_test_memorize(__FUNCTION__, $args);
+
   foreach ($items as $delta => $item) {
     if ($item['value'] == -1) {
       $errors[$field['field_name']][$langcode][$delta][] = array(
@@ -350,11 +382,13 @@ function field_test_field_formatter_view($entity_type, $entity, $field, $instanc
       break;
 
     case 'field_test_multiple':
-      $array = array();
-      foreach ($items as $delta => $item) {
-        $array[] = $delta . ':' . $item['value'];
+      if (!empty($items)) {
+        $array = array();
+        foreach ($items as $delta => $item) {
+          $array[] = $delta . ':' . $item['value'];
+        }
+        $element[0] = array('#markup' => $settings['test_formatter_setting_multiple'] . '|' . implode('|', $array));
       }
-      $element[0] = array('#markup' => $settings['test_formatter_setting_multiple'] . '|' . implode('|', $array));
       break;
   }
 

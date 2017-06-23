@@ -23,7 +23,7 @@ function forum_help($path, $arg) {
       $output .= '</ul>';
       $output .= '</ul>';
       $output .= '</ul>';
-      $output .= '<p>' . t('For more information, see the online handbook entry for <a href="@forum">Forum module</a>.', array('@forum' => 'http://drupal.org/handbook/modules/forum')) . '</p>';
+      $output .= '<p>' . t('For more information, see the online handbook entry for <a href="@forum">Forum module</a>.', array('@forum' => 'http://drupal.org/documentation/modules/forum')) . '</p>';
       $output .= '<h3>' . t('Uses') . '</h3>';
       $output .= '<dl>';
       $output .= '<dt>' . t('Setting up forum structure') . '</dt>';
@@ -233,7 +233,9 @@ function forum_entity_info_alter(&$info) {
 }
 
 /**
- * Entity URI callback.
+ * Implements callback_entity_info_uri().
+ *
+ * Entity URI callback used in forum_entity_info_alter().
  */
 function forum_uri($forum) {
   return array(
@@ -242,7 +244,7 @@ function forum_uri($forum) {
 }
 
 /**
- * Check whether a content type can be used in a forum.
+ * Checks whether a node can be used in a forum, based on its content type.
  *
  * @param $node
  *   A node object.
@@ -261,10 +263,10 @@ function _forum_node_check_node_type($node) {
  * Implements hook_node_view().
  */
 function forum_node_view($node, $view_mode) {
-  $vid = variable_get('forum_nav_vocabulary', 0);
-  $vocabulary = taxonomy_vocabulary_load($vid);
   if (_forum_node_check_node_type($node)) {
     if ($view_mode == 'full' && node_is_page($node)) {
+      $vid = variable_get('forum_nav_vocabulary', 0);
+      $vocabulary = taxonomy_vocabulary_load($vid);
       // Breadcrumb navigation
       $breadcrumb[] = l(t('Home'), NULL);
       $breadcrumb[] = l($vocabulary->name, 'forum');
@@ -283,7 +285,8 @@ function forum_node_view($node, $view_mode) {
 /**
  * Implements hook_node_validate().
  *
- * Check in particular that only a "leaf" term in the associated taxonomy.
+ * Checks in particular that the node is assigned only a "leaf" term in the
+ * forum taxonomy.
  */
 function forum_node_validate($node, $form) {
   if (_forum_node_check_node_type($node)) {
@@ -319,7 +322,7 @@ function forum_node_validate($node, $form) {
 /**
  * Implements hook_node_presave().
  *
- * Assign forum taxonomy when adding a topic from within a forum.
+ * Assigns the forum taxonomy when adding a topic from within a forum.
  */
 function forum_node_presave($node) {
   if (_forum_node_check_node_type($node)) {
@@ -329,10 +332,12 @@ function forum_node_presave($node) {
     $langcode = key($node->taxonomy_forums);
     if (!empty($node->taxonomy_forums[$langcode])) {
       $node->forum_tid = $node->taxonomy_forums[$langcode][0]['tid'];
-      $old_tid = db_query_range("SELECT f.tid FROM {forum} f INNER JOIN {node} n ON f.vid = n.vid WHERE n.nid = :nid ORDER BY f.vid DESC", 0, 1, array(':nid' => $node->nid))->fetchField();
-      if ($old_tid && isset($node->forum_tid) && ($node->forum_tid != $old_tid) && !empty($node->shadow)) {
-        // A shadow copy needs to be created. Retain new term and add old term.
-        $node->taxonomy_forums[$langcode][] = array('tid' => $old_tid);
+      if (isset($node->nid)) {
+        $old_tid = db_query_range("SELECT f.tid FROM {forum} f INNER JOIN {node} n ON f.vid = n.vid WHERE n.nid = :nid ORDER BY f.vid DESC", 0, 1, array(':nid' => $node->nid))->fetchField();
+        if ($old_tid && isset($node->forum_tid) && ($node->forum_tid != $old_tid) && !empty($node->shadow)) {
+          // A shadow copy needs to be created. Retain new term and add old term.
+          $node->taxonomy_forums[$langcode][] = array('tid' => $old_tid);
+        }
       }
     }
   }
@@ -468,10 +473,10 @@ function forum_permission() {
 /**
  * Implements hook_taxonomy_term_delete().
  */
-function forum_taxonomy_term_delete($tid) {
+function forum_taxonomy_term_delete($term) {
   // For containers, remove the tid from the forum_containers variable.
   $containers = variable_get('forum_containers', array());
-  $key = array_search($tid, $containers);
+  $key = array_search($term->tid, $containers);
   if ($key !== FALSE) {
     unset($containers[$key]);
   }
@@ -481,7 +486,7 @@ function forum_taxonomy_term_delete($tid) {
 /**
  * Implements hook_comment_publish().
  *
- * This actually handles the insert and update of published nodes since
+ * This actually handles the insertion and update of published nodes since
  * comment_save() calls hook_comment_publish() for all published comments.
  */
 function forum_comment_publish($comment) {
@@ -491,12 +496,12 @@ function forum_comment_publish($comment) {
 /**
  * Implements hook_comment_update().
  *
- * Comment module doesn't call hook_comment_unpublish() when saving individual
- * comments so we need to check for those here.
+ * The Comment module doesn't call hook_comment_unpublish() when saving
+ * individual comments, so we need to check for those here.
  */
 function forum_comment_update($comment) {
-  // comment_save() calls hook_comment_publish() for all published comments
-  // so we to handle all other values here.
+  // comment_save() calls hook_comment_publish() for all published comments,
+  // so we need to handle all other values here.
   if (!$comment->status) {
     _forum_update_forum_index($comment->nid);
   }
@@ -545,56 +550,81 @@ function forum_field_storage_pre_insert($entity_type, $entity, &$skip_fields) {
 function forum_field_storage_pre_update($entity_type, $entity, &$skip_fields) {
   $first_call = &drupal_static(__FUNCTION__, array());
 
-  if ($entity_type == 'node' && $entity->status && _forum_node_check_node_type($entity)) {
-    // We don't maintain data for old revisions, so clear all previous values
-    // from the table. Since this hook runs once per field, per object, make
-    // sure we only wipe values once.
-    if (!isset($first_call[$entity->nid])) {
-      $first_call[$entity->nid] = FALSE;
+  if ($entity_type == 'node' && _forum_node_check_node_type($entity)) {
+
+    // If the node is published, update the forum index.
+    if ($entity->status) {
+
+      // We don't maintain data for old revisions, so clear all previous values
+      // from the table. Since this hook runs once per field, per object, make
+      // sure we only wipe values once.
+      if (!isset($first_call[$entity->nid])) {
+        $first_call[$entity->nid] = FALSE;
+        db_delete('forum_index')->condition('nid', $entity->nid)->execute();
+      }
+      $query = db_insert('forum_index')->fields(array('nid', 'title', 'tid', 'sticky', 'created', 'comment_count', 'last_comment_timestamp'));
+      foreach ($entity->taxonomy_forums as $language) {
+        foreach ($language as $item) {
+          $query->values(array(
+            'nid' => $entity->nid,
+            'title' => $entity->title,
+            'tid' => $item['tid'],
+            'sticky' => $entity->sticky,
+            'created' => $entity->created,
+            'comment_count' => 0,
+            'last_comment_timestamp' => $entity->created,
+          ));
+        }
+      }
+      $query->execute();
+      // The logic for determining last_comment_count is fairly complex, so
+      // call _forum_update_forum_index() too.
+      _forum_update_forum_index($entity->nid);
+    }
+
+    // When a forum node is unpublished, remove it from the forum_index table.
+    else {
       db_delete('forum_index')->condition('nid', $entity->nid)->execute();
     }
-    $query = db_insert('forum_index')->fields(array('nid', 'title', 'tid', 'sticky', 'created', 'comment_count', 'last_comment_timestamp'));
-    foreach ($entity->taxonomy_forums as $language) {
-      foreach ($language as $item) {
-        $query->values(array(
-          'nid' => $entity->nid,
-          'title' => $entity->title,
-          'tid' => $item['tid'],
-          'sticky' => $entity->sticky,
-          'created' => $entity->created,
-          'comment_count' => 0,
-          'last_comment_timestamp' => $entity->created,
-        ));
-      }
-    }
-    $query->execute();
-    // The logic for determining last_comment_count is fairly complex, so
-    // call _forum_update_forum_index() too.
-    _forum_update_forum_index($entity->nid);
+
   }
 }
 
 /**
- * Implements hook_form_alter().
+ * Implements hook_form_FORM_ID_alter() for taxonomy_form_vocabulary().
  */
-function forum_form_alter(&$form, $form_state, $form_id) {
+function forum_form_taxonomy_form_vocabulary_alter(&$form, &$form_state, $form_id) {
   $vid = variable_get('forum_nav_vocabulary', 0);
   if (isset($form['vid']['#value']) && $form['vid']['#value'] == $vid) {
-    // Hide critical options from forum vocabulary.
-    if ($form_id == 'taxonomy_form_vocabulary') {
-      $form['help_forum_vocab'] = array(
-        '#markup' => t('This is the designated forum vocabulary. Some of the normal vocabulary options have been removed.'),
-        '#weight' => -1,
-      );
-      $form['hierarchy'] = array('#type' => 'value', '#value' => 1);
-      $form['delete']['#access'] = FALSE;
-    }
-    // Hide multiple parents select from forum terms.
-    elseif ($form_id == 'taxonomy_form_term') {
-      $form['advanced']['parent']['#access'] = FALSE;
-    }
+    $form['help_forum_vocab'] = array(
+      '#markup' => t('This is the designated forum vocabulary. Some of the normal vocabulary options have been removed.'),
+      '#weight' => -1,
+    );
+    // Forum's vocabulary always has single hierarchy. Forums and containers
+    // have only one parent or no parent for root items. By default this value
+    // is 0.
+    $form['hierarchy']['#value'] = 1;
+    // Do not allow to delete forum's vocabulary.
+    $form['actions']['delete']['#access'] = FALSE;
   }
-  if (!empty($form['#node_edit_form']) && isset($form['taxonomy_forums'])) {
+}
+
+/**
+ * Implements hook_form_FORM_ID_alter() for taxonomy_form_term().
+ */
+function forum_form_taxonomy_form_term_alter(&$form, &$form_state, $form_id) {
+   $vid = variable_get('forum_nav_vocabulary', 0);
+   if (isset($form['vid']['#value']) && $form['vid']['#value'] == $vid) {
+    // Hide multiple parents select from forum terms.
+    $form['relations']['parent']['#access'] = FALSE;
+  }
+}
+
+/**
+ * Implements hook_form_BASE_FORM_ID_alter() for node_form().
+ */
+function forum_form_node_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['taxonomy_forums'])) {
     $langcode = $form['taxonomy_forums']['#language'];
     // Make the vocabulary required for 'real' forum-nodes.
     $form['taxonomy_forums'][$langcode]['#required'] = TRUE;
@@ -630,7 +660,12 @@ function forum_block_info() {
  * Implements hook_block_configure().
  */
 function forum_block_configure($delta = '') {
-  $form['forum_block_num_' . $delta] = array('#type' => 'select', '#title' => t('Number of topics'), '#default_value' => variable_get('forum_block_num_' . $delta, '5'), '#options' => drupal_map_assoc(array(2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20)));
+  $form['forum_block_num_' . $delta] = array(
+    '#type' => 'select',
+    '#title' => t('Number of topics'),
+    '#default_value' => variable_get('forum_block_num_' . $delta, '5'),
+    '#options' => drupal_map_assoc(range(2, 20))
+  );
   return $form;
 }
 
@@ -644,8 +679,8 @@ function forum_block_save($delta = '', $edit = array()) {
 /**
  * Implements hook_block_view().
  *
- * Generates a block containing the currently active forum topics and the
- * most recently added forum topics.
+ * Generates a block containing the currently active forum topics and the most
+ * recently added forum topics.
  */
 function forum_block_view($delta = '') {
   $query = db_select('forum_index', 'f')
@@ -675,13 +710,12 @@ function forum_block_view($delta = '') {
 }
 
 /**
-* A #pre_render callback. Lists nodes based on the element's #query property.
-*
-* @see forum_block_view()
-*
-* @return
-*   A renderable array.
-*/
+ * Render API callback: Lists nodes based on the element's #query property.
+ *
+ * This function can be used as a #pre_render callback.
+ *
+ * @see forum_block_view()
+ */
 function forum_block_view_pre_render($elements) {
   $result = $elements['#query']->execute();
   if ($node_title_list = node_title_list($result)) {
@@ -705,7 +739,7 @@ function forum_form($node, $form_state) {
 
   if (!empty($node->nid)) {
     $forum_terms = $node->taxonomy_forums;
-    // If editing, give option to leave shadows
+    // If editing, give option to leave shadows.
     $shadow = (count($forum_terms) > 1);
     $form['shadow'] = array('#type' => 'checkbox', '#title' => t('Leave shadow copy'), '#default_value' => $shadow, '#description' => t('If you move this topic, you can leave a link in the old forum to the new forum.'));
     $form['forum_tid'] = array('#type' => 'value', '#value' => $node->forum_tid);
@@ -718,13 +752,15 @@ function forum_form($node, $form_state) {
  * Returns a tree of all forums for a given taxonomy term ID.
  *
  * @param $tid
- *    (optional) Taxonomy ID of the forum, if not givin all forums will be returned.
+ *   (optional) Taxonomy term ID of the forum. If not given all forums will be
+ *   returned.
+ *
  * @return
  *   A tree of taxonomy objects, with the following additional properties:
- *    - 'num_topics': Number of topics in the forum
- *    - 'num_posts': Total number of posts in all topics
- *    - 'last_post': Most recent post for the forum
- *    - 'forums': An array of child forums
+ *   - num_topics: Number of topics in the forum.
+ *   - num_posts: Total number of posts in all topics.
+ *   - last_post: Most recent post for the forum.
+ *   - forums: An array of child forums.
  */
 function forum_forum_load($tid = NULL) {
   $cache = &drupal_static(__FUNCTION__, array());
@@ -773,7 +809,7 @@ function forum_forum_load($tid = NULL) {
     $query->addExpression('SUM(ncs.comment_count)', 'comment_count');
     $counts = $query
       ->fields('f', array('tid'))
-      ->condition('status', 1)
+      ->condition('n.status', 1)
       ->groupBy('tid')
       ->addTag('node_access')
       ->execute()
@@ -832,8 +868,17 @@ function forum_forum_load($tid = NULL) {
 }
 
 /**
- * Calculate the number of nodes the user has not yet read and are newer
- * than NODE_NEW_LIMIT.
+ * Calculates the number of new posts in a forum that the user has not yet read.
+ *
+ * Nodes are new if they are newer than NODE_NEW_LIMIT.
+ *
+ * @param $term
+ *   The term ID of the forum.
+ * @param $uid
+ *   The user ID.
+ *
+ * @return
+ *   The number of new posts in the forum that have not been read by the user.
  */
 function _forum_topics_unread($term, $uid) {
   $query = db_select('node', 'n');
@@ -849,6 +894,23 @@ function _forum_topics_unread($term, $uid) {
     ->fetchField();
 }
 
+/**
+ * Gets all the topics in a forum.
+ *
+ * @param $tid
+ *   The term ID of the forum.
+ * @param $sortby
+ *   One of the following integers indicating the sort criteria:
+ *   - 1: Date - newest first.
+ *   - 2: Date - oldest first.
+ *   - 3: Posts with the most comments first.
+ *   - 4: Posts with the least comments first.
+ * @param $forum_per_page
+ *   The maximum number of topics to display per page.
+ *
+ * @return
+ *   A list of all the topics in a forum.
+ */
 function forum_get_topics($tid, $sortby, $forum_per_page) {
   global $user, $forum_topic_list_header;
 
@@ -919,7 +981,8 @@ function forum_get_topics($tid, $sortby, $forum_per_page) {
   $first_new_found = FALSE;
   foreach ($result as $topic) {
     if ($user->uid) {
-      // folder is new if topic is new or there are new comments since last visit
+      // A forum is new if the topic is new, or if there are new comments since
+      // the user's last visit.
       if ($topic->forum_tid != $tid) {
         $topic->new = 0;
       }
@@ -956,15 +1019,22 @@ function forum_get_topics($tid, $sortby, $forum_per_page) {
 }
 
 /**
- * Process variables for forums.tpl.php
+ * Preprocesses variables for forums.tpl.php.
  *
- * The $variables array contains the following arguments:
- * - $forums
- * - $topics
- * - $parents
- * - $tid
- * - $sortby
- * - $forum_per_page
+ * @param $variables
+ *   An array containing the following elements:
+ *   - forums: An array of all forum objects to display for the given taxonomy
+ *     term ID. If tid = 0 then all the top-level forums are displayed.
+ *   - topics: An array of all the topics in the current forum.
+ *   - parents: An array of taxonomy term objects that are ancestors of the
+ *     current term ID.
+ *   - tid: Taxonomy term ID of the current forum.
+ *   - sortby: One of the following integers indicating the sort criteria:
+ *     - 1: Date - newest first.
+ *     - 2: Date - oldest first.
+ *     - 3: Posts with the most comments first.
+ *     - 4: Posts with the least comments first.
+ *   - forum_per_page: The maximum number of topics to display per page.
  *
  * @see forums.tpl.php
  */
@@ -1035,12 +1105,15 @@ function template_preprocess_forums(&$variables) {
 }
 
 /**
- * Process variables to format a forum listing.
+ * Preprocesses variables for forum-list.tpl.php.
  *
- * $variables contains the following information:
- * - $forums
- * - $parents
- * - $tid
+ * @param $variables
+ *   An array containing the following elements:
+ *   - forums: An array of all forum objects to display for the given taxonomy
+ *     term ID. If tid = 0 then all the top-level forums are displayed.
+ *   - parents: An array of taxonomy term objects that are ancestors of the
+ *     current term ID.
+ *   - tid: Taxonomy term ID of the current forum.
  *
  * @see forum-list.tpl.php
  * @see theme_forum_list()
@@ -1081,13 +1154,13 @@ function template_preprocess_forum_list(&$variables) {
 }
 
 /**
- * Preprocess variables to format the topic listing.
+ * Preprocesses variables for forum-topic-list.tpl.php.
  *
- * $variables contains the following data:
- * - $tid
- * - $topics
- * - $sortby
- * - $forum_per_page
+ * @param $variables
+ *   An array containing the following elements:
+ *   - tid: Taxonomy term ID of the current forum.
+ *   - topics: An array of all the topics in the current forum.
+ *   - forum_per_page: The maximum number of topics to display per page.
  *
  * @see forum-topic-list.tpl.php
  * @see theme_forum_topic_list()
@@ -1137,7 +1210,7 @@ function template_preprocess_forum_topic_list(&$variables) {
     }
   }
   else {
-    // Make this safe for the template
+    // Make this safe for the template.
     $variables['topics'] = array();
   }
   // Give meaning to $tid for themers. $tid actually stands for term id.
@@ -1148,14 +1221,16 @@ function template_preprocess_forum_topic_list(&$variables) {
 }
 
 /**
- * Process variables to format the icon for each individual topic.
+ * Preprocesses variables for forum-icon.tpl.php.
  *
- * $variables contains the following data:
- * - $new_posts
- * - $num_posts = 0
- * - $comment_mode = 0
- * - $sticky = 0
- * - $first_new
+ * @param $variables
+ *   An array containing the following elements:
+ *   - new_posts: Indicates whether or not the topic contains new posts.
+ *   - num_posts: The total number of posts in all topics.
+ *   - comment_mode: An integer indicating whether comments are open, closed,
+ *     or hidden.
+ *   - sticky: Indicates whether the topic is sticky.
+ *   - first_new: Indicates whether this is the first topic with new posts.
  *
  * @see forum-icon.tpl.php
  * @see theme_forum_icon()
@@ -1183,9 +1258,14 @@ function template_preprocess_forum_icon(&$variables) {
 }
 
 /**
- * Process variables to format submission info for display in the forum list and topic list.
+ * Preprocesses variables for forum-submitted.tpl.php.
  *
- * $variables will contain: $topic
+ * The submission information will be displayed in the forum list and topic
+ * list.
+ *
+ * @param $variables
+ *   An array containing the following elements:
+ *   - topic: The topic object.
  *
  * @see forum-submitted.tpl.php
  * @see theme_forum_submitted()
@@ -1195,6 +1275,16 @@ function template_preprocess_forum_submitted(&$variables) {
   $variables['time'] = isset($variables['topic']->created) ? format_interval(REQUEST_TIME - $variables['topic']->created) : '';
 }
 
+/**
+ * Gets the last time the user viewed a node.
+ *
+ * @param $nid
+ *   The node ID.
+ *
+ * @return
+ *   The timestamp when the user last viewed this node, if the user has
+ *   previously viewed the node; otherwise NODE_NEW_LIMIT.
+ */
 function _forum_user_last_visit($nid) {
   global $user;
   $history = &drupal_static(__FUNCTION__, array());
@@ -1208,6 +1298,21 @@ function _forum_user_last_visit($nid) {
   return isset($history[$nid]) ? $history[$nid] : NODE_NEW_LIMIT;
 }
 
+/**
+ * Gets topic sorting information based on an integer code.
+ *
+ * @param $sortby
+ *   One of the following integers indicating the sort criteria:
+ *   - 1: Date - newest first.
+ *   - 2: Date - oldest first.
+ *   - 3: Posts with the most comments first.
+ *   - 4: Posts with the least comments first.
+ *
+ * @return
+ *   An array with the following values:
+ *   - field: A field for an SQL query.
+ *   - sort: 'asc' or 'desc'.
+ */
 function _forum_get_topic_order($sortby) {
   switch ($sortby) {
     case 1:
@@ -1232,7 +1337,7 @@ function _forum_get_topic_order($sortby) {
  *   The ID of the node to update.
  */
 function _forum_update_forum_index($nid) {
-  $count = db_query('SELECT COUNT(cid) FROM {comment} WHERE nid = :nid AND status = :status', array(
+  $count = db_query('SELECT COUNT(cid) FROM {comment} c INNER JOIN {forum_index} i ON c.nid = i.nid WHERE c.nid = :nid AND c.status = :status', array(
     ':nid' => $nid,
     ':status' => COMMENT_PUBLISHED,
   ))->fetchField();

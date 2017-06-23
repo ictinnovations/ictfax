@@ -7,7 +7,7 @@
 
 
 /**
- * @ingroup schemaapi
+ * @addtogroup schemaapi
  * @{
  */
 
@@ -39,8 +39,8 @@ class DatabaseSchema_mysql extends DatabaseSchema {
       $info['table'] = substr($table, ++$pos);
     }
     else {
-      $db_info = Database::getConnectionInfo();
-      $info['database'] = $db_info['default']['database'];
+      $db_info = $this->connection->getConnectionOptions();
+      $info['database'] = $db_info['database'];
       $info['table'] = $table;
     }
     return $info;
@@ -81,7 +81,8 @@ class DatabaseSchema_mysql extends DatabaseSchema {
     // Provide defaults if needed.
     $table += array(
       'mysql_engine' => 'InnoDB',
-      'mysql_character_set' => 'utf8',
+      // Allow the default charset to be overridden in settings.php.
+      'mysql_character_set' => $this->connection->utf8mb4IsActive() ? 'utf8mb4' : 'utf8',
     );
 
     $sql = "CREATE TABLE {" . $name . "} (\n";
@@ -109,6 +110,13 @@ class DatabaseSchema_mysql extends DatabaseSchema {
       $sql .= ' COLLATE ' . $info['collation'];
     }
 
+    // The row format needs to be either DYNAMIC or COMPRESSED in order to allow
+    // for the innodb_large_prefix setting to take effect, see
+    // https://dev.mysql.com/doc/refman/5.6/en/create-table.html
+    if ($this->connection->utf8mb4IsActive()) {
+      $sql .= ' ROW_FORMAT=DYNAMIC';
+    }
+
     // Add table comment.
     if (!empty($table['description'])) {
       $sql .= ' COMMENT ' . $this->prepareComment($table['description'], self::COMMENT_MAX_TABLE);
@@ -131,8 +139,13 @@ class DatabaseSchema_mysql extends DatabaseSchema {
   protected function createFieldSql($name, $spec) {
     $sql = "`" . $name . "` " . $spec['mysql_type'];
 
-    if (in_array($spec['mysql_type'], array('VARCHAR', 'CHAR', 'TINYTEXT', 'MEDIUMTEXT', 'LONGTEXT', 'TEXT')) && isset($spec['length'])) {
-      $sql .= '(' . $spec['length'] . ')';
+    if (in_array($spec['mysql_type'], array('VARCHAR', 'CHAR', 'TINYTEXT', 'MEDIUMTEXT', 'LONGTEXT', 'TEXT'))) {
+      if (isset($spec['length'])) {
+        $sql .= '(' . $spec['length'] . ')';
+      }
+      if (!empty($spec['binary'])) {
+        $sql .= ' BINARY';
+      }
     }
     elseif (isset($spec['precision']) && isset($spec['scale'])) {
       $sql .= '(' . $spec['precision'] . ', ' . $spec['scale'] . ')';
@@ -296,10 +309,10 @@ class DatabaseSchema_mysql extends DatabaseSchema {
 
   public function renameTable($table, $new_name) {
     if (!$this->tableExists($table)) {
-      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot rename %table to %table_new: table %table doesn't exist.", array('%table' => $table, '%table_new' => $new_name)));
+      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot rename @table to @table_new: table @table doesn't exist.", array('@table' => $table, '@table_new' => $new_name)));
     }
     if ($this->tableExists($new_name)) {
-      throw new DatabaseSchemaObjectExistsException(t("Cannot rename %table to %table_new: table %table_new already exists.", array('%table' => $table, '%table_new' => $new_name)));
+      throw new DatabaseSchemaObjectExistsException(t("Cannot rename @table to @table_new: table @table_new already exists.", array('@table' => $table, '@table_new' => $new_name)));
     }
 
     $info = $this->getPrefixInfo($new_name);
@@ -317,10 +330,10 @@ class DatabaseSchema_mysql extends DatabaseSchema {
 
   public function addField($table, $field, $spec, $keys_new = array()) {
     if (!$this->tableExists($table)) {
-      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot add field %table.%field: table doesn't exist.", array('%field' => $field, '%table' => $table)));
+      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot add field @table.@field: table doesn't exist.", array('@field' => $field, '@table' => $table)));
     }
     if ($this->fieldExists($table, $field)) {
-      throw new DatabaseSchemaObjectExistsException(t("Cannot add field %table.%field: field already exists.", array('%field' => $field, '%table' => $table)));
+      throw new DatabaseSchemaObjectExistsException(t("Cannot add field @table.@field: field already exists.", array('@field' => $field, '@table' => $table)));
     }
 
     $fixnull = FALSE;
@@ -356,7 +369,7 @@ class DatabaseSchema_mysql extends DatabaseSchema {
 
   public function fieldSetDefault($table, $field, $default) {
     if (!$this->fieldExists($table, $field)) {
-      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot set default value of field %table.%field: field doesn't exist.", array('%table' => $table, '%field' => $field)));
+      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot set default value of field @table.@field: field doesn't exist.", array('@table' => $table, '@field' => $field)));
     }
 
     if (!isset($default)) {
@@ -371,7 +384,7 @@ class DatabaseSchema_mysql extends DatabaseSchema {
 
   public function fieldSetNoDefault($table, $field) {
     if (!$this->fieldExists($table, $field)) {
-      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot remove default value of field %table.%field: field doesn't exist.", array('%table' => $table, '%field' => $field)));
+      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot remove default value of field @table.@field: field doesn't exist.", array('@table' => $table, '@field' => $field)));
     }
 
     $this->connection->query('ALTER TABLE {' . $table . '} ALTER COLUMN `' . $field . '` DROP DEFAULT');
@@ -381,15 +394,15 @@ class DatabaseSchema_mysql extends DatabaseSchema {
     // Returns one row for each column in the index. Result is string or FALSE.
     // Details at http://dev.mysql.com/doc/refman/5.0/en/show-index.html
     $row = $this->connection->query('SHOW INDEX FROM {' . $table . "} WHERE key_name = '$name'")->fetchAssoc();
-    return isset($row['key_name']);
+    return isset($row['Key_name']);
   }
 
   public function addPrimaryKey($table, $fields) {
     if (!$this->tableExists($table)) {
-      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot add primary key to table %table: table doesn't exist.", array('%table' => $table)));
+      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot add primary key to table @table: table doesn't exist.", array('@table' => $table)));
     }
     if ($this->indexExists($table, 'PRIMARY')) {
-      throw new DatabaseSchemaObjectExistsException(t("Cannot add primary key to table %table: primary key already exists.", array('%table' => $table)));
+      throw new DatabaseSchemaObjectExistsException(t("Cannot add primary key to table @table: primary key already exists.", array('@table' => $table)));
     }
 
     $this->connection->query('ALTER TABLE {' . $table . '} ADD PRIMARY KEY (' . $this->createKeySql($fields) . ')');
@@ -406,10 +419,10 @@ class DatabaseSchema_mysql extends DatabaseSchema {
 
   public function addUniqueKey($table, $name, $fields) {
     if (!$this->tableExists($table)) {
-      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot add unique key %name to table %table: table doesn't exist.", array('%table' => $table, '%name' => $name)));
+      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot add unique key @name to table @table: table doesn't exist.", array('@table' => $table, '@name' => $name)));
     }
     if ($this->indexExists($table, $name)) {
-      throw new DatabaseSchemaObjectExistsException(t("Cannot add unique key %name to table %table: unique key already exists.", array('%table' => $table, '%name' => $name)));
+      throw new DatabaseSchemaObjectExistsException(t("Cannot add unique key @name to table @table: unique key already exists.", array('@table' => $table, '@name' => $name)));
     }
 
     $this->connection->query('ALTER TABLE {' . $table . '} ADD UNIQUE KEY `' . $name . '` (' . $this->createKeySql($fields) . ')');
@@ -426,10 +439,10 @@ class DatabaseSchema_mysql extends DatabaseSchema {
 
   public function addIndex($table, $name, $fields) {
     if (!$this->tableExists($table)) {
-      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot add index %name to table %table: table doesn't exist.", array('%table' => $table, '%name' => $name)));
+      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot add index @name to table @table: table doesn't exist.", array('@table' => $table, '@name' => $name)));
     }
     if ($this->indexExists($table, $name)) {
-      throw new DatabaseSchemaObjectExistsException(t("Cannot add index %name to table %table: index already exists.", array('%table' => $table, '%name' => $name)));
+      throw new DatabaseSchemaObjectExistsException(t("Cannot add index @name to table @table: index already exists.", array('@table' => $table, '@name' => $name)));
     }
 
     $this->connection->query('ALTER TABLE {' . $table . '} ADD INDEX `' . $name . '` (' . $this->createKeySql($fields) . ')');
@@ -446,10 +459,10 @@ class DatabaseSchema_mysql extends DatabaseSchema {
 
   public function changeField($table, $field, $field_new, $spec, $keys_new = array()) {
     if (!$this->fieldExists($table, $field)) {
-      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot change the definition of field %table.%name: field doesn't exist.", array('%table' => $table, '%name' => $field)));
+      throw new DatabaseSchemaObjectDoesNotExistException(t("Cannot change the definition of field @table.@name: field doesn't exist.", array('@table' => $table, '@name' => $field)));
     }
     if (($field != $field_new) && $this->fieldExists($table, $field_new)) {
-      throw new DatabaseSchemaObjectExistsException(t("Cannot rename field %table.%name to %name_new: target field already exists.", array('%table' => $table, '%name' => $field, '%name_new' => $field_new)));
+      throw new DatabaseSchemaObjectExistsException(t("Cannot rename field @table.@name to @name_new: target field already exists.", array('@table' => $table, '@name' => $field, '@name_new' => $field_new)));
     }
 
     $sql = 'ALTER TABLE {' . $table . '} CHANGE `' . $field . '` ' . $this->createFieldSql($field_new, $this->processField($spec));
@@ -527,5 +540,5 @@ class DatabaseSchema_mysql extends DatabaseSchema {
 }
 
 /**
- * @} End of "ingroup schemaapi".
+ * @} End of "addtogroup schemaapi".
  */

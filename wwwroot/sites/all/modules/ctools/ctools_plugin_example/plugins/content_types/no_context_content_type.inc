@@ -53,8 +53,8 @@ $plugin = array(
 function no_context_content_type_render($subtype, $conf, $args, $context) {
   $block = new stdClass();
 
-  $ctools_help = theme('advanced_help_topic', 'ctools', 'plugins', 'title');
-  $ctools_plugin_example_help = theme('advanced_help_topic', 'ctools_plugin_example', 'Chaos-Tools--CTools--Plugin-Examples', 'title');
+  $ctools_help = theme('advanced_help_topic', array('module' => 'ctools', 'topic' => 'plugins', 'type' => 'title'));
+  $ctools_plugin_example_help = theme('advanced_help_topic', array('module' => 'ctools_plugin_example', 'topic' => 'Chaos-Tools--CTools--Plugin-Examples', 'type' => 'title'));
 
   // The title actually used in rendering
   $block->title = check_plain("No-context content type");
@@ -109,7 +109,7 @@ function no_context_content_type_edit_form($form, &$form_state) {
   return $form;
 }
 
-function no_context_content_type_edit_form_submit(&$form, &$form_state) {
+function no_context_content_type_edit_form_submit($form, &$form_state) {
   foreach (array('item1', 'item2') as $key) {
     $form_state['conf'][$key] = $form_state['values'][$key];
   }

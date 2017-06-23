@@ -70,8 +70,19 @@ class MenuTestCase extends DrupalWebTestCase {
     $item['options']['attributes']['title']  = $description;
     menu_link_save($item);
     $saved_item = menu_link_load($item['mlid']);
-    $this->assertEqual($description, $saved_item['options']['attributes']['title'], t('Saving an existing link updates the description (title attribute)'));
+    $this->assertEqual($description, $saved_item['options']['attributes']['title'], 'Saving an existing link updates the description (title attribute)');
     $this->resetMenuLink($item, $old_title);
+
+    // Test that the page title is correct when a local task appears in a
+    // top-level menu item. See https://www.drupal.org/node/1973262.
+    $item = $this->addMenuLink(0, 'user/register', 'user-menu');
+    $this->drupalGet('user/password');
+    $this->assertNoTitle('Home | Drupal');
+    $this->drupalLogout();
+    $this->drupalGet('user/register');
+    $this->assertTitle($item['link_title'] . ' | Drupal');
+    $this->drupalGet('user');
+    $this->assertNoTitle('Home | Drupal');
   }
 
   /**
@@ -111,14 +122,14 @@ class MenuTestCase extends DrupalWebTestCase {
 
     // Assert the new menu.
     $this->drupalGet('admin/structure/menu/manage/' . $menu_name . '/edit');
-    $this->assertRaw($title, t('Custom menu was added.'));
+    $this->assertRaw($title, 'Custom menu was added.');
 
     // Edit the menu.
     $new_title = $this->randomName(16);
     $menu['title'] = $new_title;
     menu_save($menu);
     $this->drupalGet('admin/structure/menu/manage/' . $menu_name . '/edit');
-    $this->assertRaw($new_title, t('Custom menu was edited.'));
+    $this->assertRaw($new_title, 'Custom menu was edited.');
   }
 
   /**
@@ -167,7 +178,7 @@ class MenuTestCase extends DrupalWebTestCase {
     $edit['blocks[menu_' . $menu_name . '][region]'] = 'sidebar_first';
     $this->drupalPost('admin/structure/block', $edit, t('Save blocks'));
     $this->assertResponse(200);
-    $this->assertText(t('The block settings have been updated.'), t('Custom menu block was enabled'));
+    $this->assertText(t('The block settings have been updated.'), 'Custom menu block was enabled');
 
     return menu_load($menu_name);
   }
@@ -184,11 +195,11 @@ class MenuTestCase extends DrupalWebTestCase {
     // Delete custom menu.
     $this->drupalPost("admin/structure/menu/manage/$menu_name/delete", array(), t('Delete'));
     $this->assertResponse(200);
-    $this->assertRaw(t('The custom menu %title has been deleted.', array('%title' => $title)), t('Custom menu was deleted'));
+    $this->assertRaw(t('The custom menu %title has been deleted.', array('%title' => $title)), 'Custom menu was deleted');
     $this->assertFalse(menu_load($menu_name), 'Custom menu was deleted');
     // Test if all menu links associated to the menu were removed from database.
     $result = db_query("SELECT menu_name FROM {menu_links} WHERE menu_name = :menu_name", array(':menu_name' => $menu_name))->fetchField();
-    $this->assertFalse($result, t('All menu links associated to the custom menu were deleted.'));
+    $this->assertFalse($result, 'All menu links associated to the custom menu were deleted.');
   }
 
   /**
@@ -205,7 +216,7 @@ class MenuTestCase extends DrupalWebTestCase {
 
     // Add menu links.
     $item1 = $this->addMenuLink(0, 'node/' . $node1->nid, $menu_name);
-    $item2 = $this->addMenuLink($item1['mlid'], 'node/' . $node2->nid, $menu_name);
+    $item2 = $this->addMenuLink($item1['mlid'], 'node/' . $node2->nid, $menu_name, FALSE);
     $item3 = $this->addMenuLink($item2['mlid'], 'node/' . $node3->nid, $menu_name);
     $this->assertMenuLink($item1['mlid'], array('depth' => 1, 'has_children' => 1, 'p1' => $item1['mlid'], 'p2' => 0));
     $this->assertMenuLink($item2['mlid'], array('depth' => 2, 'has_children' => 1, 'p1' => $item1['mlid'], 'p2' => $item2['mlid'], 'p3' => 0));
@@ -266,13 +277,13 @@ class MenuTestCase extends DrupalWebTestCase {
     $item = $this->addMenuLink(0, $path);
 
     $this->drupalGet('admin/structure/menu/item/' . $item['mlid'] . '/edit');
-    $this->assertFieldByName('link_path', $path, t('Path is found with both query and fragment.'));
+    $this->assertFieldByName('link_path', $path, 'Path is found with both query and fragment.');
 
     // Now change the path to something without query and fragment.
     $path = 'node';
     $this->drupalPost('admin/structure/menu/item/' . $item['mlid'] . '/edit', array('link_path' => $path), t('Save'));
     $this->drupalGet('admin/structure/menu/item/' . $item['mlid'] . '/edit');
-    $this->assertFieldByName('link_path', $path, t('Path no longer has query or fragment.'));
+    $this->assertFieldByName('link_path', $path, 'Path no longer has query or fragment.');
   }
 
   /**
@@ -283,7 +294,7 @@ class MenuTestCase extends DrupalWebTestCase {
    * @param string $menu_name Menu name.
    * @return array Menu link created.
    */
-  function addMenuLink($plid = 0, $link = '<front>', $menu_name = 'navigation') {
+  function addMenuLink($plid = 0, $link = '<front>', $menu_name = 'navigation', $expanded = TRUE) {
     // View add menu link page.
     $this->drupalGet("admin/structure/menu/manage/$menu_name/add");
     $this->assertResponse(200);
@@ -294,7 +305,7 @@ class MenuTestCase extends DrupalWebTestCase {
       'link_title' => $title,
       'description' => '',
       'enabled' => TRUE, // Use this to disable the menu and test.
-      'expanded' => TRUE, // Setting this to true should test whether it works when we do the std_user tests.
+      'expanded' => $expanded, // Setting this to true should test whether it works when we do the std_user tests.
       'parent' =>  $menu_name . ':' . $plid,
       'weight' => '0',
     );
@@ -318,7 +329,7 @@ class MenuTestCase extends DrupalWebTestCase {
    * @param string $menu_name Menu name.
    */
   function addInvalidMenuLink($menu_name = 'navigation') {
-    foreach (array('-&-', 'admin/people/permissions') as $link_path) {
+    foreach (array('-&-', 'admin/people/permissions', '#') as $link_path) {
       $edit = array(
         'link_path' => $link_path,
         'link_title' => 'title',
@@ -345,22 +356,22 @@ class MenuTestCase extends DrupalWebTestCase {
     if (isset($parent)) {
       // Verify menu link.
       $title = $parent['link_title'];
-      $this->assertText($title, 'Parent menu link was displayed');
+      $this->assertLink($title, 0, 'Parent menu link was displayed');
 
       // Verify menu link link.
       $this->clickLink($title);
       $title = $parent_node->title;
-      $this->assertTitle(t("@title | Drupal", array('@title' => $title)), t('Parent menu link link target was correct'));
+      $this->assertTitle(t("@title | Drupal", array('@title' => $title)), 'Parent menu link link target was correct');
     }
 
     // Verify menu link.
     $title = $item['link_title'];
-    $this->assertText($title, 'Menu link was displayed');
+    $this->assertLink($title, 0, 'Menu link was displayed');
 
     // Verify menu link link.
     $this->clickLink($title);
     $title = $item_node->title;
-    $this->assertTitle(t("@title | Drupal", array('@title' => $title)), t('Menu link link target was correct'));
+    $this->assertTitle(t("@title | Drupal", array('@title' => $title)), 'Menu link link target was correct');
   }
 
   /**
@@ -412,7 +423,7 @@ class MenuTestCase extends DrupalWebTestCase {
     // Reset menu link.
     $this->drupalPost("admin/structure/menu/item/$mlid/reset", array(), t('Reset'));
     $this->assertResponse(200);
-    $this->assertRaw(t('The menu link was reset to its default settings.'), t('Menu link was reset'));
+    $this->assertRaw(t('The menu link was reset to its default settings.'), 'Menu link was reset');
 
     // Verify menu link.
     $this->drupalGet('');
@@ -432,7 +443,7 @@ class MenuTestCase extends DrupalWebTestCase {
     // Delete menu link.
     $this->drupalPost("admin/structure/menu/item/$mlid/delete", array(), t('Confirm'));
     $this->assertResponse(200);
-    $this->assertRaw(t('The menu link %title has been deleted.', array('%title' => $title)), t('Menu link was deleted'));
+    $this->assertRaw(t('The menu link %title has been deleted.', array('%title' => $title)), 'Menu link was deleted');
 
     // Verify deletion.
     $this->drupalGet('');
@@ -509,8 +520,25 @@ class MenuTestCase extends DrupalWebTestCase {
       $item['link_path'] .= '#' . $options['fragment'];
     }
     foreach ($expected_item as $key => $value) {
-      $this->assertEqual($item[$key], $value, t('Parameter %key had expected value.', array('%key' => $key)));
+      $this->assertEqual($item[$key], $value, format_string('Parameter %key had expected value.', array('%key' => $key)));
     }
+  }
+
+  /**
+   * Test administrative users other than user 1 can access the menu parents AJAX callback.
+   */
+  public function testMenuParentsJsAccess() {
+    $admin = $this->drupalCreateUser(array('administer menu'));
+    $this->drupalLogin($admin);
+    // Just check access to the callback overall, the POST data is irrelevant.
+    $this->drupalGetAJAX('admin/structure/menu/parents');
+    $this->assertResponse(200);
+
+    // Do standard user tests.
+    // Login the user.
+    $this->drupalLogin($this->std_user);
+    $this->drupalGetAJAX('admin/structure/menu/parents');
+    $this->assertResponse(403);
   }
 
   /**
@@ -537,21 +565,21 @@ class MenuTestCase extends DrupalWebTestCase {
     $this->drupalGet('admin/help/menu');
     $this->assertResponse($response);
     if ($response == 200) {
-      $this->assertText(t('Menu'), t('Menu help was displayed'));
+      $this->assertText(t('Menu'), 'Menu help was displayed');
     }
 
     // View menu build overview node.
     $this->drupalGet('admin/structure/menu');
     $this->assertResponse($response);
     if ($response == 200) {
-      $this->assertText(t('Menus'), t('Menu build overview node was displayed'));
+      $this->assertText(t('Menus'), 'Menu build overview node was displayed');
     }
 
     // View navigation menu customization node.
     $this->drupalGet('admin/structure/menu/manage/navigation');
         $this->assertResponse($response);
     if ($response == 200) {
-      $this->assertText(t('Navigation'), t('Navigation menu node was displayed'));
+      $this->assertText(t('Navigation'), 'Navigation menu node was displayed');
     }
 
     // View menu edit node.
@@ -559,21 +587,21 @@ class MenuTestCase extends DrupalWebTestCase {
     $this->drupalGet('admin/structure/menu/item/' . $item['mlid'] . '/edit');
     $this->assertResponse($response);
     if ($response == 200) {
-      $this->assertText(t('Edit menu item'), t('Menu edit node was displayed'));
+      $this->assertText(t('Edit menu item'), 'Menu edit node was displayed');
     }
 
     // View menu settings node.
     $this->drupalGet('admin/structure/menu/settings');
     $this->assertResponse($response);
     if ($response == 200) {
-      $this->assertText(t('Menus'), t('Menu settings node was displayed'));
+      $this->assertText(t('Menus'), 'Menu settings node was displayed');
     }
 
     // View add menu node.
     $this->drupalGet('admin/structure/menu/add');
     $this->assertResponse($response);
     if ($response == 200) {
-      $this->assertText(t('Menus'), t('Add menu node was displayed'));
+      $this->assertText(t('Menus'), 'Add menu node was displayed');
     }
   }
 }
@@ -620,7 +648,12 @@ class MenuNodeTestCase extends DrupalWebTestCase {
     );
     $this->drupalPost('admin/structure/types/manage/page', $edit, t('Save content type'));
 
-    // Create a node.
+    // Verify that the menu link title on the node add form has the correct
+    // maxlength.
+    $this->drupalGet('node/add/page');
+    $this->assertPattern('/<input .* id="edit-menu-link-title" .* maxlength="255" .* \/>/', 'Menu link title field has correct maxlength in node add form.');
+
+    // Create a node with menu link disabled.
     $node_title = $this->randomName();
     $language = LANGUAGE_NONE;
     $edit = array(
@@ -654,7 +687,11 @@ class MenuNodeTestCase extends DrupalWebTestCase {
     $this->assertLink($node_title);
 
     $this->drupalGet('node/' . $node->nid . '/edit');
-    $this->assertOptionSelected('edit-menu-weight', 17, t('Menu weight correct in edit form'));
+    $this->assertOptionSelected('edit-menu-weight', 17, 'Menu weight correct in edit form');
+
+    // Verify that the menu link title on the node edit form has the correct
+    // maxlength.
+    $this->assertPattern('/<input .* id="edit-menu-link-title" .* maxlength="255" .* \/>/', 'Menu link title field has correct maxlength in node edit form.');
 
     // Edit the node and remove the menu link.
     $edit = array(
@@ -675,11 +712,11 @@ class MenuNodeTestCase extends DrupalWebTestCase {
 
     // Assert that disabled Management menu is not shown on the node/$nid/edit page.
     $this->drupalGet('node/' . $node->nid . '/edit');
-    $this->assertText('Provide a menu link', t('Link in not allowed menu not shown in node edit form'));
+    $this->assertText('Provide a menu link', 'Link in not allowed menu not shown in node edit form');
     // Assert that the link is still in the management menu after save.
     $this->drupalPost('node/' . $node->nid . '/edit', $edit, t('Save'));
     $link = menu_link_load($item['mlid']);
-    $this->assertTrue($link, t('Link in not allowed menu still exists after saving node'));
+    $this->assertTrue($link, 'Link in not allowed menu still exists after saving node');
 
     // Move the menu link back to the Navigation menu.
     $item['menu_name'] = 'navigation';
@@ -698,6 +735,8 @@ class MenuNodeTestCase extends DrupalWebTestCase {
     // Assert that it is not possible to set the parent of the first node to itself or the second node.
     $this->assertNoOption('edit-menu-parent', 'navigation:'. $item['mlid']);
     $this->assertNoOption('edit-menu-parent', 'navigation:'. $child_item['mlid']);
+    // Assert that unallowed Management menu is not available in options.
+    $this->assertNoOption('edit-menu-parent', 'management:0');
   }
 
   /**

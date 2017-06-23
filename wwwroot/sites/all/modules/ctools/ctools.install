@@ -26,7 +26,7 @@ function ctools_requirements($phase) {
     }
 
     if (!function_exists('error_get_last')) {
-  	  $requirements['ctools_php_52']['title'] = t('CTools PHP requirements');
+      $requirements['ctools_php_52']['title'] = t('CTools PHP requirements');
       $requirements['ctools_php_52']['description'] = t('CTools requires certain features only available in PHP 5.2.0 or higher.');
       $requirements['ctools_php_52']['severity'] = REQUIREMENT_WARNING;
       $requirements['ctools_php_52']['value'] = t('PHP !version', array('!version' => phpversion()));
@@ -37,10 +37,22 @@ function ctools_requirements($phase) {
 }
 
 /**
- * Implements hook_schemea
+ * Implements hook_schema().
  */
 function ctools_schema() {
-  return ctools_schema_2();
+  return ctools_schema_3();
+}
+
+/**
+ * Version 3 of the CTools schema.
+ */
+function ctools_schema_3() {
+  $schema = ctools_schema_2();
+
+  // update the 'obj' field to be 128 bytes long:
+  $schema['ctools_object_cache']['fields']['obj']['length'] = 128;
+
+  return $schema;
 }
 
 /**
@@ -51,6 +63,14 @@ function ctools_schema_2() {
 
   // update the 'name' field to be 128 bytes long:
   $schema['ctools_object_cache']['fields']['name']['length'] = 128;
+
+  // Update the 'data' field to be type 'blob'.
+  $schema['ctools_object_cache']['fields']['data'] = array(
+    'type' => 'blob',
+    'size' => 'big',
+    'description' => 'Serialized data being stored.',
+    'serialize' => TRUE,
+  );
 
   // DO NOT MODIFY THIS TABLE -- this definition is used to create the table.
   // Changes to this table must be made in schema_3 or higher.
@@ -134,6 +154,21 @@ function ctools_schema_1() {
 }
 
 /**
+ * Implements hook_install().
+ */
+function ctools_install() {
+  // Activate our custom cache handler for the CSS cache.
+  variable_set('cache_class_cache_ctools_css', 'CToolsCssCache');
+}
+
+/**
+ * Implements hook_uninstall().
+ */
+function ctools_uninstall() {
+  variable_del('cache_class_cache_ctools_css');
+}
+
+/**
  * Enlarge the ctools_object_cache.name column to prevent truncation and weird
  * errors.
  */
@@ -161,8 +196,8 @@ function ctools_update_6003() {
   $result = db_query('SELECT status FROM {system} WHERE name = :name', array(':name' => 'panels_views'))->fetchField();
   if ($result) {
     db_delete('system')->condition('name', 'panels_views')->execute();
-    drupal_install_modules(array('views_content'));
-  }
+    module_enable(array('views_content'), TRUE);
+ }
 }
 
 /**
@@ -188,10 +223,43 @@ function ctools_update_6007() {
   $ret = array();
   if (db_table_exists('ctools_custom_content')) {
     // Enable the module to make everything as seamless as possible.
-    drupal_install_modules(array('ctools_custom_content'));
+    module_enable(array('ctools_custom_content'), TRUE);
   }
 
   return $ret;
 }
 
+/**
+ * ctools_object_cache needs to be defined as a blob.
+ */
+function ctools_update_6008() {
+  db_delete('ctools_object_cache')
+    ->execute();
 
+  db_change_field('ctools_object_cache', 'data', 'data', array(
+      'type' => 'blob',
+      'size' => 'big',
+      'description' => 'Serialized data being stored.',
+      'serialize' => TRUE,
+    )
+  );
+}
+
+/**
+ * Enable the custom CSS cache handler.
+ */
+function ctools_update_7000() {
+  variable_set('cache_class_cache_ctools_css', 'CToolsCssCache');
+}
+
+/**
+ * Increase the length of the ctools_object_cache.obj column.
+ */
+function ctools_update_7001() {
+  db_change_field('ctools_object_cache', 'obj', 'obj', array(
+    'type' => 'varchar',
+    'length' => '128',
+    'not null' => TRUE,
+    'description' => 'The type of the object this cache is attached to; this essentially represents the owner so that several sub-systems can use this cache.',
+  ));
+}

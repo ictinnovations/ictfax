@@ -49,6 +49,9 @@ function user_schema() {
         'columns' => array('uid' => 'uid'),
       ),
     ),
+    'indexes' => array(
+      'uid_module' => array('uid', 'module'),
+    ),
   );
 
   $schema['role_permission'] = array(
@@ -81,7 +84,7 @@ function user_schema() {
     ),
     'foreign keys' => array(
       'role' => array(
-        'table' => 'roles',
+        'table' => 'role',
         'columns' => array('rid' => 'rid'),
       ),
     ),
@@ -120,6 +123,8 @@ function user_schema() {
     ),
   );
 
+  // The table name here is plural, despite Drupal table naming standards,
+  // because "user" is a reserved word in many databases.
   $schema['users'] = array(
     'description' => 'Stores user data.',
     'fields' => array(
@@ -234,6 +239,7 @@ function user_schema() {
       'access' => array('access'),
       'created' => array('created'),
       'mail' => array('mail'),
+      'picture' => array('picture'),
     ),
     'unique keys' => array(
       'name' => array('name'),
@@ -275,7 +281,7 @@ function user_schema() {
         'columns' => array('uid' => 'uid'),
       ),
       'role' => array(
-        'table' => 'roles',
+        'table' => 'role',
         'columns' => array('rid' => 'rid'),
       ),
     ),
@@ -353,11 +359,13 @@ function user_update_dependencies() {
     'filter' => 7000,
   );
 
-  // user_update_7012() uses the file API, which relies on the {file_managed}
-  // table, so it must run after system_update_7034(), which creates that
-  // table.
+  // user_update_7012() uses the file API and inserts records into the
+  // {file_managed} table, so it therefore must run after system_update_7061(),
+  // which inserts files with specific IDs into the table and therefore relies
+  // on the table being empty (otherwise it would accidentally overwrite
+  // existing records).
   $dependencies['user'][7012] = array(
-    'system' => 7034,
+    'system' => 7061,
   );
 
   // user_update_7013() uses the file usage API, which relies on the
@@ -381,7 +389,7 @@ function user_update_dependencies() {
  *   An array of permissions names.
  * @param $module
  *   The name of the module defining the permissions.
- * @ingroup update-api-6.x-to-7.x
+ * @ingroup update_api
  */
 function _update_7000_user_role_grant_permissions($rid, array $permissions, $module) {
   // Grant new permissions for the role.
@@ -532,7 +540,7 @@ function user_update_7002(&$sandbox) {
     if ($sandbox['user_from'] == $sandbox['user_count']) {
       if ($sandbox['user_not_migrated'] > 0) {
         variable_set('empty_timezone_message', 1);
-        drupal_set_message('Some user time zones have been emptied and need to be set to the correct values. Use the new ' . l('time zone options', 'admin/config/regional/settings') . ' to choose whether to remind users at login to set the correct time zone.', 'warning');
+        drupal_set_message(format_string('Some user time zones have been emptied and need to be set to the correct values. Use the new <a href="@config-url">time zone options</a> to choose whether to remind users at login to set the correct time zone.', array('@config-url' => url('admin/config/regional/settings'))), 'warning');
       }
       return t('Migrated user time zones');
     }
@@ -743,7 +751,7 @@ function user_update_7012(&$sandbox) {
         // Create a file object.
         $file = new stdClass();
         $file->uri      = $user->picture;
-        $file->filename = basename($file->uri);
+        $file->filename = drupal_basename($file->uri);
         $file->filemime = file_get_mimetype($file->uri);
         $file->uid      = $user->uid;
         $file->status   = FILE_STATUS_PERMANENT;
@@ -828,6 +836,15 @@ function user_update_7015() {
 }
 
 /**
+ * @} End of "addtogroup updates-6.x-to-7.x".
+ */
+
+/**
+ * @addtogroup updates-7.x-extra
+ * @{
+ */
+
+/**
  * Update the database to match the schema.
  */
 function user_update_7016() {
@@ -888,5 +905,23 @@ function user_update_7017() {
 }
 
 /**
- * @} End of "addtogroup updates-6.x-to-7.x"
+ * Ensure there is an index on {users}.picture.
+ */
+function user_update_7018() {
+  if (!db_index_exists('users', 'picture')) {
+    db_add_index('users', 'picture', array('picture'));
+  }
+}
+
+/**
+ * Ensure there is a combined index on {authmap}.uid and {authmap}.module.
+ */
+function user_update_7019() {
+  // Check first in case it was already added manually.
+  if (!db_index_exists('authmap', 'uid_module')) {
+    db_add_index('authmap', 'uid_module', array('uid', 'module'));
+  }
+}
+/**
+ * @} End of "addtogroup updates-7.x-extra".
  */

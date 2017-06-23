@@ -109,8 +109,8 @@ class views_content_plugin_display_ctools_context extends views_plugin_display {
       $admin_title = t('Use view name');
     }
 
-    if (strlen($admin_title) > 16) {
-      $admin_title = substr($admin_title, 0, 16) . '...';
+    if (drupal_strlen($admin_title) > 16) {
+      $admin_title = drupal_substr($admin_title, 0, 16) . '...';
     }
 
     $options['admin_title'] = array(
@@ -261,6 +261,9 @@ class views_content_plugin_display_ctools_context extends views_plugin_display {
   }
 
   function get_path() {
+    if ($this->get_option('link_display') == 'custom_url' && $override_path = $this->get_option('link_url')) {
+      return $override_path;
+    }
     if ($this->get_option('inherit_panels_path')) {
       return $_GET['q'];
     }

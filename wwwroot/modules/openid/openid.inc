@@ -138,8 +138,33 @@ function openid_redirect_form($form, &$form_state, $url, $message) {
  */
 function _openid_xrds_parse($raw_xml) {
   $services = array();
-  try {
-    $xml = @new SimpleXMLElement($raw_xml);
+
+  // For PHP version >= 5.2.11, we can use this function to protect against
+  // malicious doctype declarations and other unexpected entity loading.
+  // However, we will not rely on it, and reject any XML with a DOCTYPE.
+  $disable_entity_loader = function_exists('libxml_disable_entity_loader');
+  if ($disable_entity_loader) {
+    $load_entities = libxml_disable_entity_loader(TRUE);
+  }
+
+  // Load the XML into a DOM document.
+  $dom = new DOMDocument();
+  @$dom->loadXML($raw_xml);
+
+  // Since DOCTYPE declarations from an untrusted source could be malicious, we
+  // stop parsing here and treat the XML as invalid since XRDS documents do not
+  // require, and are not expected to have, a DOCTYPE.
+  if (isset($dom->doctype)) {
+    return array();
+  }
+
+  // Also stop parsing if there is an unreasonably large number of tags.
+  if ($dom->getElementsByTagName('*')->length > variable_get('openid_xrds_maximum_tag_count', 30000)) {
+    return array();
+  }
+
+  // Parse the DOM document for the information we need.
+  if ($xml = simplexml_import_dom($dom)) {
     foreach ($xml->children(OPENID_NS_XRD)->XRD as $xrd) {
       foreach ($xrd->children(OPENID_NS_XRD)->Service as $service_element) {
         $service = array(
@@ -165,9 +190,12 @@ function _openid_xrds_parse($raw_xml) {
       }
     }
   }
-  catch (Exception $e) {
-    // Invalid XML.
+
+  // Return the LIBXML options to the previous state before returning.
+  if ($disable_entity_loader) {
+    libxml_disable_entity_loader($load_entities);
   }
+
   return $services;
 }
 
@@ -357,6 +385,9 @@ function _openid_parse_message($message) {
 
 /**
  * Return a nonce value - formatted per OpenID spec.
+ *
+ * NOTE: This nonce is not cryptographically secure and only suitable for use
+ * by the test framework.
  */
 function _openid_nonce() {
   // YYYY-MM-DDThh:mm:ssZ, plus some optional extra unique characters.
@@ -526,7 +557,7 @@ function _openid_dh_rand($stop) {
   }
 
   do {
-    $bytes = "\x00" . _openid_get_bytes($nbytes);
+    $bytes = "\x00" . drupal_random_bytes($nbytes);
     $n = _openid_dh_binary_to_long($bytes);
     // Keep looping if this value is in the low duplicated range.
   } while (_openid_math_cmp($n, $duplicate) < 0);
@@ -535,23 +566,7 @@ function _openid_dh_rand($stop) {
 }
 
 function _openid_get_bytes($num_bytes) {
-  $f = &drupal_static(__FUNCTION__);
-  $bytes = '';
-  if (!isset($f)) {
-    $f = @fopen(OPENID_RAND_SOURCE, "r");
-  }
-  if (!$f) {
-    // pseudorandom used
-    $bytes = '';
-    for ($i = 0; $i < $num_bytes; $i += 4) {
-      $bytes .= pack('L', mt_rand());
-    }
-    $bytes = substr($bytes, 0, $num_bytes);
-  }
-  else {
-    $bytes = fread($f, $num_bytes);
-  }
-  return $bytes;
+  return drupal_random_bytes($num_bytes);
 }
 
 function _openid_response($str = NULL) {
@@ -617,18 +632,31 @@ function _openid_get_params($str) {
  * @param $fallback_prefix
  *   An optional prefix that will be used in case no prefix is found for the
  *   target extension namespace.
+ * @param $only_signed
+ *   Return only keys that are included in the message signature in openid.sig.
+ *   Unsigned fields may have been modified or added by other parties than the
+ *   OpenID Provider.
+ *
  * @return
  *   An associative array containing all the parameters in the response message
  *   that belong to the extension. The keys are stripped from their namespace
  *   prefix.
+ *
  * @see http://openid.net/specs/openid-authentication-2_0.html#extensions
  */
-function openid_extract_namespace($response, $extension_namespace, $fallback_prefix = NULL) {
+function openid_extract_namespace($response, $extension_namespace, $fallback_prefix = NULL, $only_signed = FALSE) {
+  $signed_keys = explode(',', $response['openid.signed']);
+
   // Find the namespace prefix.
   $prefix = $fallback_prefix;
   foreach ($response as $key => $value) {
     if ($value == $extension_namespace && preg_match('/^openid\.ns\.([^.]+)$/', $key, $matches)) {
       $prefix = $matches[1];
+      if ($only_signed && !in_array('ns.' . $matches[1], $signed_keys)) {
+        // The namespace was defined but was not signed as required. In this
+        // case we do not fall back to $fallback_prefix.
+        $prefix = NULL;
+      }
       break;
     }
   }
@@ -641,7 +669,9 @@ function openid_extract_namespace($response, $extension_namespace, $fallback_pre
   foreach ($response as $key => $value) {
     if (preg_match('/^openid\.' . $prefix . '\.(.+)$/', $key, $matches)) {
       $local_key = $matches[1];
-      $output[$local_key] = $value;
+      if (!$only_signed || in_array($prefix . '.' . $local_key, $signed_keys)) {
+        $output[$local_key] = $value;
+      }
     }
   }
 
@@ -820,7 +850,7 @@ function _openid_invalid_openid_transition($identity, $response) {
     $fallback_account = user_external_load($fallback_identity);
   }
 
-  // Try to replace https with http. OpenID providers often redirect
+  // Try to replace HTTPS with HTTP. OpenID providers often redirect
   // from http to https, but Drupal didn't follow the redirect.
   if (!$fallback_account && strpos($fallback_identity, 'https://') !== FALSE) {
     $fallback_identity = str_replace('https://', 'http://', $fallback_identity);
@@ -837,8 +867,8 @@ function _openid_invalid_openid_transition($identity, $response) {
     // Try to extract e-mail address from Simple Registration (SREG) or
     // Attribute Exchanges (AX) keys.
     $email = '';
-    $sreg_values = openid_extract_namespace($response, OPENID_NS_SREG, 'sreg');
-    $ax_values = openid_extract_namespace($response, OPENID_NS_AX, 'ax');
+    $sreg_values = openid_extract_namespace($response, OPENID_NS_SREG, 'sreg', TRUE);
+    $ax_values = openid_extract_namespace($response, OPENID_NS_AX, 'ax', TRUE);
     if (!empty($sreg_values['email']) && valid_email_address($sreg_values['email'])) {
       $email = $sreg_values['email'];
     }

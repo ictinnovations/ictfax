@@ -11,7 +11,7 @@
  * by the system that includes this file.
  */
 $plugin = array(
-  'title' => t('Node'),
+  'title' => t('Existing node'),
   'single' => TRUE,
   'defaults' => array(
     'nid' => '',
@@ -20,7 +20,6 @@ $plugin = array(
     'identifier' => '',
     'build_mode' => 'teaser',
   ),
-  'title' => t('Existing node'),
   'icon' => 'icon_node.png',
   'description' => t('Add a node from your site as content.'),
   'category' => t('Custom'),
@@ -67,16 +66,16 @@ function ctools_node_content_type_render($subtype, $conf, $panel_args) {
 
   // Don't store viewed node data on the node, this can mess up other
   // views of the node.
-  $node = clone($node);
+  $node = clone $node;
 
   $block->module = 'node';
   $block->delta = $node->nid;
 
+  // Set block->title to the plain node title, then additionally set block->title_link to
+  // the node url if required. The actual link is rendered in ctools_content_render().
+  $block->title = check_plain($node->title);
   if (!empty($conf['link_node_title'])) {
-    $block->title = l($node->title, 'node/' . $node->nid);
-  }
-  else {
-    $block->title = check_plain($node->title);
+    $block->title_link = 'node/' . $node->nid;
   }
 
   if (empty($conf['leave_node_title'])) {
