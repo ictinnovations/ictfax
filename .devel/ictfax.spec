@@ -105,7 +105,7 @@ ICTFax is an application for fax and fax to email related services, it provide w
 /bin/firewall-cmd --zone=public --add-port=80/tcp --permanent    # web
 /bin/firewall-cmd --zone=public --add-port=443/tcp --permanent   # ssl web
 /bin/firewall-cmd --reload
-%elseif
+%endif
 
 %changelog
 * Sat May 24 2017 Nasir Iqbal <nasir@ictinnovations.com> - 3.7.5
