@@ -1,0 +1,37 @@
+name = Fax Server
+description = Install with all fax related features pre-configured.
+version = VERSION
+core = 7.x
+dependencies[] = block
+dependencies[] = color
+dependencies[] = comment
+dependencies[] = contextual
+dependencies[] = dashboard
+dependencies[] = help
+dependencies[] = image
+dependencies[] = list
+dependencies[] = menu
+dependencies[] = number
+dependencies[] = options
+dependencies[] = path
+dependencies[] = taxonomy
+dependencies[] = dblog
+dependencies[] = search
+dependencies[] = shortcut
+dependencies[] = toolbar
+dependencies[] = overlay
+dependencies[] = field_ui
+dependencies[] = file
+dependencies[] = rdf
+dependencies[] = ictfax
+dependencies[] = ctools
+dependencies[] = ictcore
+dependencies[] = ictpbx_trunk
+dependencies[] = ictpbx_did
+dependencies[] = ictcontact
+
+; Information added by Drupal.org packaging script on 2017-06-23
+version = "3.8.1"
+project = "ictfax"
+datestamp = "1498223627"
+
