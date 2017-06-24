@@ -50,7 +50,7 @@ setenforce 0
 
 3: ICTCore Installation
 =======================
-ICTCore is main dependency of ICTFAX, if you have proper repositories pre installed (see above) then all other dependencies will be installed along with ICTCore. so we just need to issue following command
+ICTCore is main dependency of ICTFAX, if you have proper repositories pre installed (see above) then all other dependencies will be installed along with ICTCore. so we just need to issue following command, It will install latest version of ICTCore
 
 ```bash
 yum -y install ictcore ictcore-voice ictcore-fax ictcore-email
@@ -75,8 +75,10 @@ Now update /usr/ictcore/etc/ictcore.conf and /usr/ictcore/etc/odbc.ini files as 
 
 4: ICTFax Installation
 ======================
+Note: Always use latest version of ICTFax from Github, older version may conflict with current ICTCore installations
+
 1. (if any) delete /usr/ictfax
-2. Download, ictfax source from github and extract it into some temp folder
+2. Download, latest version ictfax source from github and extract it into some temp folder
 3. from ictfax source move wwwroot folder as /usr/ictfax
 ```bash
 mv /tmp/ictfax/wwwroot /usr/ictfax
