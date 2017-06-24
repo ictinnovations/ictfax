@@ -108,5 +108,5 @@ ICTFax is an application for fax and fax to email related services, it provide w
 %endif
 
 %changelog
-* Sat May 24 2017 Nasir Iqbal <nasir@ictinnovations.com> - 3.7.5
+* Sat Jun 24 2017 Nasir Iqbal <nasir@ictinnovations.com> - 3.7.5
 - First RPM release
