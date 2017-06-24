@@ -53,9 +53,9 @@ ICTFax is an application for fax and fax to email related services, it provide w
 %{__cp} -pr * %{buildroot}%{ictfax_home}
 
 # make ictfax drupal related modules available for site
-%{__mkdir} -p %{buildroot}/etc/drupal7/modules
+%{__mkdir} -p %{buildroot}/etc/drupal7/all/modules
 %{__ln_s} /usr/ictfax/ictpbx %{buildroot}/etc/drupal7/all/modules/ictpbx
-%{__mkdir} -p %{buildroot}/etc/drupal7/themes
+%{__mkdir} -p %{buildroot}/etc/drupal7/all/themes
 %{__ln_s} /usr/ictfax/drupal/themes/touch %{buildroot}/etc/drupal7/all/themes/touch
 %{__mkdir} -p %{buildroot}/etc/drupal7/all/profiles
 %{__ln_s} /usr/ictfax/drupal/profiles/fax_server %{buildroot}/etc/drupal7/all/profiles/fax_server
@@ -67,8 +67,8 @@ ICTFax is an application for fax and fax to email related services, it provide w
 %files
 # basic configuration files
 %defattr(644,root,root,755)
-/etc/drupal7/all/modules/touch
-/etc/drupal7/all/themes/ictpbx
+/etc/drupal7/all/modules/ictpbx
+/etc/drupal7/all/themes/touch
 /etc/drupal7/all/profiles/fax_server
 
 # include all ictfax files and folder
