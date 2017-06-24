@@ -76,7 +76,7 @@ ICTFax is an application for fax and fax to email related services, it provide w
 %{ictfax_home}
 
 # save documents
-%doc %{ictfax_home}/CHANGLOG.md
+%doc %{ictfax_home}/CHANGELOG.md
 %doc %{ictfax_home}/README.md
 %doc %{ictfax_home}/INSTALL.md
 %doc %{ictfax_home}/LICENSE.md
