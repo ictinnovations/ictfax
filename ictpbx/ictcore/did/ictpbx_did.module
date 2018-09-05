@@ -371,9 +371,12 @@ function ictpbx_did_option() {
  *   An array of did containing the ID of a did.
  */
 function ictpbx_did_delete($did) {
+  global $user;
+
   include_once "/usr/ictcore/core/Core.php";
 
-  $oAccount = new Account($did['account_id']); // open current account
+  \ICT\Core\do_login($user->uid);
+  $oAccount = Account::load($did['account_id']); // open current account
   $oAccount->delete();                         // and delete it
 
   drupal_set_message(t('DID deleted successfully!'), 'status');
