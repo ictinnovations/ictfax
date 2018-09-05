@@ -4,7 +4,7 @@ ICTFAX is an open source [GNU GPLv3][gpl3] based multi-user and  web based softw
 
 ICTFAX can be used in following faxing scenarios
 
-* Email to fax / web to fax / fax to email
+* [Email to fax][emailtofax] / [web to fax][webtofax] / [fax to email][emailtofax]
 * G.711 based Fax Origination / Termination / Gateway
 * T.38 based Fax Origination / Termination
 * PSTN/SS7 based Fax Origination / Termination
@@ -47,6 +47,8 @@ ICTFAX is developed by [ICT Innovations][developer]
 [install]: http://ictfax.org/content/ictfax-installation-guide-centos-fedora "ICTFAX Installation Guide"
 [admin]: http://ictfax.org/content/ictfax-admin-guide "ICTFAX Administration Guide"
 [user]: http://ictfax.org/content/ictfax-user-guide "ICTFAX User Guide"
+[emailtofax]: http://ictfax.org/fax-services-email-to-fax-software-fax-to-email-server "Email to fax, Fax to Email"
+[webtofax]: http://ictfax.org/online-fax-services-web-to-fax-software "Online Fax, Web to fax"
 [forum]: http://forum.ictfax.org/ "ICTFAX Discussion Forum"
 [demo]: http://demo.ictfax.org/ "ICTFAX Demo"
 [developer]: http://www.ictinnovations.com/ "ICT Innovations's official website"
