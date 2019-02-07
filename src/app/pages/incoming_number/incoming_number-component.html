@@ -1,0 +1,40 @@
+<nb-card>
+  <nb-card-header>
+    My Incoming Numbers
+  </nb-card-header>
+
+  <nb-card-body>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aNumbers" matSort>
+        <ng-container matColumnDef="phone">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>DID Number:</mat-header-cell>
+          <mat-cell *matCellDef="let in_num" style="text-align:left">
+            {{in_num.phone}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="first_name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Title</mat-header-cell>
+          <mat-cell *matCellDef="let in_num" style="text-align:left">
+            {{in_num.first_name}}
+          </mat-cell>
+        </ng-container>  
+        <ng-container cdkColumnDef="Operations">
+          <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+          <mat-cell *matCellDef="let in_num">
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/incoming_number/incoming_number/{{in_num.account_id}}/forward" title="Forward"><i class="ion-forward"></i></a></mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>

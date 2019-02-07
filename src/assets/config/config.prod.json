@@ -1,0 +1,8 @@
+{
+  "env": {
+    "name": "prod"
+  },
+  "apiServer": {
+    "url": "https://demo.ictcore.org/api"
+  }
+}

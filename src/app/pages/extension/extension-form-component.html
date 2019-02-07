@@ -1,0 +1,123 @@
+<h3>Add::Extension </h3>
+<div class="col-lg-12">
+  <form id="form" #f1="ngForm">
+    <nb-card>
+      <nb-card-header>
+        Extension Information  
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="username">UserName:</label>
+              <input [(ngModel)]="extension.username" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="username" required/>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        Password
+      </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="passwd">Password</label>
+            <input type="password" class="form-control" id="passwd"
+            required
+            [(ngModel)]="extension.passwd" name="passwd">
+          </div>
+          <div class="form-group">
+            <label for="passwd_pin">Password Pin</label>
+            <input type="password" class="form-control" id="passwd_pin"
+            [(ngModel)]="extension.passwd_pin"
+            required
+            name="passwd_pin">
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        Name
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="first_name">First Name:</label>
+              <input [(ngModel)]="extension.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="last_name">Last Name:</label>
+              <input [(ngModel)]="extension.last_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="last_name" required/>  
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        User Address
+      </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="phone">Phone:</label>
+            <input [(ngModel)]="extension.phone" [ngModelOptions]="{standalone: true}" type="phone" id="phone" class="form-control" pattern="[0-9]*" minlength="11" maxlength="16" #phone="ngModel" required/>
+            <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger"> 
+              <div [hidden]="!phone.hasError('required')">Mobile is required</div>
+              <div [hidden]="!phone.hasError('pattern')">Mobile numberr should be only numbers</div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="email">Email:</label>
+            <input [(ngModel)]="extension.email" [ngModelOptions]="{standalone: true}" type="email" id="email" class="form-control" #email="ngModel" email pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required/>
+            <div class="md-errors-spacer" [hidden]="email.valid || email.untouched" class="alert alert-danger">
+              <div  *ngIf="email.errors && email.errors.pattern">
+                Email is invalid
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="address">Address:</label>
+            <textarea [(ngModel)]="extension.address" [ngModelOptions]="{standalone: true}" class="form-control" id="address" rows="10" cols="30" required></textarea>              
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+    <nb-card>
+      <nb-card-header>
+        Active
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="active">Active:</label>
+              <input [(ngModel)]="extension.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="0"> No
+              <input [(ngModel)]="extension.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="1"> Yes
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <div *ngIf="(account_id>0)">
+      <button type="button" class="btn btn-primary" (click)="updateExtension()">Update</button>
+    </div>
+    <div *ngIf="(!account_id)">
+      <button type="button" class="btn btn-success" (click)="addExtension()">Submit</button>
+    </div>
+  </form>
+</div>

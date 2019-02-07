@@ -1,0 +1,24 @@
+<h4>DID Information</h4>
+<br>
+<div class="col-lg-12">
+  <nb-card>
+    <nb-card-header>
+      Upload DID List
+    </nb-card-header>
+    <nb-card-body>
+      <div class="container">           
+        <div class="navbar navbar-default">
+        </div>            
+        <div class="row">   
+          <div class="col-md-3"> 
+            <input type="file" ng2FileSelect [uploader]="uploader" />
+          </div>            
+        </div>    
+      </div><br>
+      <p style="display:inline">Example File:</p><a href="">Sample.csv</a>
+    </nb-card-body>
+  </nb-card>
+  <button type="button" class="btn btn-primary" (click)="addDocument()">Submit</button>
+</div> 
+
+

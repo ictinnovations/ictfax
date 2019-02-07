@@ -1,0 +1,157 @@
+<h3>Add::Provider</h3>
+<div class="col-lg-12">
+  <form id="form1" #f1="ngForm">
+    <nb-card>
+      <nb-card-header>
+        Provider Information
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="name">Provider Name:</label>
+              <input [(ngModel)]="provider.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="name" required/>
+            </div>
+          </div>
+          <div class="col-sm-6">
+              <label for="active">Active:</label>
+              <br>
+              <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="0"> No<br>
+              <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="1"> Yes<br>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        Gateway Type
+      </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <div>  
+              <label for="type">Gateway Type:</label>  
+              <select class = "form-control" name = "type" [(ngModel)]= "provider.type" [ngModelOptions]="{standalone: true}" [disabled]="(provider_id>0)">
+                <option value = "">Please Select an Option below</option>  
+                <option value="sip">SIP</option>
+                <option value="smpp">SMPP</option>
+                <option value="smtp">SMTP</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        Access Credentials
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="username">Username:</label>
+              <input [(ngModel)]="provider.username" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="username" required/>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="password">Password:</label>
+              <input [(ngModel)]="provider.password" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="password" required/>  
+            </div>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="host">Host:</label>
+              <input [(ngModel)]="provider.host" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="host" required/>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="port">Port:</label>
+              <input [(ngModel)]="provider.port" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="port" required/>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        Prefix and Weight
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="prefix">Prefix:</label>
+              <input [(ngModel)]="provider.prefix" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="prefix" required/>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <div>  
+                <label for="weight">Weight:</label>  
+                <select class = "form-control" name = "weight" [(ngModel)]= "provider.weight" [ngModelOptions]="{standalone: true}">
+                  <option value = "">Please Select an Option below</option>  
+                  <option value="-10">-10</option>
+                  <option value="-9">-9</option>
+                  <option value="-8">-8</option>
+                  <option value="-7">-7</option>
+                  <option value="-6">-6</option>
+                  <option value="-5">-5</option>
+                  <option value="-4">-4</option>
+                  <option value="-3">-3</option>
+                  <option value="-2">-2</option>
+                  <option value="-1">-1</option>
+                  <option value="0">0</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                  <option value="4">4</option>
+                  <option value="5">5</option>
+                  <option value="7">7</option>
+                  <option value="8">8</option>
+                  <option value="9">9</option>
+                  <option value="10">10</option>
+                </select>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        Additional Information
+      </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="settings">Settings:</label>
+            <textarea [(ngModel)]="this.provider.settings" [ngModelOptions]="{standalone: true}" class="form-control" id="settings" rows="10" cols="30" required></textarea>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="register">Register:</label>  
+            <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="0"> No
+            <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="1"> Yes
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>    
+
+    <div *ngIf="(provider_id>0)">
+      <button type="button" class="btn btn-primary" (click)="updateProvider()">Update</button>
+    </div>
+    <div *ngIf="(!provider_id)">
+      <button type="button" class="btn btn-success" (click)="addProvider()">Submit</button>
+    </div>
+  </form>
+</div>

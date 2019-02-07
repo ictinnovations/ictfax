@@ -1,0 +1,92 @@
+<h3 style="text-align:center">System Statistics</h3><br>
+<div class="row">
+  <div class="col-xxxl-3 col-md-6">
+    <ngx-status-card title="Total Campaigns" type="primary">
+      <span style="font-size:30px">{{cam_t}}</span>
+    </ngx-status-card>
+  </div>
+
+  <div class="col-xxxl-3 col-md-6">
+    <ngx-status-card title="Active Campaigns" type="success">
+      <span style="font-size:30px">{{cam_actv}}</span>
+    </ngx-status-card>
+  </div>
+
+  <div class="col-xxxl-3 col-md-6">
+    <ngx-status-card title="Total Contacts" type="info">
+      <span style="font-size:30px">{{con_t}}</span>
+    </ngx-status-card>
+  </div>
+
+  <div class="col-xxxl-3 col-md-6">
+    <ngx-status-card title="Contact Processed" type="warning">
+      <span style="font-size:30px">{{con_pr}}</span>
+    </ngx-status-card>
+  </div>
+</div>
+
+<nb-card>
+  <nb-card-header style="font-size:20px">
+    Inbound Fax and Outbound Fax
+  </nb-card-header>
+  <nb-card-body>
+    ICTFax supports both inbound and outbound fax. <br><br>
+    <div class="row">
+      <div class="col-xxxl-9 col-xxl-6 col-md-5">
+        <nb-card>
+          <nb-card-header>
+            Outbound Fax
+          </nb-card-header>
+          <nb-card-body>
+            This dials number from a contact list and on answer transfer fax documents.
+            <a routerLink = "/pages/transmission/transsenddocument/new" >Send Fax</a>
+          </nb-card-body>
+        </nb-card>
+      </div>
+      <div class="col-xxxl-9 col-xxl-6 col-md-5">
+        <nb-card>
+          <nb-card-header>
+            Inbound Fax
+          </nb-card-header>
+          <nb-card-body>
+            View all of your Inbound Fax and download them. View all of your inbound Faxes here.
+            <a routerLink = "/pages/infax" >View Received Fax</a>
+          </nb-card-body>
+        </nb-card>
+      </div>
+    </div>
+  </nb-card-body>
+</nb-card>
+
+<nb-card>
+  <nb-card-header style="font-size:20px">
+    DID and Trunk Support
+  </nb-card-header>
+  <nb-card-body>
+    ICTFax supports both Trunk and DID. <br><br>
+    <div class="row">
+      <div class="col-xxxl-9 col-xxl-6 col-md-5">
+        <nb-card>
+          <nb-card-header>
+            Trunk
+          </nb-card-header>
+          <nb-card-body>
+            ICTFax has added feature of Trunk Support. You can configure and edit the Trunk.
+            <a routerLink = "/pages/provider/provider" >Configure Trunk</a>
+          </nb-card-body>
+        </nb-card>
+      </div>
+      <div class="col-xxxl-9 col-xxl-6 col-md-5">
+        <nb-card>
+          <nb-card-header>
+            DID
+          </nb-card-header>
+          <nb-card-body>
+            ICTFax has added feature of DID Support. You can assign DID, Create DIDs in batch and import the DID List.
+            <a routerLink = "/pages/did/did" >View DIDs.</a>
+          </nb-card-body>
+        </nb-card>
+      </div>
+    </div>
+  </nb-card-body>
+</nb-card>

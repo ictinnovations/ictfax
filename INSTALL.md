@@ -1,220 +1,112 @@
-Installation Instructions
-=========================
+### ICTFAX - INSTALLATION GUIDE (CENTOS / FEDORA)
+**INSTALLATION INSTRUCTIONS**   
 
+ICTFax is a unique and complete solution featuring Mass, Voice, Sms, Email and fax broadcasting campaigns, and Transmissions.
 
-1: Introduction
-===============
+### 1. INSTALL BASIC SYSTEM REQUIREMENTS
 
-ICT-FAX is a unique and complete faxing solution featuring T.38 support, Email2Fax, Web2Fax,
-Fax2Email and Billing.
-
-
-2: Install Basic System Requirements
-====================================
-
- 1.  CentOs 6
- 2.  Apache 2
- 3.  MySQL 5
- 4.  PHP 5.3.3
- 5.  ICTCore
- 6.  Sendmail
- 7.  FreeSWITCH
-
+* CentOs 7
+* Apache 2
+* MySQL 5
+* PHP 5.3.3
+* ICTCore
+* Sendmail
+* FreeSWITCH
 To install above requirements, first of all we need to install their respective repositories
 
-```bash
-rpm -Uvh 'http://service.ictinnovations.com/repo/6/ict-release-6-2.noarch.rpm'
-rpm -Uvh 'http://download.fedoraproject.org/pub/epel/6/i386/epel-release-6-8.noarch.rpm'
-rpm -Uvh 'http://files.freeswitch.org/freeswitch-release-1-0.noarch.rpm'
-```
+**FOR CENTOS 7** 
+         
+          yum install -y https://service.ictinnovations.com/repo/7/ict-release-7-4.el7.centos.noarch.rpm  
+          yum install -y http://files.freeswitch.org/freeswitch-release-1-6.noarch.rpm  
+          yum install -y epel-release 
+         
 
-Before proceeding further please disable selinux and to disable it permanently edit /etc/selinux/config file
+Disable SELinux, before proceeding further,
+Check the SELinux state by:
 
-```bash
-setenforce 0
+             getenforce 
+or  
+         
+            setenforce 0
 
-/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 22 -j ACCEPT    # ssh
-/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 25 -j ACCEPT    # smtp / email
-/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 80 -j ACCEPT    # web
-/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 443 -j ACCEPT   # ssl web
-/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 5060 -j ACCEPT  # sip tcp
-/sbin/iptables -I INPUT -p udp -m state --state NEW -m udp --dport 5060 -j ACCEPT  # sip
-/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 5070 -j ACCEPT  # sip tcp
-/sbin/iptables -I INPUT -p udp -m state --state NEW -m udp --dport 5070 -j ACCEPT  # sip
-/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 5071 -j ACCEPT  # sip tcp
-/sbin/iptables -I INPUT -p udp -m state --state NEW -m udp --dport 5071 -j ACCEPT  # sip
-/sbin/iptables -I INPUT -p udp --dport 10000:20000 -j ACCEPT
+If the output is either permissive or disabled, skip this task and follow the instructions given below, otherwise disable it first and then follow the instructions:
 
-/etc/init.d/iptables save
-```
+### 2. ICTCORE INSTALLATION
+ICTCore is main dependency of ICTFax, if you have proper repositories pre installed (see above) then all other dependencies will be installed along with ICTCore. We just need to issue following command:
 
-3: ICTCore Installation
-=======================
-ICTCore is main dependency of ICTFAX, if you have proper repositories pre installed (see above) then all other dependencies will be installed along with ICTCore. so we just need to issue following command, It will install latest version of ICTCore
-
-```bash
-yum -y install ictcore ictcore-voice ictcore-fax ictcore-email
-```
-
-### 3.1 Setup ICTCore database
-To create database in mysql for ictcore issue following commands at mysql prompt
-
-```bash
-CREATE DATABASE ictfax;
-USE ictfax;
-GRANT ALL PRIVILEGES ON ictfax.* TO ictfaxuser@localhost IDENTIFIED BY 'plsChangeIt';
-FLUSH PRIVILEGES;
-
-SOURCE /usr/ictcore/db/database.sql;
-SOURCE /usr/ictcore/db/email.sql;
-SOURCE /usr/ictcore/db/fax.sql;
-```
-
-Now update /usr/ictcore/etc/ictcore.conf and /usr/ictcore/etc/odbc.ini files as per above created database
+         yum -y install ictcore ictcore-voice ictcore-fax ictcore-sms ictcore-email  
 
 
-4: ICTFax Installation
-======================
-Note: Always use latest version of ICTFax from Github, older version may conflict with current ICTCore installations
+**SETUP ICTFax DATABASE**
 
-1. (if any) delete /usr/ictfax
-2. Download, latest version ictfax source from github and extract it into some temp folder
-3. from ictfax source move wwwroot folder as /usr/ictfax
-```bash
-mv /tmp/ictfax/wwwroot /usr/ictfax
-```
-4. again from ictfax source move ictpbx folder into /usr/ictfax/sites/all/modules
-```bash
-mv /tmp/ictfax/ictpbx /usr/ictfax/sites/all/modules
-```
-5. issue following command to create website configuration file
-```bash
-cp /usr/ictfax/sites/default/default.settings.php /usr/ictfax/sites/default/settings.php
-chown -R apache:apache /usr/ictfax
-```
-6. Update Apache configurations to set /usr/ictfax as DocumentRoot
-7. restart Apache
-
-### 4.1 Frontend / Web GUI
-1. Now visit http://DOMAIN.COM/ and follow the installation instructions for ICTFax (drupal based) front end installation.
-2. When asked for database please provide access info to recently created database ( in ictcore section ) and enter `web_` as table prefix
-2. Once you are done with installation, visit the website and login as site administrator with username and password that you provided during installation.
-4. Now comeback to Web GUI and go to Modules menu and enable all modules in __ICTCore System__ Package.
-5. Now you'll see menu item Fax Account, ICTCore System and others in your Navigation Menu.
-6. After all please make sure that "Authenticated User" has permission over "Can use ICTFAX" from module permissions
-
-### 4.2 User Synchronization
-After installation issue following command against ictfax database, to synchronize ICTFAX users with ICTCore
-
-```sql
-USE ictfax;
-INSERT INTO usr (username, passwd, email, active, date_created, created_by) SELECT name, pass, mail, 1, UNIX_TIMESTAMP(), 1 FROM web_users WHERE uid > 0;
-```
-
-5: Email to FAX / FAX to Email service (optional)
-=================================================
-1. make sure that your desired domain's MX records are properly configured for email2fax server.
-2. enable sendmail to listen on public ip address look for following line in /etc/mail/sendmail.mc
-```conf
-DAEMON_OPTIONS(`Port=smtp,Addr=127.0.0.1, Name=MTA')dnl
-```
-3. and change line mentioned above into
-```conf
-DAEMON_OPTIONS(`Port=smtp, Addr=0.0.0.0, Name=MTA')dnl
-```
-4. Add ictcore and apache to list of trusted user 
-```bash
-echo "ictcore" >> /etc/mail/trusted-users
-echo "apache" >> /etc/mail/trusted-users
-```
-5. Add your domain name in allowed local domain list to let sendmail receive mails for that domain
-```bash
-echo "FAX_DOMAIN.COM" >> /etc/mail/local-host-names
-```
-6. route all mails for none-existing addresses into ictcore mailbox so we can receive emails for addresses like `xyz_number@FAX_DOMAIN.COM`
-```bash
-echo '@FAX_DOMAIN.COM ictcore' >> /etc/mail/virtusertable
-```
-7. to apply email related changes
-```
-/etc/mail/make
-```
-8. restart sendmail service so changes can take affect
-```bash
-chkconfig sendmail on
-service sendmail restart
-```
-9. edit /usr/ictcore/etc/ictcore.conf and update __mailbox__ section like following
-```ini
-folder = /var/spool/email/ictcore
-```
-
-NOTE: make sure that `/etc/hosts.allow` is properly configured for accepting mails, and smtp `port (25)` is not blocked by firewall. if so execute following line to allow smtp port in firewall: 
-
-```bash
-/sbin/iptables -I INPUT -p tcp -m state --state NEW -m tcp --dport 25 -j ACCEPT    # smtp
-/etc/init.d/iptables save
-```
+write in command prtompt
+            mysql
+enter these commands one by one:
+ 
+         CREATE DATABASE ictfax;
+         USE ictfax;
+         GRANT ALL PRIVILEGES ON ictfax. *TO ictfaxuser@localhost IDENTIFIED BY 'plsChangeIt';                  
+         FLUSH PRIVILEGES;
+         SOURCE /usr/ictcore/db/database.sql;
+         SOURCE /usr/ictcore/db/voice.sql;
+         SOURCE /usr/ictcore/db/fax.sql;
+         SOURCE /usr/ictcore/db/sms.sql;
+         SOURCE /usr/ictcore/db/email.sql;
+         SOURCE /usr/ictcore/db/data/role_user.sql;
+         SOURCE /usr/ictcore/db/data/role_admin.sql;
+         SOURCE /usr/ictcore/db/data/demo_users.sql;
   
-Now you are ready to send faxes through your email. See Admin/User Guide for further details.
+  
+Now update `/usr/ictcore/etc/ictcore.conf` and `/usr/ictcore/etc/odbc.ini` files as per above created database.
 
+Open the file ictcore.conf and find out the [db] section and replace the following lines:
 
-6: First FAX
-============
+user = myuser
 
-### 6.1: Sending First FAX
-1. Login as admin
-2. Add gateway / trunk for outgoing fax at "ICTCore System" => "Provider Trunks"
-3. Currently, in ICTFAX3.0 only one gateway/trunk will be used for calling. Currently routing is not supported.
-4. Register (Sign up) a new user by registering from http://DOMAIN.COM/ictfax/?q=user/register. Directly adding user from admin=>people is not supported. Once user is registered, it is blocked by default. Login in as admin and Activate it from admin=>People. (Sign up process can be changed from admin => configuration => Account settings. 
-5. Logout
-6. Login as newly created user
-7. Send new fax via "FAX Account" => "Fax Outbox" => ""Create New FAX"
-or via email2fax
-8. From user registration email address send an email with following values
+pass = mypass
 
-* To: faxnumber@FAX_DOMAIN.COM
-* Subject: Anything
-* Body:
-* Attachment: pdf file
+name = ictcore
 
-NOTE: Attach only a single file. Every time create new email message and give unique email subject. 
-Using Forward or Reply may confuse ictfax system with some previous email subjects.
+with these lines:
 
-### 6.2: Receiving First FAX
-1. Point DIDs to fax server
-2. Configure freeswitch to receive traffic for this DID provider. 
-3. Usually only IP address of the DID provider is sufficient to be added in ACL.
-4. In Web GUI login as admin
-5. Add incoming did number at "ICTPBX System" => "DID Numbers" 
-6. Assign a DID number to previously created VoIP Account from "ICTPBX System" => "Assign/Release"
-7. Logout
-8. Login as previously created user
-9. Click on "Settings" => "My Incoming Numbers"
-10. Forward fax by selecting "Forward" and enter some email address in given box and save
-11. Send test fax to selected did
+user = ictfaxuser
 
-7: Extra
-========
-Optionally for text to fax support you can install
+pass = plsChangeIt
 
-```bash
-yum -y install git make 
-```
+name = ictfax
 
-also install yudit for text to pdf support
+Next open the file odbc.ini and change the following lines
 
-```bash
-cd /usr/src
-wget "http://www.yudit.org/download/yudit-2.9.2.tar.gz"
-tar xzf yudit-2.9.2.tar.gz
-cd yudit*
-./configure --prefix=/usr/local
-make
-make install
-```
+Database = ictcore
 
-8: Contacts
-===========
-info@ictinnovations.com
-http://www.ictinnovations.com
+User     = myuser
+
+Password = mypass
+
+with these lines
+
+Database = ictfax
+
+User     = ictfaxuser
+
+Password = plsChangeIt
+
+### 3. ICTFax INSTALATION 
+
+Now install ICTFax web interface
+
+         yum install ictfax;
+         
+Now Restart the **apache** by typing the following command in the terminal
+
+        service httpd restart
+
+  
+Now visit `http://yourdomain/ictfax` in your browser 
+
+Default Username : **admin@ictcore.org**  
+Default Password : **helloAdmin**  
+
+Login by entering the default admin and password, which we provided you. Go to the administration panel, which is placed on the bottom of the side bar on left.Create a new user or edit the existing.
+You can configure providers and accounts too. For further details visit [**Admin guide** ](/admin-guide).  
+

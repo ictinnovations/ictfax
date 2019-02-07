@@ -1,0 +1,49 @@
+<nb-card>
+  <nb-card-header>
+    Document List
+  </nb-card-header>
+
+  <nb-card-body>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/message/document/new']"><i class="fa fa-plus"></i> Add document</button>
+    <br>
+    <br>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aDocument" matSort>
+        <ng-container matColumnDef="ID">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>ID</mat-header-cell>
+          <mat-cell *matCellDef="let document">
+            {{document.document_id}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Document Name:</mat-header-cell>
+          <mat-cell *matCellDef="let document" style="text-align:left">
+            {{document.name}}
+          </mat-cell>
+        </ng-container>
+        <ng-container cdkColumnDef="Operations">
+          <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+          <mat-cell *matCellDef="let document">
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/message/document/{{document.document_id}}" title="Edit"><i class="fa fa-pencil-square-o"></i></a></mat-icon>
+            </button>
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon (click)="downloadDocument(document.document_id)"  ><i class="fa fa-cloud-download" title="Download"></i></mat-icon>
+            </button>
+            <button mat-icon-button color="primary" style= "font-size:20px">  
+              <mat-icon style="color:red" (click)="showStaticModal(document.name, document.document_id)" ><i class="fa fa-trash" title="Delete"></i></mat-icon>                
+            </button>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>

@@ -1,0 +1,59 @@
+<h3>Add::DID </h3>
+<div class="col-lg-12">
+  <form id="form" #f1="ngForm">
+    <nb-card>
+      <nb-card-header>
+        DID Information  
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-9">
+            <div class="form-group">
+              <label for="phone">DID Number:</label>
+              <input [(ngModel)]="did.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="phone" #phone="ngModel" required/>
+              <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger">
+                <div [hidden]="!phone.hasError('required')">DID Number field is required.</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-9">
+            <div class="form-group">
+              <label for="first_name">Title:</label>
+              <input [(ngModel)]="did.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
+            </div>
+          </div>
+          <div class="col-sm-9">
+            <div class="form-group">
+              <label for="email">Email: </label>
+              <input [(ngModel)]="did.email" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="email" required/>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+    <nb-card>
+      <nb-card-header>
+        Active
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="active">Active:</label>
+              <input [(ngModel)]="did.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="0"> No
+              <input [(ngModel)]="did.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="1"> Yes
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+
+    <div *ngIf="(account_id>0)">
+      <button type="button" class="btn btn-primary" (click)="updateDID()">Update</button>
+    </div>
+    <div *ngIf="(!account_id)">
+      <button type="button" class="btn btn-success" (click)="addDID()">Submit</button>
+    </div>
+  </form>
+</div>

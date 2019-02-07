@@ -1,3 +1,28 @@
+#### 2019-02-04 Version 4.0.0
+
+* Complete application rewrite Angular Framework
+* Fax Extensions and ATA Support
+* Send multiple files
+* DID Management
+* Assign the service on incoming number like Forward to Extension, Fax to email etc.
+* APIs Support
+* Dropping backward compatibility of Centos 6
+* Dropping Drupal 7 from dependencies
+* ICTCore upgraded to 0.8.4
+
+#### 2017-01-17 Version 3.7.4
+
+* Documentation improved
+* Forwarding support added for user
+* Bug fixes
+* ICTCore upgraded to 0.7.1
+
+#### 2015-04-08 Version 3.2.0
+
+* Plivo dropped from ICTFax in favour of ICTCore 0.7
+* Update script added
+* Bug fixes
+
 #### 2014-02-12 Version 2.2.0
 
 * Bugfix regarding new gevent issue in centos 6.5

@@ -1,0 +1,32 @@
+h1 {
+  left: 0;
+  line-height: 200px;
+  margin-top: -100px;
+  position: absolute;
+  text-align: center;
+  top: 50%;
+  width: 100%;
+  font-size: 30px;
+  color: red;
+}
+
+.flex-centered {
+  margin: auto;
+}
+nb-card-body {
+  display: flex;
+}
+ 
+.title {
+  text-align: center;
+}
+
+.sub-title {
+  text-align: center;
+  display: block;
+  margin-bottom: 3rem;
+}
+
+.btn {
+  margin-bottom: 2rem;
+}
