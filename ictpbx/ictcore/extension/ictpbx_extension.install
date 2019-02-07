@@ -1,0 +1,30 @@
+<?php
+/******************************************************************
+* Copyright © 2018 ICT Innovations.                               *
+* Developed By: Nasir Iqbal                                       *
+* Website : http://www.ictinnovations.com/                        *
+* Mail : info@ictinnovations.com                                  *
+******************************************************************/
+
+//  $Id: ictpbx_extension.info,v 1.0 2018/12/26 10:40:49 ictinnovations Exp $
+
+/**
+ * Implementation of hook_install().
+ */
+function ictpbx_extension_install() {
+//  drupal_install_schema('extension');
+}
+
+/**
+ * Implementation of hook_schema().
+ */
+function ictpbx_extension_schema() {
+ // nothing to do
+}
+
+/**
+ * Implementation of hook_uninstall().
+ */
+function ictpbx_extension_uninstall() {
+//  drupal_uninstall_schema('extension');
+}

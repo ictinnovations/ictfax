@@ -162,6 +162,7 @@ function ictpbx_did_list($admin_links = false) {
   $query->addfield('u', 'username', 'username');
   //$query->addExpression('u', "CONCAT_WS(' ', last_name, first_name)", 'user_name');
   //$query->condition('a.last_name', NULL, 'IS');
+  $query->condition('a.type', 'did', '=');
   //$query->condition('t.uid', $user->uid,'='); 
   $result = $query->limit(50)         
             ->extend('TableSort')
@@ -172,9 +173,8 @@ function ictpbx_did_list($admin_links = false) {
     $row_id = $did['account_id'];
     $rows[$row_id][] = check_plain($did['phone']);
     $rows[$row_id][] = check_plain($did['first_name']);
-    $rows[$row_id][] = check_plain($did['username']); 
-    $rows[$row_id][] = "<p style='width:125px; height:2px;'>" . _ictpbx_did_list_links($did) . "</p>".
-			  "<p style='font-size:9px'>" . check_plain($did['email']) . "</p>";
+    $rows[$row_id][] = check_plain($did['username']);
+    $rows[$row_id][] = _ictpbx_did_list_links($did);
   }
   if (!isset($rows)) {
     $rows[] = array(array('data' => t('No DID Number available'), 'colspan' => 6));
@@ -296,7 +296,8 @@ function ictpbx_did_form_submit($form, &$form_state) {
   $did = array(
     'phone'          => $data['phone'],
     'first_name'     => $data['first_name'],
-    'email'          => $data['email']
+    'email'          => $data['email'],
+    'type'           => 'did'
   );
 
   if (!empty($data['account_id'])) {
@@ -349,7 +350,7 @@ function ictpbx_did_load($did_id) {
  * Loader function for all dids.
  */
 function ictpbx_did_option() {
-  $sql    = "SELECT account_id, phone FROM account";
+  $sql    = "SELECT account_id, phone FROM account WHERE type='did'";
   $result = CoreDB::db_query($sql);
   $rows   = array();
   while ($did = $result->fetchAssoc()) {
@@ -461,6 +462,7 @@ function ictpbx_did_batch_submit($form, &$form_state) {
   global $user;
 
   $did = $form_state['values'];
+  $did['type'] = 'did';
   $did['created_by'] = 0; // no owner
 
   for ($num = $did['from']; $num <= $did['to']; $num++) {
@@ -521,7 +523,10 @@ function ictpbx_did_import_validate($form, &$form_state) {
  */
 function ictpbx_did_import_submit($form, &$form_state) {
   global $user;
+
   $did = $form_state['values'];
+  $did['type'] = 'did';
+
   // set source file path
   //$file = file_save_upload('file_upload');
   $validators = array(
@@ -605,6 +610,16 @@ function ictpbx_did_assign($form, &$form_state, $edit = array()) {
     '#required'      => TRUE,
     '#options'       => ictpbx_did_service_list(),
   );
+  $form['setting']['extension_id'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Select Extension'),
+    '#options'       => ictpbx_extension_option(),
+    '#states' => array(
+      'visible' => array(
+        '#edit-service' => array('value' => 'forward'),
+      ),
+    ),
+  );
 
   $form['buttons']['submit'] = array(
     '#type'          => 'submit',
@@ -658,7 +673,7 @@ function ictpbx_did_assign_submit($form, &$form_state) {
     $tranRs = CoreDB::db_query($query, array(':account_id' => $did['account_id']));
   }
 
-  ictpbx_did_service_install($did['account_id'], $did['service']);
+  ictpbx_did_service_install($did['account_id'], $did['service'], $did['extension_id']);
 
   drupal_set_message(t('DID assigned successfully!'), 'status');
   $form_state['redirect'] = 'ictcore/did/list';
@@ -687,6 +702,7 @@ function ictpbx_user_did_list() {
   $query = CoreDB::db_select('account', 'a')->extend('PagerDefault');
   $query->fields('a', array('account_id', 'phone', 'first_name', 'email'));
   $query->leftjoin('usr','u','u.usr_id = a.created_by');
+  $query->condition('a.type', 'did', '=');
   $query->condition('u.usr_id', $user->uid , '=');
 
   $result = $query->limit(50)         
@@ -756,6 +772,16 @@ function ictpbx_did_forward($form, &$form_state, $edit = array()) {
     '#required'      => TRUE,
     '#options'       => ictpbx_did_service_list(),
   );
+  $form['setting']['extension_id'] = array(
+    '#type'          => 'select',
+    '#title'         => t('Select Extension'),
+    '#options'       => ictpbx_extension_option(),
+    '#states' => array(
+      'visible' => array(
+        '#edit-service' => array('value' => 'forward'),
+      ),
+    ),
+  );
 
   $form['buttons']['submit'] = array(
     '#type'          => 'submit',
@@ -778,7 +804,7 @@ function ictpbx_did_forward_validate($form, &$form_state) {
 function ictpbx_did_forward_submit($form, &$form_state) {
   $did = $form_state['values'];
 
-  ictpbx_did_service_install($did['account_id'], $did['service']);
+  ictpbx_did_service_install($did['account_id'], $did['service'], $did['extension_id']);
 
   drupal_set_message(t('DID assigned successfully!'), 'status');
   //  save_conf_did();
@@ -787,11 +813,12 @@ function ictpbx_did_forward_submit($form, &$form_state) {
 
 function ictpbx_did_service_list() {
   return array(
-    'faxtoemail' => 'Fax to Email'
+    'faxtoemail' => 'Fax to Email',
+    'forward' => 'Forward to Extension'
   );
 }
 
-function ictpbx_did_service_install($account_id, $service_name) {
+function ictpbx_did_service_install($account_id, $service_name, $extension_id = null) {
   include_once "/usr/ictcore/core/Core.php";
 
   // first remove all existing dependencies for this account / did
@@ -812,6 +839,17 @@ function ictpbx_did_service_install($account_id, $service_name) {
       $oProgram->save();
       $oProgram->deploy();
       break;
+
+    case 'forward':
+      $programData = array(
+        'did_id' => $account_id,
+        'extension_id' => $extension_id
+      );
+      $oProgram = Program::load(null, $programData);
+      $oProgram->save();
+      $oProgram->deploy();
+      break;
+
     default:
       // do nothing, in future we can add new applications here
       break;
