@@ -212,13 +212,13 @@ create call request / dial / send message
 
 + Response 200
 
-## Transmition Send [/transmissions/{transmission_id}/send]
+## Transmission Send [/transmissions/{transmission_id}/send]
 
 + Parameters
 
     + transmission_id (number) - ID of the transmission in the form of an integer
 
-### Send Transmition [POST]
+### Send Transmission [POST]
 
 + Request (application/json)
 
@@ -496,7 +496,7 @@ Complete details of each step along with remote side responses, for requested tr
 
 # Group User account / Email / DID / Extension
 
-## Users Acounts [/accounts]
+## Users Accounts [/accounts]
 
 ### Create Account [POST]
 
@@ -820,11 +820,11 @@ list all exiting users, optionally client can filter users using query string (k
 + campaign_active: 0 (number) -total number of active campaign
 + group_total: 12 (number) - number of groups
 + contact_total: 5 (number) - number of contacts
-+ transmission_total: 1 (number) - number of transmistions
++ transmission_total: 1 (number) - number of transmissions
 + transmission_active: 1 (number) - number of active transmission
 + spool_total: 1 (number) - number of spools
 + spool_success: 1 (number) - number of success spools
-+ spool_failed: 1 (number) - number of unsuccessed spools
++ spool_failed: 1 (number) - number of unsuccessful spools
 
 ## Contact (object)
 + first_name: first name (string, required)
@@ -832,7 +832,7 @@ list all exiting users, optionally client can filter users using query string (k
 + phone:   03001234567 (number, required)
 + email:  email (string, optional)
 + address: address (string, optional)
-+ custom1: custom1 (string, optional)
++ custom1: custom 1 (string, optional)
 + custom2: custom 2 (string, optional)
 + custom3: custom 3 (string, optional)
 + description: description (string, optional)
@@ -937,11 +937,11 @@ list all exiting users, optionally client can filter users using query string (k
 + gateway_flag: 1 (number) - Type of gateway i.e Freeswitch::GATEWAY_FLAG or Kannel::GATEWAY_FLAG
 + service_flag: 1 (number) - Type of transmission service i.e Email::SERVICE_FLAG or Voice::SERVICE_FLAG
 + node_id: 1 (number, optional) - see node table
-+ host: ipaddress (string) - ip address to termination server
++ host: ip-address (string) - ip address to termination server
 + port: 8080 (number, optional)
 + username: username (string,required)
 + password: password (string, optional)
-+ dialstring: dailstring (string, optional)
++ dialstring: dail-string (string, optional)
 + prefix: 12 (number, optional) -number which is required to be dialed before actual phone number
 + settings: settings (string, optional) - any additional configuration required by this provider
 + register: 1 (number, optional) 1 for yes, 0 for no

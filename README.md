@@ -60,7 +60,7 @@ ICTFAX is developed by [ICT Innovations][developer]
 
 [official]: http://ictfax.org/ "ICTFAX Open Source Online FAX & Email to FAX Solution"
 [gpl3]: http://www.gnu.org/licenses/gpl-3.0.html "GNU GPL V.3 License"
-[install]: http://ictfax.org/content/ictfax-installation-guide-centos-fedora "ICTFAX Installation Guide"
+[install]: http://ictfax.org/content/ictfax-installation-guide "ICTFAX Installation Guide"
 [admin]: http://ictfax.org/content/ictfax-admin-guide "ICTFAX Administration Guide"
 [user]: http://ictfax.org/content/ictfax-user-guide "ICTFAX User Guide"
 [emailtofax]: http://ictfax.org/fax-services-email-to-fax-software-fax-to-email-server "Email to fax, Fax to Email"
