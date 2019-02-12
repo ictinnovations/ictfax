@@ -24,7 +24,7 @@ BuildRequires: npm git
 Provides: ictfax
 
 # GUI dependence on ICTCore
-Requires: ictcore-voice ictcore-fax ictcore-email ictcore-sms
+Requires: ictcore-fax ictcore-email
 # ICTCore GUI exposse its interface via apache web server
 Requires: httpd
 
