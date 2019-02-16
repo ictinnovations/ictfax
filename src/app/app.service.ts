@@ -43,6 +43,7 @@ export class AppService {
   apiUrlDashboard = `${this.apiUrl}/statistics`;
   apiUrlAccounts = `${this.apiUrl}/accounts`;
   apiUrlDid = `${this.apiUrl}/dids`;
+  apiUrlRoles = `${this.apiUrl}/roles`;
 
   createAuthorizationHeader(headers: Headers) {
     headers.append('Authorization', ' Bearer ' + localStorage.getItem('auth_app_token'));

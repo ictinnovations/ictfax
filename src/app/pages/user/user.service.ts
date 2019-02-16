@@ -24,6 +24,42 @@ export class AUserService {
     .then(response => response.json() as User[]).catch(response => this.app_service.handleError(response));
   }
 
+  get_RoleList() {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({ headers: headers});
+    return this.http.get(this.app_service.apiUrlRoles, options).toPromise()
+    .then(response => response.json()).catch(response => this.app_service.handleError(response));
+  }
+
+  setRole(user_id, role_id) {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({headers: headers});
+    const body = JSON.stringify(user_id);
+    const setRoleUrl = `${this.app_service.apiUrlUsers}/${user_id}/roles/${role_id}`;
+    return this.http.put(setRoleUrl, body, options).toPromise().then(response => response.json())
+    .catch(response => this.app_service.handleError(response));
+  }
+
+  getUserRoles(user_id) {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({ headers: headers});
+    const url9 = `${this.app_service.apiUrlUsers}/${user_id}/roles`;
+    return this.http.get(url9, options).toPromise()
+    .then(response => response.json()).catch(response => this.app_service.handleError(response));
+  }
+
+  deleteRoles(user_id, role_id) {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({headers: headers});
+    const deleteRoleUrl = `${this.app_service.apiUrlUsers}/${user_id}/roles/${role_id}`;
+    return this.http.delete(deleteRoleUrl, options).toPromise().then(response => response.json())
+    .catch(response => this.app_service.handleError(response));
+  }
+
   get_UserData(user_id): Promise<User> {
     const headers = new Headers();
     this.app_service.createAuthorizationHeader(headers);

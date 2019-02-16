@@ -484,6 +484,17 @@
       </nb-card-body>
     </nb-card>
 
+    <nb-card>
+      <nb-card-header>
+        Select Role
+      </nb-card-header>
+      <nb-card-body>
+          <div *ngFor="let rol of role">
+            <input type="checkbox" (change)="onChange(rol.role_id, $event.target.checked)" [checked]="rol.state"> {{rol.name}}<br>
+          </div>
+      </nb-card-body>
+    </nb-card>
+
     <div *ngIf="(user_id>0)">
       <button type="button" class="btn btn-primary" (click)="updateUser()">Update</button>
     </div>
