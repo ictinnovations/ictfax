@@ -3,7 +3,6 @@ import { NgModule } from '@angular/core';
 
 import { PagesComponent } from './pages.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { FormsTransmissionComponent } from './transmission/transmission-component';
 import { ErrorComponent } from './error-handler/error-handler.component';
 import { DefaultSettingsComponent } from './default_settings/default_settings-component';
 import { InFaxComponent } from './infax/infax-component';
@@ -14,10 +13,6 @@ const routes: Routes = [{
   children: [{
     path: 'dashboard',
     component: DashboardComponent,
-  },
-  {
-    path: 'transmission',
-    component: FormsTransmissionComponent,
   },
   {
     path: 'Error',
@@ -48,13 +43,16 @@ const routes: Routes = [{
   }, {
     path: 'extension',
     loadChildren: './extension/extension.module#ExtensionModule',
+  },{
+    path: 'sendfax',
+    loadChildren: './sendfax/sendfax.module#SendFaxModule',
   }, {
     path: 'did',
     loadChildren: './did/did.module#DIDModule',
   },
    {
     path: '',
-    redirectTo: 'transmission',
+    redirectTo: 'dashboard',
     pathMatch: 'full',
   }],
 }];

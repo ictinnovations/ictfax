@@ -1,0 +1,39 @@
+<nb-card>
+  <nb-card-header>
+    Outbound Fax
+  </nb-card-header>
+  <nb-card-body>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/sendfax/sendfax/new']"><i class="fa fa-plus"></i> New Outbound Fax</button>
+    <br><br>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aSendFax" matSort>
+        <ng-container matColumnDef="ID">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>ID</mat-header-cell>
+          <mat-cell *matCellDef="let sendfax">
+            {{sendfax.transmission_id}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="contact_id">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Contact ID</mat-header-cell>
+          <mat-cell *matCellDef="let sendfax">
+            {{sendfax.contact_id}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
+          <mat-cell *matCellDef="let sendfax" style="text-align:left">
+            {{sendfax.status}}
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>

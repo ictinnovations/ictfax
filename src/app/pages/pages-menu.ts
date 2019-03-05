@@ -8,9 +8,9 @@ export const MENU_ITEMS: NbMenuItem[] = [
     home: true,
   },
   {
-    title: 'Outbound Fax',
+    title: 'Send Fax',
     icon: 'ion-arrow-up-c',
-    link: '/pages/transmission/transmissions',
+    link: '/pages/sendfax/sendfax',
   },
   {
     title: 'Inbound Fax',
@@ -80,9 +80,9 @@ export const userMenuItems: NbMenuItem[] = [
     home: true,
   },
   {
-    title: 'Outbound Fax',
+    title: 'Send Fax',
     icon: 'ion-arrow-up-c',
-    link: '/pages/transmission/transmissions',
+    link: '/pages/sendfax/sendfax',
   },
   {
     title: 'Inbound Fax',

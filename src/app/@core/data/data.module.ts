@@ -19,6 +19,7 @@ import { InFaxService } from '../../pages/infax/infax.service';
 import { DIDService } from '../../pages/did/did.service';
 import { DefaultSettingsService } from '../../pages/default_settings/default_settings.service';
 import { ExtensionService } from '../../pages/extension/extension.service';
+import { SendFaxService } from '../../pages/sendfax/sendfax.service';
 
 const SERVICES = [
   UserService,
@@ -37,7 +38,8 @@ const SERVICES = [
   InFaxService,
   DIDService,
   DefaultSettingsService,
-  ExtensionService
+  ExtensionService,
+  SendFaxService
 ];
 
 @NgModule({

@@ -52,13 +52,13 @@ export class DocumentService {
     });
   }
 
-  add_Document(document: Document): Promise<Document> {
+  add_Document(document: Document) {
     const headers = new Headers();
     this.app_service.createAuthorizationHeader(headers);
     const options = new RequestOptions({headers: headers});
     const body = JSON.stringify(document);
     const addDocumentUrl = `${this.app_service.apiUrlDocument}`;
-    return this.http.post(addDocumentUrl, body, options).toPromise().then(response => response.json() as Document)
+    return this.http.post(addDocumentUrl, body, options).toPromise().then(response => response.json())
     .catch(response => this.app_service.handleError(response));
   }
 

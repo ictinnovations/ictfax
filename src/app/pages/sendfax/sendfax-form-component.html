@@ -1,0 +1,110 @@
+<h3>Send Fax Document Program</h3>
+<div class="col-lg-12">
+  <form id="form1" #f1="ngForm">
+    <nb-card>
+      <nb-card-header>
+        Title
+      </nb-card-header>
+      <nb-card-body>
+        <div class="form-group">
+          <label for="title">Title:</label>
+          <input [(ngModel)]="sendfax.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+        <nb-card-header>
+          Choose Document
+        </nb-card-header>
+        <nb-card-body>
+          <div>  
+            <label for="document">Document:</label>  
+            <select class = "form-control" name = "document" (change)="onSelect($event.target.value)">
+              <option *ngFor="let document of documentArray; let i = index"   
+                [value] = "document.document_id" [selected]="i==0">  
+                {{document.name}}  
+              </option>  
+            </select>  
+          </div>
+        </nb-card-body>
+      </nb-card>
+
+      <div *ngIf = "(selectedDocument == 0)">
+          <nb-card>
+              <nb-card-header>
+               Upload Document
+              </nb-card-header>
+              <nb-card-body>
+                <div class="row">
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label for="name">Document Name:</label>
+                      <input [(ngModel)]="document.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="name" required/>
+                    </div>
+                  </div>
+                </div>
+                <div class="container">
+                    <div class="navbar navbar-default">
+                    </div>  
+                    <div class="row">            
+                      <div class="col-md-3">
+                        <label>Select File:</label>
+                        <input type="file" ng2FileSelect [uploader]="uploader" multiple  /><br/>
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngFor="let item of uploader.queue"> 
+                    <br>
+                    <label>{{ item?.file?.name }}</label>
+                    <i class="nb-close smmmm" (click)="item.remove()"></i>
+                  </div>
+                  <br><br>
+                  <div class="col-sm-6">
+                      <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input [(ngModel)]="document.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="description" required/>  
+                      </div>
+                    </div>
+              </nb-card-body>
+            </nb-card>
+            </div>
+    
+    <nb-card>
+      <nb-card-header>
+        Phone number of Destination Contact
+      </nb-card-header>
+      <nb-card-body>
+        <div class="form-group">
+          <label for="phone">Destination Contact: </label>
+          <input type="text" class="form-control" [(ngModel)]="sendfax.phone" [ngModelOptions]="{standalone: true}" id="phone" required/>
+        </div>    
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        Retry
+      </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <div>  
+              <label for="try_allowed">Retry:</label>  
+              <select class = "form-control" name = "try_allowed" [(ngModel)]= "sendfax.try_allowed" [ngModelOptions]="{standalone: true}">
+                <option value = "">Please Select an Option below</option>  
+                <option value="1">1</option>
+                <option value="2">2</option>
+                <option value="3">3</option>
+              </select>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+    <div>
+      <button type="button" class="btn btn-success" (click)="sendnewFax()" [disabled] = "(selectedDocument == 0 && (file == '' || document.name == undefined || document.name == ''))">Submit</button>
+    </div>
+  </form>
+</div>
+ 
