@@ -1,15 +1,17 @@
 Introduction
 ============
-ICTFAX is an open source [GNU GPLv3][gpl3] based multi-user and  web based software solution for businesses. ICTFAX is an email to fax gateway, supports G.711 faxing , PSTN faxing and T.38 origination and termination. ICTFAX based on open source __Freeswitch__, __ICTCore__.
 
-This angular based application acts as client to ICTFax, and offers basic functionality like email to fax, inbound fax, outbound fax, DIDs, Fax Campaigns and much more.
+ ICTFAX is a free and open source GNU GPLv3 based multi-user and web based Fax software solution for businesses. ICTFAX is an Email to Fax, Fax to Email and Web to Fax gateway applicaion, supports Extensions / ATA , REST API's and G.711 faxing, PSTN faxing and FoIP T.38 origination and termination. ICTFAX is based on open source Freeswitch, ICTCore and Angular Framework.
 
 ICTFAX can be used in following faxing scenarios
 
 * [Email to fax][emailtofax] / [web to fax][webtofax] / [fax to email][emailtofax]
 * G.711 based Fax Origination / Termination / Gateway
+* ATA / Extensions to send and receive faxes via Fax machine using internet
+* REST based Fax API's to integrate with third party applications and automate business process
+* G.711 based Fax Origination / Termination / Gateway
 * T.38 based Fax Origination / Termination
-* PSTN/SS7 based Fax Origination / Termination
+* PSTN based Fax Origination / Termination / Gateway
 
 A Single GUI is created to cover all the major communication methods and services like:
 
