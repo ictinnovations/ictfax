@@ -50,7 +50,7 @@ export const MENU_ITEMS: NbMenuItem[] = [
     icon: 'ion-arrow-down-c',
   },
   {
-    title: 'Administartion',
+    title: 'Administration',
     icon: 'ion-person',
     children: [
   {
@@ -122,7 +122,7 @@ export const userMenuItems: NbMenuItem[] = [
     icon: 'ion-arrow-down-c',
   },
   {
-    title: 'Administartion',
+    title: 'Administration',
     icon: 'ion-person',
     children: [
   {
