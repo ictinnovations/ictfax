@@ -7,11 +7,15 @@ import { MatTableModule } from '@angular/material/table';
 import { CdkTableModule } from '@angular/cdk/table';
 import { SendFaxService } from './sendfax.service';
 import { MatSortModule } from '@angular/material';
-import { MatPaginatorModule } from '@angular/material';
-import { DropDownsModule } from '@progress/kendo-angular-dropdowns';
+import { MatPaginatorModule, MatFormFieldModule, MatAutocompleteModule, MatInputModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material';
 import { FileUploadModule } from 'ng2-file-upload';
 import {MatTabsModule} from '@angular/material/tabs';
+import { Ng2CompleterModule } from "ng2-completer";
+import { NbCardModule } from '@nebular/theme';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+
+
 
 @NgModule({
   imports: [
@@ -23,7 +27,14 @@ import {MatTabsModule} from '@angular/material/tabs';
     MatSortModule,
     FileUploadModule,
     MatPaginatorModule,
-    MatTabsModule
+    MatTabsModule,
+    MatFormFieldModule,
+    MatAutocompleteModule,
+    MatInputModule,
+    Ng2CompleterModule,
+    NbCardModule,
+    FormsModule, 
+    ReactiveFormsModule
   ],
   declarations: [
     ...routedComponents,

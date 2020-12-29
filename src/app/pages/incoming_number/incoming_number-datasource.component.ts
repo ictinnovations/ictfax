@@ -10,13 +10,14 @@ import { IncomingNumberDatabase } from './incoming_number-database.component';
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/observable/merge';
 import 'rxjs/add/operator/toPromise';
-import { Observable } from 'rxjs/Observable';
+import { Observable } from 'rxjs/Rx';
 
 export class IncomingNumberDataSource extends DataSource<IncomingNumber> {
 
   constructor(private incomingNumberDatabase: IncomingNumberDatabase, private _sort: MatSort,
   private _paginator: MatPaginator) {
     super();
+
   }
 
   connect(): Observable<IncomingNumber[]> {
@@ -25,6 +26,7 @@ export class IncomingNumberDataSource extends DataSource<IncomingNumber> {
       this._sort.sortChange,
       this._paginator.page,
     ];
+
     return Observable.merge(...displayDataChanges)
     .map(() => this.getSortedData())
     .map(data => this.paginate(data));

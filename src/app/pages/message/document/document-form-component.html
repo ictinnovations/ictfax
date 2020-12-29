@@ -19,7 +19,7 @@
       
     <nb-card>
       <nb-card-header>
-        Upload Document
+        Upload Document (pdf, png, tiff and jpeg are supported only)
       </nb-card-header>
       <nb-card-body>
         <div class="container">
@@ -27,9 +27,13 @@
           </div>  
           <div class="row">            
             <div class="col-md-3">
-              <input type="file" ng2FileSelect [uploader]="uploader" multiple  /><br/>
+              <input type="file" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" ng2FileSelect [uploader]="uploader" multiple  /><br/>
             </div>
           </div>
+        </div>
+        <div *ngIf="unsupportedErr">
+          <br>
+          <label style="color:red" text-center>Unsupported file type</label>
         </div>
         <div *ngFor="let item of uploader.queue"> 
           <br>
@@ -40,6 +44,27 @@
             <i class="nb-close" (click)="item.remove()"></i>
           </button>
           !-->
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        Fax Quality Type
+      </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <div>  
+              <label for="type">Quality Type:</label>  
+              <select class = "form-control" name = "quality" [(ngModel)]= "document.quality" [ngModelOptions]="{standalone: true}" [disabled]="(document_id>0)">
+                <option value = "">Please Select an Option below</option>  
+                <option value="standard">Standard</option>
+                <option value="fine">Fine</option>
+                <option value="super">Super</option>
+              </select>
+            </div>
+          </div>
         </div>
       </nb-card-body>
     </nb-card>

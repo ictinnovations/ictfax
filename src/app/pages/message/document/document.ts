@@ -4,4 +4,5 @@ export class Document {
   file_name: any;
   type: string;
   description: string;
+  quality: any;
 }

@@ -13,6 +13,6 @@ export class Provider {
   settings: string;
   register: boolean;
   weight: number;
-  type: number;
-  active: number;
+  type: any;
+  active: any;
 }

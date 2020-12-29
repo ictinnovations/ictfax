@@ -2,21 +2,21 @@ import { ExtraOptions, RouterModule, Routes } from '@angular/router';
 import { NgModule } from '@angular/core';
 import {
   NbAuthComponent,
-  NbLoginComponent,
   NbLogoutComponent,
   NbRegisterComponent,
   NbRequestPasswordComponent,
   NbResetPasswordComponent,
 } from '@nebular/auth';
+import { LoginComponent } from './auth/login/login.component';
+import { LogoutComponent } from './auth/logout/logout.component';
 import { AuthGuard } from './auth-guard.service';
-import { NgxLoginComponent } from './auth/login/login.component';
-import { NgxLogoutComponent } from './auth/logout/logout.component';
 
 const routes: Routes = [
   {
     path: 'pages',
     canActivate: [AuthGuard],
-    loadChildren: 'app/pages/pages.module#PagesModule',
+    loadChildren: () => import('app/pages/pages.module')
+      .then(m => m.PagesModule),
   },
   {
     path: 'auth',
@@ -24,11 +24,11 @@ const routes: Routes = [
     children: [
       {
         path: '',
-        component: NgxLoginComponent,
+        component: LoginComponent,
       },
       {
         path: 'login',
-        component: NgxLoginComponent,
+        component: LoginComponent,
       },
       {
         path: 'register',
@@ -36,7 +36,7 @@ const routes: Routes = [
       },
       {
         path: 'logout',
-        component: NgxLogoutComponent,
+        component: LogoutComponent,
       },
       {
         path: 'request-password',
@@ -48,12 +48,12 @@ const routes: Routes = [
       },
     ],
   },
-  { path: '', redirectTo: 'dashboard', pathMatch: 'full' },
+  { path: '', redirectTo: 'pages', pathMatch: 'full' },
   { path: '**', redirectTo: 'pages' },
 ];
 
 const config: ExtraOptions = {
-  useHash: true,
+  useHash: false,
 };
 
 @NgModule({

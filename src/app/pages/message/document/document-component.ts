@@ -1,15 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { DocumentService } from './document.service';
-import { Document } from './document';
-import { DataSource } from '@angular/cdk/collections';
-import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { MatSortHeaderIntl } from '@angular/material';
-import { MatPaginator, MatSort } from '@angular/material';
+import { MatPaginator, MatSort, Sort } from '@angular/material';
 import { DocumentDatabase } from './document-database.component';
 import { DocumentDataSource } from './document-datasource.component';
 import { ModalComponent } from '../../../modal.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
-
+import { Observable } from 'rxjs/Rx';
 
 @Component({
   selector: 'ngx-document-component',
@@ -26,9 +22,11 @@ export class FormsDocumentComponent implements OnInit {
 
   displayedColumns= ['ID', 'name', 'Operations'];
 
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+
+  @ViewChild('filter', {static: false}) filter: ElementRef;
 
   ngOnInit() {
     this.getDocumentlist();
@@ -38,6 +36,22 @@ export class FormsDocumentComponent implements OnInit {
     this.document_service.get_DocumentList().then(data => {
       this.length = data.length;
       this.aDocument = new DocumentDataSource(new DocumentDatabase( data ), this.sort, this.paginator);
+
+      //Sort the data automatically
+
+      const sortState: Sort = {active: 'ID', direction: 'desc'};
+      this.sort.active = sortState.active;
+      this.sort.direction = sortState.direction;
+      this.sort.sortChange.emit(sortState);
+
+      // Observable for the filter
+      Observable.fromEvent(this.filter.nativeElement, 'keyup')
+     .debounceTime(150)
+     .distinctUntilChanged()
+     .subscribe(() => {
+       if (!this.aDocument) { return; }
+       this.aDocument.filter = this.filter.nativeElement.value;
+      });
     });
   }
 

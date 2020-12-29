@@ -17,10 +17,10 @@ A Single GUI is created to cover all the major communication methods and service
 
 By Using ICTFax a user can manage:
 
-  * Contacts Management
+  * Dashboard
   * Fax Documents
-  * Outbound Fax
-  * Inbound Fax
+  * Send Fax
+  * Receive Fax
   * DIDs
   * Extensions
   * User Management

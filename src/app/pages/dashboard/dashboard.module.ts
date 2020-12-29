@@ -1,24 +1,47 @@
 import { NgModule } from '@angular/core';
-import { AngularEchartsModule } from 'ngx-echarts';
+import {
+  NbActionsModule,
+  NbButtonModule,
+  NbCardModule,
+  NbTabsetModule,
+  NbUserModule,
+  NbRadioModule,
+  NbSelectModule,
+  NbListModule,
+  NbIconModule,
+} from '@nebular/theme';
+import { NgxEchartsModule } from 'ngx-echarts';
 
 import { ThemeModule } from '../../@theme/theme.module';
 import { DashboardComponent } from './dashboard.component';
 import { StatusCardComponent } from './status-card/status-card.component';
-import { TeamComponent } from './team/team.component';
-import { RouterModule } from '@angular/router';
+import { FormsModule } from '@angular/forms';
+import { MatTableModule, MatPaginatorModule, MatSortModule } from '@angular/material';
+import { CdkTableModule } from '@angular/cdk/table';
 
 @NgModule({
   imports: [
+    FormsModule,
     ThemeModule,
-    AngularEchartsModule,
-    RouterModule,
-
+    NbCardModule,
+    NbUserModule,
+    NbButtonModule,
+    NbTabsetModule,
+    NbActionsModule,
+    NbRadioModule,
+    NbSelectModule,
+    NbListModule,
+    NbIconModule,
+    NbButtonModule,
+    NgxEchartsModule,
+    MatTableModule,
+    MatPaginatorModule,
+    MatSortModule,
+    CdkTableModule
   ],
   declarations: [
     DashboardComponent,
     StatusCardComponent,
-
-    TeamComponent,
   ],
 })
 export class DashboardModule { }

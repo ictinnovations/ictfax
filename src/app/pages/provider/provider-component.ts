@@ -1,14 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ProviderService } from './provider.service';
-import { Provider } from './provider';
-import { DataSource } from '@angular/cdk/collections';
 import { MatSort, MatPaginator } from '@angular/material';
-import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { MatSortHeaderIntl } from '@angular/material';
 import { ProviderDatabase } from './provider-database.component';
 import { ProviderDataSource } from './provider-datasource.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ModalComponent } from '../../modal.component';
+import { Observable } from 'rxjs/Rx';
 
 @Component({
   selector: 'ngx-provider-component',
@@ -26,9 +23,11 @@ export class FormsProviderComponent implements OnInit {
 
   displayedColumns= ['ID', 'Name', 'host', 'type', 'Operations'];
 
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+
+  @ViewChild('filter', {static: false}) filter: ElementRef;
 
   ngOnInit() {
     this.getProviderlist();
@@ -38,6 +37,15 @@ export class FormsProviderComponent implements OnInit {
     this.provider_service.get_ProviderList().then(data => {
       this.length = data.length;
       this.aProvider = new ProviderDataSource(new ProviderDatabase( data ), this.sort, this.paginator);
+
+      // Observable for the filter
+      Observable.fromEvent(this.filter.nativeElement, 'keyup')
+     .debounceTime(150)
+     .distinctUntilChanged()
+     .subscribe(() => {
+       if (!this.aProvider) { return; }
+       this.aProvider.filter = this.filter.nativeElement.value;
+      });
     })
     .catch(this.handleError);
   }

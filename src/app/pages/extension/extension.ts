@@ -10,4 +10,11 @@ export class Extension {
   address: string;
   active: number;
   type: any;
+  settings : {
+    emailtofax_coversheet: any;
+  }
+}
+
+export class Settings {
+  value:any;
 }

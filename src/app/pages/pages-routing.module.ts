@@ -3,9 +3,8 @@ import { NgModule } from '@angular/core';
 
 import { PagesComponent } from './pages.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
-import { ErrorComponent } from './error-handler/error-handler.component';
-import { DefaultSettingsComponent } from './default_settings/default_settings-component';
 import { InFaxComponent } from './infax/infax-component';
+import { ChangePasswordComponent } from './changepassword/changepassword-component';
 
 const routes: Routes = [{
   path: '',
@@ -15,40 +14,49 @@ const routes: Routes = [{
     component: DashboardComponent,
   },
   {
-    path: 'Error',
-    component: ErrorComponent,
-  },
-  {
     path: 'infax',
-    component: InFaxComponent,
+    component: InFaxComponent
+  },
+  {  
+    path: 'Changepass',
+    component: ChangePasswordComponent
   },
   {
     path: 'contact',
-    loadChildren: './contact/contact.module#ContactModule',
+    loadChildren: () => import('./contact/contact.module')
+    .then(m => m.ContactModule),
   }, {
     path: 'message',
-    loadChildren: './message/message.module#MessageModule',
+    loadChildren: () => import('./message/message.module')
+    .then(m => m.MessageModule),
   }, {
     path: 'transmission',
-    loadChildren: './transmission/transmission.module#TransmissionModule',
+    loadChildren: () => import('./transmission/transmission.module')
+        .then(m => m.TransmissionModule),
   }, {
     path: 'provider',
-    loadChildren: './provider/provider.module#ProviderModule',
+    loadChildren: () => import('./provider/provider.module')
+        .then(m => m.ProviderModule),
   }, {
     path: 'user',
-    loadChildren: './user/user.module#UserModule',
-  }, {
-    path: 'incoming_number',
-    loadChildren: './incoming_number/incoming_number.module#IncomingNumberModule',
+    loadChildren: () => import('./user/user.module')
+    .then(m => m.UserModule),
   }, {
     path: 'extension',
-    loadChildren: './extension/extension.module#ExtensionModule',
+    loadChildren: () => import('./extension/extension.module')
+        .then(m => m.ExtensionModule),
   },{
+    path: 'incoming_number',
+    loadChildren: () => import('./incoming_number/incoming_number.module')
+      .then(m => m.IncomingNumberModule),
+  }, {
     path: 'sendfax',
-    loadChildren: './sendfax/sendfax.module#SendFaxModule',
+    loadChildren: () => import('./sendfax/sendfax.module')
+      .then(m => m.SendFaxModule),
   }, {
     path: 'did',
-    loadChildren: './did/did.module#DIDModule',
+    loadChildren: () => import('./did/did.module')
+      .then(m => m.DIDModule),
   },
    {
     path: '',

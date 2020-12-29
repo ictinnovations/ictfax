@@ -1,14 +1,11 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ContactService } from './contact.service';
-import { Contact } from './contact';
-import { DataSource } from '@angular/cdk/collections';
-import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { MatSortHeaderIntl } from '@angular/material';
 import { MatPaginator, MatSort } from '@angular/material';
 import { ContactDatabase } from './contact-database.component';
 import { ContactDataSource } from './contact-datasource.component';
 import { ModalComponent } from '../../modal.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { Observable } from 'rxjs/Rx';
 
 
 @Component({
@@ -27,10 +24,11 @@ export class FormsContactComponent implements OnInit {
 
   displayedColumns= ['ID', 'firstName', 'lastName', 'Phone', 'Email', 'Operations'];
 
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
+  @ViewChild('filter', {static: false}) filter: ElementRef;
 
   ngOnInit() {
     this.getContactlist();
@@ -40,6 +38,15 @@ export class FormsContactComponent implements OnInit {
     this.contact_service.get_ContactList().then(data => {
       this.length = data.length;
       this.aContact = new ContactDataSource(new ContactDatabase( data ), this.sort, this.paginator);
+
+      // Observable for the filter
+      Observable.fromEvent(this.filter.nativeElement, 'keyup')
+     .debounceTime(150)
+     .distinctUntilChanged()
+     .subscribe(() => {
+       if (!this.aContact) { return; }
+       this.aContact.filter = this.filter.nativeElement.value;
+      });
     });
   }
 

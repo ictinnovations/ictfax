@@ -2,14 +2,14 @@ import { NgModule } from '@angular/core';
 
 import { ThemeModule } from '../../@theme/theme.module';
 import { ContactRoutingModule, routedComponents } from './contact-routing.module';
-import { FormsContactComponent } from '../../pages/contact/contact-component';
 import { MatTableModule } from '@angular/material/table';
 import { CdkTableModule } from '@angular/cdk/table';
-import { ContactService } from '../../pages/contact/contact.service';
-import { MatSortModule } from '@angular/material';
+import { MatSortModule, MatIconModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material';
 import { MatPaginatorModule } from '@angular/material';
 import { FileUploadModule } from 'ng2-file-upload';
+import { NbCardModule, NbIconModule } from '@nebular/theme';
+import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -21,6 +21,11 @@ import { FileUploadModule } from 'ng2-file-upload';
     FileUploadModule,
     MatButtonModule,
     MatPaginatorModule,
+    MatIconModule,
+    NbCardModule,
+    FormsModule,
+    ReactiveFormsModule,
+    NbIconModule
   ],
   declarations: [
     ...routedComponents,

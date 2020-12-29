@@ -1,17 +1,9 @@
 import { DataSource } from '@angular/cdk/collections';
 import { TransmissionDatabase } from './transmission-database.component';
 import { Transmission } from './transmission';
-import { CdkTableModule } from '@angular/cdk/table';
-import { MatTableModule } from '@angular/material/table';
 import { MatSort, MatPaginator } from '@angular/material';
-import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { MatSortHeaderIntl } from '@angular/material';
 
-import 'rxjs/add/operator/startWith';
-import 'rxjs/add/observable/merge';
-import 'rxjs/add/operator/toPromise';
-import 'rxjs/add/operator/map';
-import { Observable } from 'rxjs/Observable';
+import { Observable, merge } from 'rxjs';
 
 export class TransmissionDataSource extends DataSource<Transmission> {
 
@@ -25,7 +17,7 @@ export class TransmissionDataSource extends DataSource<Transmission> {
       this._sort.sortChange,
       this._paginator.page,
     ];
-    return Observable.merge(...displayDataChanges)
+    return merge(...displayDataChanges)
     .map(() => this.getSortedData())
     .map(data => this.paginate(data));
   }

@@ -18,7 +18,6 @@ import 'rxjs/add/observable/merge';
 import 'rxjs/add/operator/toPromise';
 import { Observable } from 'rxjs/Observable';
 import { error } from 'util';
-import { errorHandler } from '@angular/platform-browser/src/browser';
 import { elementAt } from 'rxjs/operator/elementAt';
 
 
@@ -42,9 +41,9 @@ export class FormsTransmissionComponent implements OnInit {
 
   displayedColumns= ['ID', 'contact_id', 'status'];
 
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
 
   ngOnInit() {

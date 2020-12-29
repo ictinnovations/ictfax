@@ -3,7 +3,6 @@ import { AppService } from '../../app.service';
 import { Router } from '@angular/router';
 import { Settings } from './default_settings';
 import { DefaultSettingsService } from './default_settings.service';
-import { Response } from 'selenium-webdriver/http';
 
 @Component({
   selector: 'ngx-defaultsettings-component',

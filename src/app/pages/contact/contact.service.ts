@@ -16,12 +16,12 @@ export class ContactService {
 
   constructor(private http: Http, private app_service: AppService) {}
 
-  get_ContactList(): Promise<Contact[]> {
+  get_ContactList() {
     const headers = new Headers();
     this.app_service.createAuthorizationHeader(headers);
     const options = new RequestOptions({ headers: headers});
     return this.http.get(this.app_service.apiUrlContacts, options).toPromise()
-    .then(response => response.json() as Contact[]).catch(response => this.app_service.handleError(response));
+    .then(response => response.json() ).catch(response => this.app_service.handleError(response));
   }
 
   get_ContactData(contact_id): Promise<Contact> {

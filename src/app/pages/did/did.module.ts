@@ -6,12 +6,13 @@ import { FormsDIDComponent } from './did-component';
 import { MatTableModule } from '@angular/material/table';
 import { CdkTableModule } from '@angular/cdk/table';
 import { DIDService } from './did.service';
-import { MatSortModule, MatPaginator } from '@angular/material';
+import { MatSortModule, MatPaginator, MatIconModule } from '@angular/material';
 import { MatButtonModule } from '@angular/material';
 import { MatPaginatorModule } from '@angular/material';
 import { MatRadioModule } from '@angular/material/radio';
-import { DropDownsModule } from '@progress/kendo-angular-dropdowns';
 import { FileUploadModule } from 'ng2-file-upload';
+import { NbCardModule } from '@nebular/theme';
+import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
   imports: [
@@ -23,8 +24,11 @@ import { FileUploadModule } from 'ng2-file-upload';
     MatButtonModule,
     MatPaginatorModule,
     MatRadioModule,
-    DropDownsModule,
     FileUploadModule,
+    NbCardModule,
+    MatIconModule, 
+    FormsModule,
+    ReactiveFormsModule
   ],
   declarations: [
     ...routedComponents,

@@ -1,0 +1,75 @@
+<h3>Create Document Campaign</h3>
+<div class="col-lg-12">
+<form id="form1" #f1="ngForm">
+<nb-card>
+  <nb-card-header>
+  Choose Document
+  </nb-card-header>
+    <nb-card-body>
+          <div>  
+            <label for="document">Document:</label>  
+                <select class = "form-control" name = "document" [(ngModel)]= "selectedDoc">  
+                <option *ngFor="let document of document"  
+                       [ngValue] = "document" >  
+                              {{document.name}}  
+                </option>  
+                </select>  
+          </div>
+    </nb-card-body>
+</nb-card>
+<div *ngIf="(!campaign_id)">
+<nb-card>
+    <nb-card-header>
+        Choose Group
+    </nb-card-header>
+    <nb-card-body>
+            <div *ngIf="(!campaign_id)">  
+                    <label for = "group">Groups:</label>  
+                        <select class = "form-control" name = "group" [(ngModel)]= "selectedGrp">  
+                                        <option *ngFor="let group of group"  
+                               [ngValue] = "group">  
+                                      {{group.name}} 
+                        </option>  
+                          </select>  
+                    </div>  
+    </nb-card-body>
+</nb-card>
+</div>    
+<nb-card>
+  <nb-card-header>
+    Retry
+  </nb-card-header>
+  <nb-card-body>
+    <div class="row">
+    <div class="col-sm-6">
+        <div class="form-group">
+            <div>  
+                <label for="try_allowed">Retry:</label>  
+                    <select class = "form-control" name = "try_allowed" [(ngModel)]= "campaign.try_allowed" [ngModelOptions]="{standalone: true}">
+                    <option value = "">Please Select an Option below</option>  
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                      </select>
+                </div>
+        </div>
+    </div>
+    <div class="col-sm-6">
+      <div class="form-group">
+        <label for="delay">Delay b/w Fax in minutes</label>
+        <input [(ngModel)]="campaign.cpm" [ngModelOptions]="{standalone: true}" type="text" id="delay" class="form-control" placeholder="Delay b/w calls" required/>
+      </div>
+</div>
+    </div>
+  </nb-card-body>
+</nb-card>
+
+
+<div *ngIf="(campaign_id>0)">
+    <button type="button" class="btn btn-primary" (click)="updateCampaign()">Update</button>
+</div>
+<div *ngIf="(!campaign_id)">
+    <button type="button" class="btn btn-success" (click)="addSendDocument()">Submit</button>
+</div>
+</form>
+</div>

@@ -1,12 +1,10 @@
-import { Component, OnInit, NgModule, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
-import { Router, ActivatedRoute, Params, ParamMap } from '@angular/router';
-import { Http, HttpModule, Response } from '@angular/http';
-import { FormsModule, FormGroup, FormBuilder } from '@angular/forms';
-import { Extension } from './extension';
+import { Component, OnInit } from '@angular/core';
+import { Router, ActivatedRoute } from '@angular/router';
+import { FormGroup } from '@angular/forms';
+import { Extension, Settings } from './extension';
 import { ExtensionService } from './extension.service';
 import 'rxjs/add/operator/toPromise';
-import { Directive, forwardRef, Attribute } from '@angular/core';
-import { NG_VALIDATORS, Validator, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
+
 
 @Component({
   selector: 'ngx-add-extension-component',
@@ -17,7 +15,7 @@ import { NG_VALIDATORS, Validator, Validators, AbstractControl, ValidatorFn } fr
 
 export class AddExtensionComponent implements OnInit {
 
-  constructor(private http: Http, private route: ActivatedRoute, private account_service: ExtensionService,
+  constructor(private route: ActivatedRoute, private account_service: ExtensionService,
   private router: Router) { }
 
 
@@ -25,6 +23,9 @@ export class AddExtensionComponent implements OnInit {
   extension: Extension= new Extension;
   account_id: any= null;
   form: FormGroup;
+
+  settings: Settings = new Settings;
+  public sendbody: any = false;
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -36,6 +37,7 @@ export class AddExtensionComponent implements OnInit {
       } else {
         return this.account_service.get_ExtensionData(this.account_id).then(data => {
           this.extension = data;
+          this.fetch_settings();
         });
       }
     });
@@ -44,13 +46,47 @@ export class AddExtensionComponent implements OnInit {
   addExtension(): void {
     this.extension.type = 'extension';
     this.account_service.add_Extension(this.extension).then(response => {
+      if (this.sendbody == true) {
+        this.updateSettings(response);
+      }
+      else {
+        this.deleteSettings(response);
+
+      }
       this.router.navigate(['../../extension'], {relativeTo: this.route});
     });
   }
 
   updateExtension(): void {
     this.account_service.update_Extension(this.extension).then(() => {
+      if (this.sendbody == true) {
+        this.updateSettings(this.extension.account_id);
+      }
+      else {
+        this.deleteSettings(this.extension.account_id);
+
+      }
       this.router.navigate(['../../extension'], {relativeTo: this.route});
+    })
+    .catch(this.handleError);
+  }
+
+  fetch_settings() {
+    this.account_service.get_Settings(this.extension.account_id).then(response => {
+      this.sendbody = response;
+    })
+    .catch(err => this.handleError(err));
+  }
+
+  updateSettings(account_id) {
+    this.settings.value = 'body';
+    this.account_service.update_Settings(account_id,this.settings).then(data => {
+    })
+    .catch(this.handleError);
+  }
+
+  deleteSettings(account_id) {
+    this.account_service.delete_Settings(account_id).then(data => {
     })
     .catch(this.handleError);
   }

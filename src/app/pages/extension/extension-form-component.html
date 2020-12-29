@@ -85,17 +85,11 @@
               <div  *ngIf="email.errors && email.errors.pattern">
                 Email is invalid
               </div>
-            </div>
-          </div>
-        </div>
-        <div class="col-sm-6">
-          <div class="form-group">
-            <label for="address">Address:</label>
-            <textarea [(ngModel)]="extension.address" [ngModelOptions]="{standalone: true}" class="form-control" id="address" rows="10" cols="30" required></textarea>              
-          </div>
-        </div>
-      </nb-card-body>
-    </nb-card>
+              </div>
+            </div>     
+        </div> 
+  </nb-card-body>
+</nb-card>
     <nb-card>
       <nb-card-header>
         Active
@@ -107,6 +101,21 @@
               <label for="active">Active:</label>
               <input [(ngModel)]="extension.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="0"> No
               <input [(ngModel)]="extension.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="1"> Yes
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+    
+    <nb-card>
+      <nb-card-header>
+        Settings
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <input type="checkbox" [(ngModel)]="sendbody" [ngModelOptions]="{standalone: true}" [checked]="sendbody"> Send Email Body as coversheet<br>
             </div>
           </div>
         </div>

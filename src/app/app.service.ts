@@ -1,7 +1,5 @@
-import { Injectable, Component } from '@angular/core';
-import { Http, Headers, Response, RequestOptions } from '@angular/http';
-import { Subject } from 'rxjs/Subject';
-import { NbAuthService, NbTokenService, NbAuthJWTToken } from '@nebular/auth';
+import { Injectable } from '@angular/core';
+import { Http, Headers } from '@angular/http';
 import { Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { environment } from '../environments/environment';
@@ -11,7 +9,7 @@ import { environment } from '../environments/environment';
 export class AppService {
 
   constructor(private http: Http, private router: Router, private _location: Location) {
-    this.upload_Header.push({name: 'Authorization', value: 'Bearer ' + localStorage.getItem('auth_app_token')});
+    this.upload_Header.push({name: 'Authorization', value: 'Bearer ' + JSON.parse(localStorage.getItem('auth_app_token')).value});
   }
   // headers for uploading the file
   upload_Header: Array<{
@@ -46,7 +44,8 @@ export class AppService {
   apiUrlRoles = `${this.apiUrl}/roles`;
 
   createAuthorizationHeader(headers: Headers) {
-    headers.append('Authorization', ' Bearer ' + localStorage.getItem('auth_app_token'));
+    let token:any = localStorage.getItem('auth_app_token');
+    headers.append('Authorization', ' Bearer ' + JSON.parse(token).value);
     headers.append('Content-Type', 'application/json');
     headers.append('Accept', 'application/json');
   }
@@ -54,7 +53,7 @@ export class AppService {
   public handleError(error: any): Promise<any> {
     console.error('An error occurred', error); // for demo purposes only
     if (error.status === 0 || error.status === 500) {
-      this.router.navigate(['pages/Error']);
+      this.router.navigate(['pages/miscellaneous/404']);
     }
     if (error.status === 401) {
       this.router.navigate(['auth/login']);

@@ -98,6 +98,16 @@ export class AUserService {
     .catch(response => this.app_service.handleError(response));
   }
 
+  changePass(user) {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({headers: headers});
+    const body = JSON.stringify(user);
+    const updateUrl = `${this.app_service.apiUrlUsers}/${user.user_id}/password`;
+    return this.http.put(updateUrl, body, options).toPromise().then(response => response.json())
+    .catch(response => this.app_service.handleError(response));
+  }
+
   private handleError(error: any): Promise<any> {
     console.error('An error occurred', error); // for demo purposes only
     return Promise.reject(error.message || error);

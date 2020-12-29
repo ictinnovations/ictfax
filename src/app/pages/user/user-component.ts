@@ -1,15 +1,12 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { AUserService } from './user.service';
-import { User } from './user';
-import { DataSource } from '@angular/cdk/collections';
-import { MatSort, MatPaginator } from '@angular/material';
-import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { MatSortHeaderIntl } from '@angular/material';
+import { MatSort, MatPaginator, Sort } from '@angular/material';
 import { UserDatabase } from './user-database.component';
 import { UserDataSource } from './user-datasource.component';
 import { ModalComponent } from '../../modal.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
-
+import { fromEvent } from 'rxjs';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 @Component({
   selector: 'ngx-user-component',
@@ -28,10 +25,11 @@ export class FormsUserComponent implements OnInit {
 
   displayedColumns= ['ID', 'username', 'first_name', 'last_name', 'email', 'Operations'];
 
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
+  @ViewChild('filter', {static: false}) filter: ElementRef;
 
   ngOnInit() {
     this.getUserlist();
@@ -41,9 +39,24 @@ export class FormsUserComponent implements OnInit {
     this.user_service.get_UserList().then(data => {
       this.length = data.length;
       this.aUser = new  UserDataSource(new UserDatabase( data ), this.sort, this.paginator);
+
+      //Sort the data automatically
+
+      const sortState: Sort = {active: 'ID', direction: 'desc'};
+      this.sort.active = sortState.active;
+      this.sort.direction = sortState.direction;
+      this.sort.sortChange.emit(sortState);
+
+      // Observable for the filter
+      fromEvent(this.filter.nativeElement, 'keyup')
+      .pipe(debounceTime(150),
+      distinctUntilChanged())
+     .subscribe(() => {
+       if (!this.aUser) { return; }
+       this.aUser.filter = this.filter.nativeElement.value;
+      });
     });
   }
-
 
   deleteUser(user_id): void {
     this.user_service.delete_User(user_id)

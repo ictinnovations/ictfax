@@ -1,6 +1,7 @@
 <nb-card>
   <nb-card-header>
     Document List
+    <input style="float:right" class="form-control cc" type="text" #filter placeholder="Filter Documents">
   </nb-card-header>
 
   <nb-card-body>
@@ -12,26 +13,24 @@
         <ng-container matColumnDef="ID">
           <mat-header-cell *matHeaderCellDef mat-sort-header>ID</mat-header-cell>
           <mat-cell *matCellDef="let document">
-            {{document.document_id}}
-          </mat-cell>
+            {{document.document_id}}</mat-cell>
         </ng-container>
         <ng-container matColumnDef="name">
           <mat-header-cell *matHeaderCellDef mat-sort-header>Document Name:</mat-header-cell>
           <mat-cell *matCellDef="let document" style="text-align:left">
-            {{document.name}}
-          </mat-cell>
+            {{document.name}}</mat-cell>
         </ng-container>
         <ng-container cdkColumnDef="Operations">
           <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
           <mat-cell *matCellDef="let document">
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/message/document/{{document.document_id}}" title="Edit"><i class="fa fa-pencil-square-o"></i></a></mat-icon>
+              <mat-icon><a routerLink="/pages/message/document/{{document.document_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
             </button>
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="downloadDocument(document.document_id)"  ><i class="fa fa-cloud-download" title="Download"></i></mat-icon>
+              <mat-icon (click)="downloadDocument(document.document_id)"  ><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon>
             </button>
             <button mat-icon-button color="primary" style= "font-size:20px">  
-              <mat-icon style="color:red" (click)="showStaticModal(document.name, document.document_id)" ><i class="fa fa-trash" title="Delete"></i></mat-icon>                
+              <mat-icon style="color:red" (click)="showStaticModal(document.name, document.document_id)" ><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>                
             </button>
           </mat-cell>
         </ng-container>

@@ -1,11 +1,7 @@
 import { NgModule, ModuleWithProviders } from '@angular/core';
 import { CommonModule } from '@angular/common';
 
-import { UserService } from './users.service';
-import { ElectricityService } from './electricity.service';
-import { StateService } from './state.service';
-import { SmartTableService } from './smart-table.service';
-import { PlayerService } from './player.service';
+
 import { ContactService } from '../../pages/contact/contact.service';
 import { DocumentService } from '../../pages/message/document/document.service';
 import { TransmissionService } from '../../pages/transmission/transmission.service';
@@ -22,11 +18,6 @@ import { ExtensionService } from '../../pages/extension/extension.service';
 import { SendFaxService } from '../../pages/sendfax/sendfax.service';
 
 const SERVICES = [
-  UserService,
-  ElectricityService,
-  StateService,
-  SmartTableService,
-  PlayerService,
   ContactService,
   DocumentService,
   TransmissionService,

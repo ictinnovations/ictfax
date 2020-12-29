@@ -3,8 +3,9 @@
  * Copyright Akveo. All Rights Reserved.
  * Licensed under the MIT License. See License.txt in the project root for license information.
  */
-import { Component, OnInit, Injectable } from '@angular/core';
+import { Component, OnInit } from '@angular/core';
 import { AnalyticsService } from './@core/utils/analytics.service';
+import { SeoService } from './@core/utils/seo.service';
 
 @Component({
   selector: 'ngx-app',
@@ -12,10 +13,11 @@ import { AnalyticsService } from './@core/utils/analytics.service';
 })
 export class AppComponent implements OnInit {
 
-  constructor(private analytics: AnalyticsService) {
+  constructor(private analytics: AnalyticsService, private seoService: SeoService) {
   }
 
   ngOnInit(): void {
     this.analytics.trackPageViews();
+    this.seoService.trackCanonicalChanges();
   }
 }

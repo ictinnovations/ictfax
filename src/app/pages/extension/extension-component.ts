@@ -1,12 +1,11 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { ExtensionService } from './extension.service';
-import { Extension } from './extension';
-import { DataSource } from '@angular/cdk/collections';
 import { MatSort, MatPaginator } from '@angular/material';
 import { ExtensionDatabase } from './extension-database.component';
 import { ExtensionDataSource } from './extension-datasource.component';
 import { ModalComponent } from '../../modal.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { Observable } from 'rxjs/Rx';
 
 @Component({
   selector: 'ngx-extension-component',
@@ -23,10 +22,11 @@ export class FormsExtensionComponent implements OnInit {
 
   displayedColumns= ['ID', 'username', 'phone', 'email', 'Operations'];
 
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
+  @ViewChild('filter', {static: false}) filter: ElementRef;
 
   ngOnInit() {
     this.getExtensionlist();
@@ -36,6 +36,15 @@ export class FormsExtensionComponent implements OnInit {
     this.extension_service.get_ExtensionList().then(data => {
       this.length = data.length;
       this.aExtension = new  ExtensionDataSource(new ExtensionDatabase( data ), this.sort, this.paginator);
+
+      // Observable for the filter
+      Observable.fromEvent(this.filter.nativeElement, 'keyup')
+     .debounceTime(150)
+     .distinctUntilChanged()
+     .subscribe(() => {
+       if (!this.aExtension) { return; }
+       this.aExtension.filter = this.filter.nativeElement.value;
+      });
     });
   }
 
