@@ -28,6 +28,9 @@ export class AddProviderComponent implements OnInit {
       const test_url = this.router.url.split('/');
       const lastsegment = test_url[test_url.length - 1];
       if (lastsegment === 'new') {
+        this.provider.active = '1';
+        this.provider.type = 'sip';
+        console.log(this.provider.active);
         return null;
       } else {
         return this.provider_service.get_ProviderData(this.provider_id).then(data => {

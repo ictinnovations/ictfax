@@ -1,6 +1,7 @@
 <nb-card>
   <nb-card-header>
     Contact List
+    <input style="float:right" class="form-control cc" type="text" #filter placeholder="Filter Contacts">
   </nb-card-header>
   
   <nb-card-body>
@@ -43,10 +44,10 @@
           <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
           <mat-cell *matCellDef="let contact">
             <button mat-icon-button color="accent" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/contact/contacts/{{contact.contact_id}}" title="Edit"><i class="fa fa-pencil-square-o"></i></a></mat-icon>
+              <mat-icon><a routerLink="/pages/contact/contacts/{{contact.contact_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
             </button>
             <button mat-icon-button style="font-size:20px">
-              <mat-icon style="color:red" (click)="showStaticModal(contact.first_name, contact.contact_id)"><i class="fa fa-trash" title="Delete"></i></mat-icon>                
+              <mat-icon style="color:red" (click)="showStaticModal(contact.first_name, contact.contact_id)"><nb-icon icon="trash-2-outline"></nb-icon></mat-icon>                
             </button>
           </mat-cell>
         </ng-container>

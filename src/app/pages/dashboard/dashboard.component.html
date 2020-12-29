@@ -1,30 +1,33 @@
 <h3 style="text-align:center">System Statistics</h3><br>
 <div class="row">
-  <div class="col-xxxl-3 col-md-6">
-    <ngx-status-card title="Total Campaigns" type="primary">
-      <span style="font-size:30px">{{cam_t}}</span>
+  
+  <div class="col-xxxl-6 col-md-6" (click)="cardClick('outfax')">
+    <ngx-status-card title="Outbound Fax" type="primary">
+      <span style="font-size:30px">{{outfax_total}}</span>
     </ngx-status-card>
   </div>
 
-  <div class="col-xxxl-3 col-md-6">
-    <ngx-status-card title="Active Campaigns" type="success">
-      <span style="font-size:30px">{{cam_actv}}</span>
+  <div class="col-xxxl-6 col-md-6" (click)="cardClick('infax')">
+    <ngx-status-card title="Inbound Fax" type="success">
+      <span style="font-size:30px">{{infax_total}}</span>
+    </ngx-status-card>
+  </div>
+  
+
+  <div class="col-xxxl-6 col-md-6" (click)="cardClick('dids')">
+    <ngx-status-card title="DIDs" type="info">
+        <span style="font-size:30px">{{did_total}}</span>
     </ngx-status-card>
   </div>
 
-  <div class="col-xxxl-3 col-md-6">
-    <ngx-status-card title="Total Contacts" type="info">
-      <span style="font-size:30px">{{con_t}}</span>
-    </ngx-status-card>
-  </div>
-
-  <div class="col-xxxl-3 col-md-6">
-    <ngx-status-card title="Contact Processed" type="warning">
-      <span style="font-size:30px">{{con_pr}}</span>
+  <div class="col-xxxl-6 col-md-6" (click)="cardClick('users')">
+    <ngx-status-card title="Users" type="warning">
+      <span style="font-size:30px">{{user_total}}</span>
     </ngx-status-card>
   </div>
 </div>
 
+<!--
 <nb-card>
   <nb-card-header style="font-size:20px">
     Inbound Fax and Outbound Fax
@@ -60,10 +63,10 @@
 
 <nb-card>
   <nb-card-header style="font-size:20px">
-    DID and Trunk Support
+    Extension and DID Support
   </nb-card-header>
   <nb-card-body>
-    ICTFax supports both Trunk and DID. <br><br>
+    ICTFax supports both Extension and DID. <br><br>
     <div class="row">
       <div class="col-xxxl-9 col-xxl-6 col-md-5">
         <nb-card>
@@ -87,6 +90,184 @@
           </nb-card-body>
         </nb-card>
       </div>
+    </div>
+  </nb-card-body>
+</nb-card>
+!-->
+
+<nb-card *ngIf="users">
+  <nb-card-header>
+    User List
+  </nb-card-header>
+
+  <nb-card-body>
+    <br>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aUser" matSort>
+        <ng-container matColumnDef="ID">
+          <mat-header-cell *matHeaderCellDef mat-sort-header >ID</mat-header-cell>
+          <mat-cell *matCellDef="let user">
+            {{user.user_id}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="username">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
+          <mat-cell *matCellDef="let user" style="text-align:left">
+            {{user.username}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="first_name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>First Name</mat-header-cell>
+          <mat-cell *matCellDef="let user" style="text-align:left">
+            {{user.first_name}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="last_name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</mat-header-cell>
+          <mat-cell *matCellDef="let user" style="text-align:left">
+            {{user.last_name}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="email">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+          <mat-cell *matCellDef="let user" style="text-align:left">
+            {{user.email}}</mat-cell>
+        </ng-container>                    
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "user_length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>
+
+<nb-card *ngIf="dids">
+  <nb-card-header>
+    DID List 
+  </nb-card-header>
+  
+  <nb-card-body>
+    <br>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aDID" matSort>
+        <ng-container matColumnDef="phone">
+          <mat-header-cell *matHeaderCellDef mat-sort-header >Number</mat-header-cell>
+          <mat-cell *matCellDef="let did">
+            {{did.phone}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="first_name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Title</mat-header-cell>
+          <mat-cell *matCellDef="let did" style="text-align:left">
+            {{did.first_name}}</mat-cell>
+        </ng-container>     
+        <mat-header-row *matHeaderRowDef="did_displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:did_displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "did_length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>
+
+<nb-card *ngIf="outfax">
+  <nb-card-header>
+    Outbound Fax
+  </nb-card-header>
+
+  <nb-card-body>
+    
+    <br>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aSendFax" matSort>
+        <ng-container matColumnDef="ID">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>ID</mat-header-cell>
+          <mat-cell *matCellDef="let sendfax">
+            {{sendfax.transmission_id}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="phone">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Phone number</mat-header-cell>
+          <mat-cell *matCellDef="let sendfax">
+            {{sendfax.contact_phone}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="Timestamp">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Date and Time</mat-header-cell>
+          <mat-cell *matCellDef="let sendfax">
+            {{sendfax.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="username">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Username</mat-header-cell>
+          <mat-cell *matCellDef="let sendfax" style="text-align:left">
+            {{sendfax.username}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
+          <mat-cell *matCellDef="let sendfax" style="text-align:left">
+            {{sendfax.status}}
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="senfax_displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:senfax_displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "sendfax_length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>
+
+<nb-card *ngIf="infax">
+  <nb-card-header>
+    Inbound Fax
+  </nb-card-header>
+
+  <nb-card-body>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aInFax" matSort>
+        <ng-container matColumnDef="ID">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>ID</mat-header-cell>
+          <mat-cell *matCellDef="let infax">
+            {{infax.transmission_id}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="phone">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Phone number</mat-header-cell>
+          <mat-cell *matCellDef="let infax" style="text-align:left">
+            {{infax.contact_phone}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
+          <mat-cell *matCellDef="let infax" style="text-align:left">
+            {{infax.status}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="Timestamp">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Date and Time</mat-header-cell>
+          <mat-cell *matCellDef="let infax">
+            {{infax.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="infax_displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:infax_displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "infax_length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
     </div>
   </nb-card-body>
 </nb-card>

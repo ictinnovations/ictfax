@@ -1,54 +1,56 @@
 <nb-card>
-  <nb-card-header>
-    Extension List 
-  </nb-card-header>
+    <nb-card-header>
+      Extension List 
+      <input style="float:right" class="form-control cc" type="text" #filter placeholder="Filter Extensions">
+    </nb-card-header>
   
-  <nb-card-body>
-    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/extension/extension/new']"><i class="fa fa-plus"></i>Add Extension</button>
-    <br>
-    <br>
-    <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aExtension" matSort>
-        <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header >ID</mat-header-cell>
-          <mat-cell *matCellDef="let extension">
-            {{extension.account_id}}</mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="username">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
-          <mat-cell *matCellDef="let extension" style="text-align:left">
-            {{extension.username}}</mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>Phone</mat-header-cell>
-          <mat-cell *matCellDef="let extension" style="text-align:left">
-            {{extension.phone}}</mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="email">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
-          <mat-cell *matCellDef="let extension" style="text-align:left">
-            {{extension.email}}</mat-cell>
-        </ng-container>                    
-        <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
-          <mat-cell *matCellDef="let extension">
-            <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/extension/extension/{{extension.account_id}}" title="Edit"><i class="fa fa-pencil-square-o"></i></a></mat-icon>
-            </button>
-            <button mat-icon-button color="primary" style= "font-size:20px">  
-              <mat-icon style="color: red" (click)="showStaticModal(extension.username, extension.account_id)" ><i class="fa fa-trash" title="Delete"></i></mat-icon>                  
-            </button>
-          </mat-cell>
-        </ng-container>
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-      [length] = "length"
-      [pageIndex]="0"
-      [pageSize]="10"
-      [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
-    </div>
-  </nb-card-body>
+    <nb-card-body>
+        <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/extension/extension/new']"><i class="fa fa-plus"></i>Add Extension</button>
+        <br>
+        <br>
+      <div class="example-container mat-elevation-z8">
+        <mat-table #table [dataSource]="aExtension" matSort>
+          <ng-container matColumnDef="ID">
+            <mat-header-cell *matHeaderCellDef mat-sort-header >ID</mat-header-cell>
+            <mat-cell *matCellDef="let extension">
+              {{extension.account_id}}</mat-cell>
+          </ng-container>
+          <ng-container matColumnDef="username">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
+            <mat-cell *matCellDef="let extension" style="text-align:left">
+              {{extension.username}}</mat-cell>
+          </ng-container>
+          <ng-container matColumnDef="phone">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>Phone</mat-header-cell>
+            <mat-cell *matCellDef="let extension" style="text-align:left">
+              {{extension.phone}}</mat-cell>
+          </ng-container>
+          <ng-container matColumnDef="email">
+            <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+            <mat-cell *matCellDef="let extension" style="text-align:left">
+              {{extension.email}}</mat-cell>
+            </ng-container>                    
+            <ng-container cdkColumnDef="Operations">
+                <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+                <mat-cell *matCellDef="let extension">
+                <button mat-icon-button color="primary" style= "font-size:20px">
+                  <mat-icon><a routerLink="/pages/extension/extension/{{extension.account_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
+                </button>
+                <button mat-icon-button color="primary" style= "font-size:20px">  
+                  <mat-icon style="color: red" (click)="showStaticModal(extension.username, extension.account_id)" ><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>                  
+                </button>
+                </mat-cell>
+                </ng-container>
+        <mat-header-row
+          *matHeaderRowDef="displayedColumns"></mat-header-row>
+          <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
+    </mat-table>
+    <mat-paginator #paginator
+    [length] = "length"
+    [pageIndex]="0"
+    [pageSize]="10"
+    [pageSizeOptions]="[5, 10, 25, 100]">
+  </mat-paginator>
+  </div>
+</nb-card-body>
 </nb-card>

@@ -1,0 +1,69 @@
+<nb-card>
+  <nb-card-header>
+    Campaign List
+  </nb-card-header>
+  <nb-card-body>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/campaigns/campaigns/sendfax/new']"><i class="fa fa-plus"></i> New Fax Campaign</button>
+    <br><br>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aCampaign" matSort>
+        <ng-container matColumnDef="ID">
+          <mat-header-cell *matHeaderCellDef mat-sort-header >ID</mat-header-cell>
+          <mat-cell *matCellDef="let campaign">
+            {{campaign.campaign_id}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="ID1">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Program ID</mat-header-cell>
+          <mat-cell *matCellDef="let campaign">
+            {{campaign.program_id}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Program Name</mat-header-cell>
+          <mat-cell *matCellDef="let campaign" style="text-align:left">
+            {{campaign.program_type}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="status">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
+          <mat-cell *matCellDef="let campaign" style="text-align:left">
+            {{campaign.status}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="total">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Total</mat-header-cell>
+          <mat-cell *matCellDef="let campaign">
+            {{campaign.contact_total}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="done">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Done</mat-header-cell>
+          <mat-cell *matCellDef="let campaign">
+            {{campaign.contact_done}}</mat-cell>
+        </ng-container>
+        <ng-container cdkColumnDef="Operations">
+          <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+          <mat-cell *matCellDef="let campaign">
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/campaigns/campaigns/{{campaign.program_type}}/{{campaign.campaign_id}}" title="Edit"><i class="fa fa-pencil-square-o"></i></a></mat-icon>
+            </button>
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon (click)="startCampaign(campaign.campaign_id)"><i class="fa fa-play-circle" title="Start"></i></mat-icon>
+            </button>
+            <br>
+            <button mat-icon-button color="primary" style= "font-size:20px">  
+              <mat-icon (click)="stopCampaign(campaign.campaign_id)" ><i class="fa fa-stop" title="Stop"></i></mat-icon>
+            </button>
+            <button mat-icon-button color="primary" style= "font-size:20px">  
+              <mat-icon style="color: red" (click)="showStaticModal(campaign.campaign_id)" ><i class="fa fa-trash" title="Delete"></i></mat-icon>                  
+            </button>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>

@@ -4,9 +4,9 @@ export class SendFax {
   transmission_id: number;
   service_flag: number;
   account_id: number;
-  phone: number;
+  phone: any;
   email: string;
-  contact_id: number;
+  contact_id: any;
   origin: string;
   direction: string;
   status: string;
@@ -17,6 +17,11 @@ export class SendFax {
   fax_to: any;
   job_id: any;
   result: any;
+  last_run: any;
+  contact: {
+    phone:any;
+  }
+  contact_phone:any;
 }
 
 export class DocumentProgram {

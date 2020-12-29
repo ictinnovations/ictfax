@@ -1,7 +1,5 @@
-import { Component, OnInit, ViewChild } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { DIDService } from './did.service';
-import { DID } from './did';
-import { DataSource } from '@angular/cdk/collections';
 import { MatSort, MatPaginator } from '@angular/material';
 import { DIDDatabase } from './did-database.component';
 import { DIDDataSource } from './did-datasource.component';
@@ -24,9 +22,11 @@ export class FormsDIDComponent implements OnInit {
 
   displayedColumns= ['phone', 'first_name', 'Operations'];
 
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, {static: false}) sort: MatSort;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+
+  @ViewChild('filter', {static: false}) filter: ElementRef;
 
 
   ngOnInit() {

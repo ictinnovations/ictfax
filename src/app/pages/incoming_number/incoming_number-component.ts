@@ -40,9 +40,9 @@ export class FormsIncomingNumberComponent implements OnInit {
 
   displayedColumns= ['phone', 'first_name', 'Operations'];
 
-  @ViewChild(MatSort) sort: MatSort;
+  @ViewChild(MatSort, { static: false}) sort: MatSort;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  @ViewChild(MatPaginator, { static: false}) paginator: MatPaginator;
 
   ngOnInit() {
     if (this.auser.is_admin == 0) {

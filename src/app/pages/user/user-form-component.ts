@@ -1,14 +1,12 @@
 import { Component, OnInit, NgModule, TemplateRef, ViewChild, ViewContainerRef } from '@angular/core';
 import { Router, ActivatedRoute, Params, ParamMap } from '@angular/router';
 import { Http, HttpModule, Response } from '@angular/http';
-import { FormsModule, FormGroup, FormBuilder } from '@angular/forms';
+import { FormsModule, FormGroup, FormBuilder, FormControl, NG_VALIDATORS, Validator, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { User } from './user';
 import { AUserService } from './user.service';
 import 'rxjs/add/operator/toPromise';
 import { Directive, forwardRef, Attribute } from '@angular/core';
-import { NG_VALIDATORS, Validator, Validators, AbstractControl, ValidatorFn } from '@angular/forms';
 import { EqualValidator } from './password.match.directive';
-import {FormControl} from '@angular/forms';
 
 
 @Component({

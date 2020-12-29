@@ -63,6 +63,34 @@ export class ExtensionService {
     .catch(this.handleError);
   }
 
+  get_Settings(account_id) {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({ headers: headers});
+    const url5 = `${this.app_service.apiUrlAccounts}/${account_id}/settings/emailtofax_coversheet`;
+    return this.http.get(url5, options).toPromise()
+    .then(response => response.json()).catch(err => this.handleError(err));
+  }
+
+  update_Settings(account_id, settings){
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({headers: headers});
+    const body = JSON.stringify(settings);
+    const updateUrl = `${this.app_service.apiUrlAccounts}/${account_id}/settings/emailtofax_coversheet`;
+    return this.http.put(updateUrl, body, options).toPromise().then(response => response.json())
+    .catch(this.handleError);
+  }
+
+  delete_Settings(account_id) {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({headers: headers});
+    const deleteUrl = `${this.app_service.apiUrlAccounts}/${account_id}/settings/emailtofax_coversheet`;
+    return this.http.delete(deleteUrl, options).toPromise().then(response => response.json() as Extension)
+    .catch(err => this.handleError(err));
+  }
+
   private handleError(error: any): Promise<any> {
     console.error('An error occurred', error); // for demo purposes only
     return Promise.reject(error.message || error);

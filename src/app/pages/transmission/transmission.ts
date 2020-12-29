@@ -17,6 +17,11 @@ export class Transmission {
   fax_to: any;
   job_id: any;
   result: any;
+  last_run:any;
+  contact: {
+    phone:any;
+  }
+  contact_phone:any;
 }
 
 export class SMSProgram {

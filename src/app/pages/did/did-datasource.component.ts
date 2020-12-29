@@ -7,11 +7,7 @@ import { BehaviorSubject} from 'rxjs/BehaviorSubject';
 import { MatSortHeaderIntl } from '@angular/material';
 import { DIDDatabase } from './did-database.component';
 
-import 'rxjs/add/operator/startWith';
-import 'rxjs/add/observable/merge';
-import 'rxjs/add/operator/toPromise';
-import 'rxjs/add/operator/map';
-import { Observable } from 'rxjs/Observable';
+import { Observable, merge } from 'rxjs';
 
 export class DIDDataSource extends DataSource<DID> {
 
@@ -54,7 +50,6 @@ export class DIDDataSource extends DataSource<DID> {
       (this._sort.direction === 'asc' ? 1 : -1);
     });
   }
-
   paginate(data) {
     const startIndex = this._paginator.pageIndex * this._paginator.pageSize;
     return data.splice(startIndex, this._paginator.pageSize);

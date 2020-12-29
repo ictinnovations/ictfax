@@ -19,7 +19,7 @@ Source1:  ictfax.conf
 
 BuildArch: noarch
 BuildRoot: %{_tmppath}/%{name}-%{version}-%{release}-root-%(%{__id_u} -n)
-BuildRequires: npm git
+BuildRequires: nodejs git
 
 Provides: ictfax
 
@@ -36,7 +36,7 @@ ICTCore GUI is web based interface which act as client to ICTCore REST APIs and 
 
 %build
 npm install
-./node_modules/.bin/ng build --prod
+node --max_old_space_size=8192 ./node_modules/@angular/cli/bin/ng build
 
 %install
 %{__rm} -rf %{buildroot}

@@ -32,6 +32,7 @@ export class ImportDIDComponent implements OnInit {
     this.uploader.onBeforeUploadItem = (item) => {
       item.method = 'PUT';
       item.url = this.URL;
+      item.withCredentials = false;
     };
 
     this.uploader.onAfterAddingFile = (response: any) => {

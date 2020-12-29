@@ -1,68 +1,102 @@
-import { Component, Input, OnInit, Injectable } from '@angular/core';
-import {  NbAuthJWTToken, NbAuthService } from '@nebular/auth';
+import { Component, OnDestroy, OnInit } from '@angular/core';
+import { NbMediaBreakpointsService, NbMenuService, NbSidebarService, NbThemeService } from '@nebular/theme';
 
-import { NbMenuService, NbSidebarService } from '@nebular/theme';
-import { UserService } from '../../../@core/data/users.service';
-import { AnalyticsService } from '../../../@core/utils/analytics.service';
-import { Router } from '@angular/router';
-import { HttpResponse } from '@angular/common/http';
+import { LayoutService } from '../../../@core/utils';
+import { map, takeUntil } from 'rxjs/operators';
+import { Subject } from 'rxjs';
+
+import { NbAuthJWTToken, NbAuthService } from '@nebular/auth';
 
 @Component({
   selector: 'ngx-header',
   styleUrls: ['./header.component.scss'],
   templateUrl: './header.component.html',
 })
+export class HeaderComponent implements OnInit, OnDestroy {
 
-export class HeaderComponent implements OnInit {
-
-
-  @Input() position = 'normal';
-
+  private destroy$: Subject<void> = new Subject<void>();
+  userPictureOnly: boolean = false;
   user: any;
-  auser= {username: '', picture: ''};
 
-  userMenu = [{ title: 'Log out', link: '/auth/logout' }];
+  auser = {};
+
+
+  themes = [
+    {
+      value: 'default',
+      name: 'Light',
+    },
+    {
+      value: 'dark',
+      name: 'Dark',
+    },
+    {
+      value: 'cosmic',
+      name: 'Cosmic',
+    },
+    {
+      value: 'corporate',
+      name: 'Corporate',
+    },
+  ];
+
+  currentTheme = 'default';
+
+  userMenu = [ { title: 'Change Password', link: '/pages/Changepass' }, { title: 'Log out', link: 'auth/logout' } ];
 
   constructor(private sidebarService: NbSidebarService,
               private menuService: NbMenuService,
-              private userService: UserService,
-              private analyticsService: AnalyticsService,
-              private router: Router,
-              private authService: NbAuthService) {
-              this.authService.onTokenChange()
-                .subscribe((token: NbAuthJWTToken,
-                ) => {
+              private themeService: NbThemeService,
+              private layoutService: LayoutService,
+              private breakpointService: NbMediaBreakpointsService, private authService: NbAuthService) {
 
-                  if (token && token.getValue()) {
-                    this.auser = token.getPayload();
-                  }
-                });
+                this.authService.onTokenChange()
+      .subscribe((token: NbAuthJWTToken) => {
+
+        if (token.isValid()) {
+          this.auser = token.getPayload(); // here we receive a payload from the token and assigns it to our `user` variable
+        }
+
+      });
   }
 
   ngOnInit() {
-    this.userService.getUsers()
-      .subscribe((users: any) => this.user = users.nick);
+    this.currentTheme = this.themeService.currentTheme;
+
+    const { xl } = this.breakpointService.getBreakpointsMap();
+    this.themeService.onMediaQueryChange()
+      .pipe(
+        map(([, currentBreakpoint]) => currentBreakpoint.width < xl),
+        takeUntil(this.destroy$),
+      )
+      .subscribe((isLessThanXl: boolean) => this.userPictureOnly = isLessThanXl);
+
+    this.themeService.onThemeChange()
+      .pipe(
+        map(({ name }) => name),
+        takeUntil(this.destroy$),
+      )
+      .subscribe(themeName => this.currentTheme = themeName);
+  }
+
+  ngOnDestroy() {
+    this.destroy$.next();
+    this.destroy$.complete();
+  }
+
+  changeTheme(themeName: string) {
+    this.themeService.changeTheme(themeName);
   }
 
   toggleSidebar(): boolean {
     this.sidebarService.toggle(true, 'menu-sidebar');
+    this.layoutService.changeLayoutSize();
+
     return false;
   }
 
-  toggleSettings(): boolean {
-    this.sidebarService.toggle(false, 'settings-sidebar');
-    return false;
-  }
-
-  goToHome() {
+  navigateHome() {
     this.menuService.navigateHome();
-  }
-
-  startSearch() {
-    this.analyticsService.trackEvent('startSearch');
-  }
-
-  menuClick() {
-    this.router.navigate(['auth/logout']);
+    return false;
   }
 }

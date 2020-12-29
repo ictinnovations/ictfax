@@ -1,4 +1,4 @@
-import { saveAs } from 'file-saver/FileSaver';
+import { saveAs } from 'file-saver';
 import { Response } from '@angular/http';
 
 /**

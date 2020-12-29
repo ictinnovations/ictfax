@@ -22,28 +22,6 @@
               <input [(ngModel)]="did.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
             </div>
           </div>
-          <div class="col-sm-9">
-            <div class="form-group">
-              <label for="email">Email: </label>
-              <input [(ngModel)]="did.email" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="email" required/>
-            </div>
-          </div>
-        </div>
-      </nb-card-body>
-    </nb-card>
-    <nb-card>
-      <nb-card-header>
-        Active
-      </nb-card-header>
-      <nb-card-body>
-        <div class="row">
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label for="active">Active:</label>
-              <input [(ngModel)]="did.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="0"> No
-              <input [(ngModel)]="did.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="1"> Yes
-            </div>
-          </div>
         </div>
       </nb-card-body>
     </nb-card>

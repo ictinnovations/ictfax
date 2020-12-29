@@ -1,29 +1,29 @@
 import { NgModule } from '@angular/core';
+import { NbMenuModule } from '@nebular/theme';
 
+import { ThemeModule } from '../@theme/theme.module';
 import { PagesComponent } from './pages.component';
-import { ErrorModule } from './error-handler/error-handler.module';
 import { DefaultSettingsModule } from './default_settings/default_settings.module';
 import { InFaxModule } from './infax/infax.module';
+import { ChangePasswordModule } from './changepassword/changepassword.module';
 import { DashboardModule } from './dashboard/dashboard.module';
-import { TransmissionModule } from '../pages/transmission/transmission.module';
 import { PagesRoutingModule } from './pages-routing.module';
-import { ThemeModule } from '../@theme/theme.module';
-const PAGES_COMPONENTS = [
-  PagesComponent,
-];
+import { MiscellaneousModule } from './miscellaneous/miscellaneous.module';
+import { TransmissionModule } from './transmission/transmission.module';
 
 @NgModule({
   imports: [
     PagesRoutingModule,
     ThemeModule,
+    NbMenuModule,
     DashboardModule,
     TransmissionModule,
-    ErrorModule,
     DefaultSettingsModule,
     InFaxModule,
+    ChangePasswordModule
   ],
   declarations: [
-    ...PAGES_COMPONENTS,
+    PagesComponent,
   ],
 })
 export class PagesModule {

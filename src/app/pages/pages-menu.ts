@@ -3,70 +3,78 @@ import { NbMenuItem } from '@nebular/theme';
 export const MENU_ITEMS: NbMenuItem[] = [
   {
     title: 'Dashboard',
-    icon: 'nb-home',
     link: '/pages/dashboard',
+    icon: 'home-outline',
     home: true,
   },
+  /*
+  {
+    title: 'Fax Campaigns',
+    link: '/pages/campaigns/campaigns',
+    icon: 'radio-outline'
+  },
+  */
   {
     title: 'Send Fax',
-    icon: 'ion-arrow-up-c',
+    icon: 'arrow-upward-outline',
     link: '/pages/sendfax/sendfax',
   },
   {
-    title: 'Inbound Fax',
-    icon: 'ion-arrow-down-c',
+    title: 'Receive Fax',
+    icon: 'arrow-downward-outline',
     link: '/pages/infax',
   },
   {
     title: 'Contacts',
-    icon: 'nb-phone',
+    icon: 'person-outline',
     children: [
       {
         title: 'Contacts',
         link: '/pages/contact/contacts',
-        icon: 'nb-person',
+        icon: 'person-add-outline'
       },
+      /*
+      {
+        title: 'Groups',
+        link: '/pages/contact/group',
+        icon: 'people-outline'
+      },
+      */
     ],
   },
   {
-    title: 'Resources',
-    icon: 'ion-android-apps',
-    children: [
-  {
     title: 'Fax Documents',
     link: '/pages/message/document',
-    icon: 'fa fa-file',
-  },
-],
+    icon: 'file-text-outline'
   },
   {
-    title: 'DID Numbers',
-    link: '/pages/did/did',
-    icon: 'fa fa-phone-square',
-  },
-  {
-    title: 'Incoming numbers',
+    title: 'My DIDs',
     link: '/pages/incoming_number/incoming_number',
-    icon: 'ion-arrow-down-c',
+    icon: 'arrow-downward-outline',
   },
   {
     title: 'Administration',
-    icon: 'ion-person',
+    icon: 'settings-2-outline',
     children: [
+  {
+    title: 'DID Numbers',
+    link: '/pages/did/did',
+    icon: 'smartphone-outline',
+  },
   {
     title: 'Provider / Trunks',
     link: '/pages/provider/provider',
-    icon: 'fa fa-user-circle-o',
+    icon: 'shuffle-2-outline',
   },
   {
     title: 'User Management',
     link: '/pages/user/user',
-    icon: 'ion-person',
+    icon: 'person-done-outline'
   },
   {
     title: 'Extensions',
     link: '/pages/extension/extension',
-    icon: 'fa fa-phone-square',
+    icon: 'hash-outline'
   },
  ],
 },
@@ -85,50 +93,51 @@ export const userMenuItems: NbMenuItem[] = [
     link: '/pages/sendfax/sendfax',
   },
   {
-    title: 'Inbound Fax',
+    title: 'Receive Fax',
     icon: 'ion-arrow-down-c',
     link: '/pages/infax',
   },
   {
     title: 'Contacts',
-    icon: 'nb-phone',
+    icon: 'person-outline',
     children: [
       {
         title: 'Contacts',
         link: '/pages/contact/contacts',
-        icon: 'nb-person',
+        icon: 'person-add-outline'
       },
+      /*
+      {
+        title: 'Groups',
+        link: '/pages/contact/group',
+        icon: 'people-outline'
+      },
+      */
     ],
   },
-  {
-    title: 'Resources',
-    icon: 'ion-android-apps',
-    children: [
   {
     title: 'Fax Documents',
     link: '/pages/message/document',
     icon: 'fa fa-file',
   },
-],
-  },
   {
-    title: 'DID Numbers',
-    link: '/pages/did/did',
-    icon: 'fa fa-phone-square',
-  },
-  {
-    title: 'My Incoming numbers',
+    title: 'My DIDs',
     link: '/pages/incoming_number/incoming_number',
-    icon: 'ion-arrow-down-c',
+    icon: 'arrow-downward-outline',
   },
   {
     title: 'Administration',
     icon: 'ion-person',
     children: [
+      {
+        title: 'DID Numbers',
+        link: '/pages/did/did',
+        icon: 'smartphone-outline',
+      },
   {
     title: 'Extensions',
     link: '/pages/extension/extension',
-    icon: 'fa fa-phone-square',
+    icon: 'hash-outline',
   },
  ],
 },

@@ -1,7 +1,9 @@
 <nb-card>
   <nb-card-header>
     Inbound Fax
+    <input style="float:right" class="form-control cc" type="text" #filter placeholder="Filter fax">
   </nb-card-header>
+
   <nb-card-body>
     <div class="example-container mat-elevation-z8">
       <mat-table #table [dataSource]="aInFax" matSort>
@@ -11,10 +13,22 @@
             {{infax.transmission_id}}
           </mat-cell>
         </ng-container>
+        <ng-container matColumnDef="phone">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Phone number</mat-header-cell>
+          <mat-cell *matCellDef="let infax" style="text-align:left">
+            {{infax.contact_phone}}
+          </mat-cell>
+        </ng-container>
         <ng-container matColumnDef="status">
           <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
           <mat-cell *matCellDef="let infax" style="text-align:left">
             {{infax.status}}
+          </mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="Timestamp">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>Date and Time</mat-header-cell>
+          <mat-cell *matCellDef="let infax">
+            {{infax.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
           </mat-cell>
         </ng-container>
         <ng-container cdkColumnDef="Operations">
