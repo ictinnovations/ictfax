@@ -2,9 +2,9 @@
 
 * Show system statistics
 * Bugs removed
-* Assign service to DID
-* Create DIDs in batch
-* office document support added
+* Create DIDs in batch, Assign service to DID
+* DID forwarding supported added for Fax ATA support
+* Major Office document types supported
 * User - Friendly GUI
 
 #### 2019-02-04 Version 4.0
