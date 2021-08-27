@@ -1,3 +1,12 @@
+#### 2021-08-27 Version 4.5.0
+
+* Show system statistics
+* Bugs removed
+* Assign service to DID
+* Create DIDs in batch
+* office document support added
+* User - Friendly GUI
+
 #### 2019-02-04 Version 4.0
 
 * Angular based Application
