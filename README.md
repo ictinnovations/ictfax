@@ -1,6 +1,6 @@
 Introduction
 ============
-ICTFAX is an open source multi-user Fax server software solution. ICTFAX features both inbound as well as outbound faxing solutions using T.38 protocol as well as G.711 passt hrough. ICTFAX is developed over reknown open source __Freeswitch__, __ICTCore__ communications frameowrk and Php based Angular framework. It support both inbound and outbound faxing. 
+ICTFAX is an open source multi-user Fax server software solution. ICTFAX features both inbound as well as outbound faxing solutions using T.38 protocol as well as G.711 passt hrough. ICTFAX is developed over reknown open source __Freeswitch__, __ICTCore__ communications frameowrk[ictcore] and Php based Angular framework. It support both inbound and outbound faxing. 
 
 ICTFAX can be used in following faxing scenarios
 
@@ -57,13 +57,14 @@ Credits
 =======
 ICTFAX is developed by [ICT Innovations][developer]
 
-[official]: http://ictfax.org/ "ICTFAX Open Source Online FAX & Email to FAX Solution"
-[gpl3]: http://www.gnu.org/licenses/gpl-3.0.html "GNU GPL V.3 License"
-[install]: http://ictfax.org/content/ictfax-installation-guide "ICTFAX Installation Guide"
-[admin]: http://ictfax.org/content/ictfax-admin-guide "ICTFAX Administration Guide"
-[user]: http://ictfax.org/content/ictfax-user-guide "ICTFAX User Guide"
-[emailtofax]: http://ictfax.org/fax-services-email-to-fax-software-fax-to-email-server "Email to fax, Fax to Email"
-[webtofax]: http://ictfax.org/online-fax-services-web-to-fax-software "Online Fax, Web to fax"
-[forum]: http://forum.ictfax.org/ "ICTFAX Discussion Forum"
+[official]: https://ictfax.org/ "ICTFAX Open Source Online FAX & Email to FAX Solution"
+[gpl3]: https://www.gnu.org/licenses/gpl-3.0.html "GNU GPL V.3 License"
+[install]: https://ictfax.org/content/ictfax-installation-guide "ICTFAX Installation Guide"
+[admin]: https://www.ictfax.org/content/ictfax-admin-guide "ICTFAX Administration Guide"
+[user]: https://www.ictfax.org/content/ictfax-user-guide "ICTFAX User Guide"
+[emailtofax]: https://ictfax.org/fax-services-email-to-fax-software-fax-to-email-server "Email to fax, Fax to Email"
+[webtofax]: https://ictfax.org/online-fax-services-web-to-fax-software "Online Fax, Web to fax"
+[forum]: https://forum.ictfax.org/ "ICTFAX Discussion Forum"
 [demo]: http://demo.ictfax.org/ "ICTFAX Demo"
-[developer]: http://www.ictinnovations.com/ "ICT Innovations's official website"
+[developer]: https://www.ictinnovations.com/ "ICT Innovations's official website"
+[ictcore]: https://www.ictcore.org/ "ICTCore Communictions framework"
