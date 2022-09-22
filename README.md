@@ -67,4 +67,4 @@ ICTFAX is developed by [ICT Innovations][developer]
 [forum]: https://forum.ictfax.org/ "ICTFAX Discussion Forum"
 [demo]: http://demo.ictfax.org/ "ICTFAX Demo"
 [developer]: https://www.ictinnovations.com/ "ICT Innovations's official website"
-[ICTCore]: https://www.ictcore.org/ "ICTCore Communictions framework"
+[ICTCore]: https://www.ictcore.org/ "ICTCore Communications framework"
