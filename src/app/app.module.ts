@@ -36,34 +36,30 @@ export function initializeApp() {
 
 
 @NgModule({
-  declarations: [AppComponent, ModalComponent],
-  imports: [
-    BrowserModule,
-    BrowserAnimationsModule,
-    HttpClientModule,
-    AppRoutingModule,
-    HttpModule,
-    NgbModule,
-    NbAuthModule,
-    AuthModule,
-    
-
-    ThemeModule.forRoot(),
-
-    NbSidebarModule.forRoot(),
-    NbMenuModule.forRoot(),
-    NbDatepickerModule.forRoot(),
-    NbDialogModule.forRoot(),
-    NbWindowModule.forRoot(),
-    NbToastrModule.forRoot(),
-    NbChatModule.forRoot({
-      messageGoogleMapKey: 'AIzaSyA_wNuCzia92MAmdLRzmqitRGvCF7wCZPY',
-    }),
-    CoreModule.forRoot(),
-    ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
-  ],
-  bootstrap: [AppComponent],
-  entryComponents: [ModalComponent],
+    declarations: [AppComponent, ModalComponent],
+    imports: [
+        BrowserModule,
+        BrowserAnimationsModule,
+        HttpClientModule,
+        AppRoutingModule,
+        HttpModule,
+        NgbModule,
+        NbAuthModule,
+        AuthModule,
+        ThemeModule.forRoot(),
+        NbSidebarModule.forRoot(),
+        NbMenuModule.forRoot(),
+        NbDatepickerModule.forRoot(),
+        NbDialogModule.forRoot(),
+        NbWindowModule.forRoot(),
+        NbToastrModule.forRoot(),
+        NbChatModule.forRoot({
+            messageGoogleMapKey: 'AIzaSyA_wNuCzia92MAmdLRzmqitRGvCF7wCZPY',
+        }),
+        CoreModule.forRoot(),
+        ServiceWorkerModule.register('ngsw-worker.js', { enabled: environment.production }),
+    ],
+    bootstrap: [AppComponent]
 })
 export class AppModule {
 }
