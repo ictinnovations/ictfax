@@ -31,7 +31,7 @@
   "dependencies": {
     "@agm/core": "^1.0.0-beta.5",
     "@angular/animations": "^9.1.13",
-    "@angular/cdk": "^8.0.0",
+    "@angular/cdk": "^9.2.4",
     "@angular/common": "^9.1.13",
     "@angular/compiler": "^9.1.13",
     "@angular/core": "^9.1.13",
