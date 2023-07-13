@@ -4,3 +4,4 @@ export class Group {
   description: string;
   contact_total: number;
 }
+

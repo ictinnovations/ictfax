@@ -22,7 +22,7 @@ export class ImportDIDComponent implements OnInit {
 
   form1: any= {};
   file: any;
-  document_id: any;
+  document_id: any = null;
   document: any;
 
   URL = `${this.app_service.apiUrlDocument}/${this.document_id}/media`;

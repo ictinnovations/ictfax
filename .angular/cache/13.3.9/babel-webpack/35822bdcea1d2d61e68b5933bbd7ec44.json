@@ -1,0 +1,1 @@
+{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar toArray_1 = require(\"../../operator/toArray\");\n\nrxjs_1.Observable.prototype.toArray = toArray_1.toArray; //# sourceMappingURL=toArray.js.map","map":null,"metadata":{},"sourceType":"script"}

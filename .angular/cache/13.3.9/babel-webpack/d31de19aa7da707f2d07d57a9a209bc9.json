@@ -1,0 +1,1 @@
+{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar sampleTime_1 = require(\"../../operator/sampleTime\");\n\nrxjs_1.Observable.prototype.sampleTime = sampleTime_1.sampleTime; //# sourceMappingURL=sampleTime.js.map","map":null,"metadata":{},"sourceType":"script"}

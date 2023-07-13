@@ -3,9 +3,9 @@ import { InFaxDatabase } from './infax-database.component';
 import { Transmission } from '../transmission/transmission';
 import { CdkTableModule } from '@angular/cdk/table';
 import { MatTableModule } from '@angular/material/table';
-import { MatSort, MatPaginator } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { MatSortHeaderIntl } from '@angular/material';
 
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/observable/merge';

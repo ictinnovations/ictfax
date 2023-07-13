@@ -2,7 +2,6 @@
   display: flex;
   flex-direction: column;
   min-width: 300px;
-
 }
   
 .example-header {
@@ -13,14 +12,17 @@
   font-size: 20px;
 }
   
+
 .mat-table {
   overflow: auto;
   max-height: 500px;
 }
 
+
 .mat-header-cell .mat-sort-header-sorted {
   color: black;
 }
+
 
 .cdk-visually-hidden {
   border: 0;
@@ -33,22 +35,25 @@
   width: 1px;
 }
 
+
 .example-button-row {
   display: flex;
   align-items: center;
   justify-content: space-around;
 }
 
+
 .mat-form-field {
   font-size: 14px;
   flex-grow: 1;
   margin-left: 32px;
-    
 }
+
 
 a:hover {
   color: rgb(10, 238, 10);
 }
+
 
 .fa-trash:hover {
   color: rgb(138, 4, 4);

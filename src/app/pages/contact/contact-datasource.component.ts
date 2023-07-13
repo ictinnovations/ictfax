@@ -1,8 +1,8 @@
 import { Contact } from './contact';
 import { DataSource } from '@angular/cdk/collections';
-import { MatSort } from '@angular/material';
+import { MatSort } from '@angular/material/sort';
 import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { MatPaginator } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
 import { ContactDatabase } from './contact-database.component';
 
 import { Observable, merge } from 'rxjs';

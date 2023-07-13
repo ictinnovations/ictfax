@@ -1,0 +1,1 @@
+{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar windowToggle_1 = require(\"../../operator/windowToggle\");\n\nrxjs_1.Observable.prototype.windowToggle = windowToggle_1.windowToggle; //# sourceMappingURL=windowToggle.js.map","map":null,"metadata":{},"sourceType":"script"}

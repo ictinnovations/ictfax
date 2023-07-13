@@ -1,0 +1,1 @@
+{"ast":null,"code":"var PI2 = Math.PI * 2;\n\nfunction normalizeRadian(angle) {\n  angle %= PI2;\n\n  if (angle < 0) {\n    angle += PI2;\n  }\n\n  return angle;\n}\n\nexports.normalizeRadian = normalizeRadian;","map":null,"metadata":{},"sourceType":"script"}

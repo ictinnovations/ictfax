@@ -1,0 +1,1 @@
+{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar sequenceEqual_1 = require(\"../../operator/sequenceEqual\");\n\nrxjs_1.Observable.prototype.sequenceEqual = sequenceEqual_1.sequenceEqual; //# sourceMappingURL=sequenceEqual.js.map","map":null,"metadata":{},"sourceType":"script"}

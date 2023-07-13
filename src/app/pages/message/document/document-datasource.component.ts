@@ -1,8 +1,8 @@
 import { Document } from './document';
 import { DataSource } from '@angular/cdk/collections';
-import { MatSort } from '@angular/material';
+import { MatSort } from '@angular/material/sort';
 import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { MatPaginator } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
 import { DocumentDatabase } from './document-database.component';
 
 import { Observable, merge } from 'rxjs';

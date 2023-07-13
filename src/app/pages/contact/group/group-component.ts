@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { GroupService } from './group.service';
-import { MatPaginator, MatSort } from '@angular/material';
+import {  MatSort, Sort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { GroupDatabase } from './group-database.component';
 import { GroupDataSource } from './group-datasource.component';
 import { ModalComponent } from '../../../modal.component';
@@ -24,11 +25,11 @@ export class FormsGroupComponent implements OnInit {
 
   displayedColumns= ['ID', 'Name', 'contact_total', 'Operations'];
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
+  @ViewChild(MatSort) sort: MatSort;
 
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  @ViewChild('filter', {static: false}) filter: ElementRef;
+  @ViewChild('filter') filter: ElementRef;
 
   ngOnInit() {
     this.getGrouplist();
@@ -47,6 +48,13 @@ export class FormsGroupComponent implements OnInit {
        if (!this.aGroup) { return; }
        this.aGroup.filter = this.filter.nativeElement.value;
       });
+
+      //Sort the data automatically
+
+      const sortState: Sort = {active: 'ID', direction: 'desc'};
+      this.sort.active = sortState.active;
+      this.sort.direction = sortState.direction;
+      this.sort.sortChange.emit(sortState);
     });
   }
 

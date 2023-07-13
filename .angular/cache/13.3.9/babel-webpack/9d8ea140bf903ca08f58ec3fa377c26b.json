@@ -1,0 +1,1 @@
+{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nrxjs_1.Observable.throw = rxjs_1.throwError;\nrxjs_1.Observable.throwError = rxjs_1.throwError; //# sourceMappingURL=throw.js.map","map":null,"metadata":{},"sourceType":"script"}

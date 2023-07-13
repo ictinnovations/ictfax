@@ -1,0 +1,1 @@
+{"ast":null,"code":"var svgURI = 'http://www.w3.org/2000/svg';\n\nfunction createElement(name) {\n  return document.createElementNS(svgURI, name);\n}\n\nexports.createElement = createElement;","map":null,"metadata":{},"sourceType":"script"}

@@ -1,8 +1,8 @@
 import { DataSource } from '@angular/cdk/collections';
 import { TransmissionDatabase } from './transmission-database.component';
 import { Transmission } from './transmission';
-import { MatSort, MatPaginator } from '@angular/material';
-
+import { MatSort} from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { Observable, merge } from 'rxjs';
 
 export class TransmissionDataSource extends DataSource<Transmission> {

@@ -1,0 +1,1 @@
+{"ast":null,"code":"export { ajax } from '../internal/observable/dom/ajax';\nexport { AjaxResponse, AjaxError, AjaxTimeoutError } from '../internal/observable/dom/AjaxObservable'; //# sourceMappingURL=index.js.map","map":null,"metadata":{},"sourceType":"module"}

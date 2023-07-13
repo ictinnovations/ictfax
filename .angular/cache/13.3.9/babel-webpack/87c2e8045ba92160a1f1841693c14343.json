@@ -1,0 +1,1 @@
+{"ast":null,"code":"export function throwIfAlreadyLoaded(parentModule, moduleName) {\n  if (parentModule) {\n    throw new Error(`${moduleName} has already been loaded. Import Core modules in the AppModule only.`);\n  }\n}","map":null,"metadata":{},"sourceType":"module"}

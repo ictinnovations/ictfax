@@ -1,0 +1,1 @@
+{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar expand_1 = require(\"../../operator/expand\");\n\nrxjs_1.Observable.prototype.expand = expand_1.expand; //# sourceMappingURL=expand.js.map","map":null,"metadata":{},"sourceType":"script"}

@@ -3,7 +3,7 @@
 @import '~@nebular/theme/styles/global/breakpoints';
 
 @include nb-install-component() {
-  .menu-sidebar ::ng-deep .scrollable {
+  .menu-sidebar.scrollable {
     padding-top: nb-theme(layout-padding-top);
   }
 }

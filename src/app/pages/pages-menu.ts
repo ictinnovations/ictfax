@@ -33,13 +33,13 @@ export const MENU_ITEMS: NbMenuItem[] = [
         link: '/pages/contact/contacts',
         icon: 'person-add-outline'
       },
-      /*
+      
       {
         title: 'Groups',
         link: '/pages/contact/group',
         icon: 'people-outline'
       },
-      */
+      
     ],
   },
   {
@@ -106,13 +106,13 @@ export const userMenuItems: NbMenuItem[] = [
         link: '/pages/contact/contacts',
         icon: 'person-add-outline'
       },
-      /*
+      
       {
         title: 'Groups',
         link: '/pages/contact/group',
         icon: 'people-outline'
       },
-      */
+      
     ],
   },
   {
