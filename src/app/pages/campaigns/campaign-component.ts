@@ -1,7 +1,7 @@
 import { Component, OnInit, ViewChild } from '@angular/core';
 import { CampaignService } from './campaign.service';
-import { MatSort } from '@angular/material';
-import { MatPaginator } from '@angular/material';
+import { MatSort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { CampaignDatabase } from './campaign-database.component';
 import { CampaignDataSource } from './campaign-datasource.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';

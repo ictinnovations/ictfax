@@ -1,6 +1,7 @@
 import { Provider } from './provider';
 import { DataSource } from '@angular/cdk/collections';
-import { MatSort, MatPaginator } from '@angular/material';
+import { MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { ProviderDatabase } from './provider-database.component';
 import { BehaviorSubject} from 'rxjs/BehaviorSubject';
 

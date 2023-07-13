@@ -6,9 +6,10 @@ import { FormsIncomingNumberComponent } from './incoming_number-component';
 import { MatTableModule } from '@angular/material/table';
 import { CdkTableModule } from '@angular/cdk/table';
 import { IncomingNumberService } from './incoming_number.service';
-import { MatIconModule, MatSortModule } from '@angular/material';
-import { MatButtonModule } from '@angular/material';
-import { MatPaginatorModule } from '@angular/material';
+import { MatIconModule } from '@angular/material/icon';
+import { MatSortModule } from '@angular/material/sort';
+import { MatButtonModule } from '@angular/material/button';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { NbCardModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 

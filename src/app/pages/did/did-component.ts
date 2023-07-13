@@ -1,6 +1,7 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { DIDService } from './did.service';
-import { MatSort, MatPaginator } from '@angular/material';
+import {MatPaginator } from '@angular/material/paginator';
+import { MatSort } from '@angular/material/sort';
 import { DIDDatabase } from './did-database.component';
 import { DIDDataSource } from './did-datasource.component';
 import { ModalComponent } from '../../modal.component';

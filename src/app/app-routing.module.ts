@@ -15,7 +15,7 @@ const routes: Routes = [
   {
     path: 'pages',
     canActivate: [AuthGuard],
-    loadChildren: () => import('app/pages/pages.module')
+    loadChildren: () => import('./pages/pages.module')
       .then(m => m.PagesModule),
   },
   {
@@ -55,10 +55,7 @@ const routes: Routes = [
 const config: ExtraOptions = {
     useHash: false,
     relativeLinkResolution: 'legacy'
-}{
-    useHash: false,
-    relativeLinkResolution: 'legacy'
-};
+}
 
 @NgModule({
   imports: [RouterModule.forRoot(routes, config)],

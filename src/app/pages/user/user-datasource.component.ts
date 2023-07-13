@@ -1,7 +1,8 @@
 import { DataSource } from '@angular/cdk/collections';
 import { UserDatabase } from './user-database.component';
 import { User } from './user';
-import { MatSort, MatPaginator } from '@angular/material';
+import { MatSort} from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { BehaviorSubject} from 'rxjs/BehaviorSubject';
 
 import { Observable, merge } from 'rxjs';

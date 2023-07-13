@@ -48,7 +48,7 @@ export class AddSendFaxComponent implements OnInit {
 
 
   file: any = [];
-  document_id:any;
+  document_id:any = null;
   URL = `${this.app_service.apiUrlDocument}/${this.document_id}/media`;
   public uploader: FileUploader = new FileUploader({url: this.URL, disableMultipart: true });
 

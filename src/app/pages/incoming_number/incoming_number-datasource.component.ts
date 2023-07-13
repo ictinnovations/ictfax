@@ -2,9 +2,9 @@ import { IncomingNumber } from './incoming_number';
 import { CdkTableModule } from '@angular/cdk/table';
 import { MatTableModule } from '@angular/material/table';
 import { DataSource } from '@angular/cdk/collections';
-import { MatSort, MatPaginator } from '@angular/material';
+import { MatSort} from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { MatSortHeaderIntl } from '@angular/material';
 import { IncomingNumberDatabase } from './incoming_number-database.component';
 
 import 'rxjs/add/operator/startWith';

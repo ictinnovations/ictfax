@@ -19,13 +19,15 @@ export class AddGroupComponent implements OnInit {
   constructor(private http: Http, private route: ActivatedRoute, private app_service: AppService, private group_service: GroupService,
   private router: Router) { }
 
-
   form1: any= {};
   group: Group= new Group;
   group_id: any= null;
   file: any;
   URL = `${this.app_service.apiUrlGroups}/${this.group_id}/csv`;
   public uploader: FileUploader = new FileUploader({url: this.URL, disableMultipart: true});
+
+  isError = false;
+  errorText: any = [];
 
   ngOnInit(): void {
     this.route.params.subscribe(params => {
@@ -60,23 +62,33 @@ export class AddGroupComponent implements OnInit {
   }
 
   addGroup(): void {
-    this.group_service.add_Group(this.group).then(response => {
-      const group_id = response;
-      this.URL = `${this.app_service.apiUrlGroups}/${group_id}/csv`;
-      this.upload();
-      this.router.navigate(['../../group'], {relativeTo: this.route});
-    });
+    this.checkFields("new");
+    if (this.errorText.length === 0) {
+      this.group_service.add_Group(this.group).then(response => {
+        const group_id = response;
+        this.URL = `${this.app_service.apiUrlGroups}/${group_id}/csv`;
+        this.upload();
+        this.router.navigate(['../../group'], {relativeTo: this.route});
+      });
+    }else{
+      this.errorHandler(true, this.errorText);
+    }
   }
 
   updateGroup(): void {
-    this.group_service.update_Group(this.group).then(() => {
-      this.URL = `${this.app_service.apiUrlGroups}/${this.group_id}/csv`;
-      if (this.file != null) {
-        this.upload();
-      }
-      this.router.navigate(['../../group'], {relativeTo: this.route});
-    })
-    .catch(this.handleError);
+    this.checkFields();
+    if (this.errorText.length === 0) {
+      this.group_service.update_Group(this.group).then(() => {
+        this.URL = `${this.app_service.apiUrlGroups}/${this.group_id}/csv`;
+        if (this.file != null) {
+          this.upload();
+        }
+        this.router.navigate(['../../group'], {relativeTo: this.route});
+      })
+      .catch(this.handleError);
+    }else{
+      this.errorHandler(true, this.errorText);
+    }
   }
 
   upload () {
@@ -92,6 +104,23 @@ export class AddGroupComponent implements OnInit {
 
   private fileOverAnother(e: any) {
     this.hasAnotherDropZoneOver = e;
+  }
+
+  private checkFields(status = null):any{
+    this.errorHandler(false, [])
+    if (!this.group.name) this.errorText.push("Group name is required.");
+    if (status == "new" && !this.file) this.errorText.push("Contacts CSV file must be selected.");
+  }
+
+  private errorHandler(status, message):any{
+    this.isError = status;
+    this.errorText = message;
+    if (status) {
+      setTimeout(() => {
+        this.isError = false;
+        this.errorText = [];
+      }, 10000);
+    }
   }
 
   private handleError(error: any): Promise<any> {

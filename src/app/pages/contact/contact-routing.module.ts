@@ -4,7 +4,8 @@ import { Routes, RouterModule } from '@angular/router';
 import { ContactComponent } from './contact.component';
 import { FormsContactComponent } from './contact-component';
 import { AddContactComponent } from './contact-form-component';
-
+import { FormsGroupComponent } from './group/group-component';
+import { AddGroupComponent } from './group/group-form-component';
 
 const routes: Routes = [{
   path: '',
@@ -21,7 +22,21 @@ const routes: Routes = [{
   }, {
     path: 'contacts/:id/delete',
     component: FormsContactComponent,
-  }],
+  }, 
+  {
+    path: 'group',
+    component: FormsGroupComponent,
+  }, {
+    path: 'group/new',
+    component: AddGroupComponent,
+  }, {
+    path: 'group/:id',
+    component: AddGroupComponent,
+  }, {
+    path: 'group/:id/delete',
+    component: AddGroupComponent,
+  }
+],
 }];
 
 @NgModule({
@@ -40,4 +55,7 @@ export const routedComponents = [
   ContactComponent,
   FormsContactComponent,
   AddContactComponent,
+  FormsGroupComponent,
+  AddGroupComponent,
 ];
+

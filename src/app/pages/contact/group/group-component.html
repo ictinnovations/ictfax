@@ -1,33 +1,33 @@
 <nb-card>
     <nb-card-header>
-      Group List
-      <input style="float:right" class="form-control cc" type="text" #filter placeholder="Filter Groups">
+      {{ 'group.list' | translate}}
+      <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{ 'group.filter' | translate}}">
     </nb-card-header>
   
     <nb-card-body>
-        <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/contact/group/new']"><i class="fa fa-plus"></i> Add Group</button>&nbsp;
-        <button type="button" mat-raised-button color="primary" style="font-size:15px" (click)="sampleCSV()"><i class="fa fa-file" title="Sample File download"></i> Sample CSV file</button>
+        <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/contact/group/new']"><i class="fa fa-plus"></i> {{ 'group.add' | translate}}</button>&nbsp;
+        <button type="button" mat-raised-button color="primary" style="font-size:15px" (click)="sampleCSV()"><i class="fa fa-file" title="Sample File download"></i> {{ 'group.sample_csv' | translate}}</button>
         <br>
         <br>
       <div class="example-container mat-elevation-z8">
         <mat-table #table [dataSource]="aGroup" matSort>
           <ng-container matColumnDef="ID">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>ID</mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'general.ID' | translate}}</mat-header-cell>
             <mat-cell *matCellDef="let group">
               {{group.group_id}}</mat-cell>
           </ng-container>
           <ng-container matColumnDef="Name">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>Group Name</mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'group.group_name' | translate}}</mat-header-cell>
             <mat-cell *matCellDef="let group" style="text-align:left">
               {{group.name}}</mat-cell>
           </ng-container>
           <ng-container matColumnDef="contact_total">
-              <mat-header-cell *matHeaderCellDef mat-sort-header>Contact Count</mat-header-cell>
+              <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'group.contact_count' | translate}}</mat-header-cell>
               <mat-cell *matCellDef="let group">
                 {{group.contact_total}}</mat-cell>
             </ng-container>
           <ng-container cdkColumnDef="Operations">
-              <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+              <mat-header-cell *matHeaderCellDef>{{ 'general.operations' | translate}}</mat-header-cell>
               <mat-cell *matCellDef="let group">
               <button mat-icon-button color="primary" style= "font-size:20px">
                 <mat-icon><a routerLink="/pages/contact/group/{{group.group_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>

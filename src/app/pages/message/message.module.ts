@@ -5,10 +5,11 @@ import { MessageRoutingModule, routedComponents } from './message-routing.module
 import { FormsDocumentComponent } from '../message/document/document-component';
 import { MatTableModule } from '@angular/material/table';
 import { CdkTableModule } from '@angular/cdk/table';
-import { MatSortModule, MatPaginator, MatIconModule } from '@angular/material';
+import { MatSortModule} from '@angular/material/sort';
+import { MatIconModule } from '@angular/material/icon';
 import { FileUploadModule } from 'ng2-file-upload';
-import { MatButtonModule } from '@angular/material';
-import { MatPaginatorModule } from '@angular/material';
+import { MatButtonModule } from '@angular/material/button';
+import { MatPaginatorModule } from '@angular/material/paginator';
 import { NbCardModule, NbIconModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 

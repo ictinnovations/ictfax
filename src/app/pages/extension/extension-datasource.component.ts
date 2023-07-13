@@ -1,6 +1,7 @@
 import { Extension } from './extension';
 import { DataSource } from '@angular/cdk/collections';
-import { MatSort, MatPaginator } from '@angular/material';
+import { MatSort} from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator';
 import { ExtensionDatabase } from './extension-database.component';
 import { BehaviorSubject} from 'rxjs/BehaviorSubject';
 

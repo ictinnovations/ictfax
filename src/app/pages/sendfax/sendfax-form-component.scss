@@ -1,8 +1,12 @@
 .my-drop-zone { border: dotted 3px lightgray; }
+
 .nv-file-over { border: dotted 3px red; } /* Default class applied to drop zones on over */
+
 .another-file-over-class { border: dotted 3px green; }
 
+
 html, body { height: 100%; }
+
 
 .smmmm {
   font-size: 25px;
@@ -10,17 +14,20 @@ html, body { height: 100%; }
   color: red;
 }
 
+
 .gmmmm {
   font-size: 25px;
   display: inline;
   color: green;
 }
 
+
 .cmmmm {
   font-size: 25px;
   display: inline;
   color: blue;
 }
+
 
 .classcard {
   min-height: 18rem;
