@@ -32,7 +32,7 @@
     "@abacritt/angularx-social-login": "^1.1.0",
     "@agm/core": "^1.1.0",
     "@angular/cdk": "^13.3.9",
-    "@angular/common": "^16.1.5",
+    "@angular/common": "^13.3.6",
     "@angular/compiler": "^13.3.6",
     "@angular/core": "^13.3.6",
     "@angular/forms": "^13.3.6",
