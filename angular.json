@@ -15,6 +15,9 @@
         "build": {
           "builder": "@angular-devkit/build-angular:browser",
           "options": {
+            "allowedCommonJsDependencies": [
+              "lodash"
+           ],
             "preserveSymlinks": true,
             "outputPath": "dist",
             "index": "src/index.html",
