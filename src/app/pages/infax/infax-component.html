@@ -1,38 +1,38 @@
 <nb-card>
-  <nb-card-header>
-    Inbound Fax
-    <input style="float:right" class="form-control cc" type="text" #filter placeholder="Filter fax">
+  <nb-card-header> 
+   {{'general.inbound_fax' | translate }}
+    <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'outbound_fax.filter' | translate}}">
   </nb-card-header>
 
   <nb-card-body>
     <div class="example-container mat-elevation-z8">
       <mat-table #table [dataSource]="aInFax" matSort>
         <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>ID</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.ID' | translate }}</mat-header-cell>
           <mat-cell *matCellDef="let infax">
             {{infax.transmission_id}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>Phone number</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.phone_num' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let infax" style="text-align:left">
             {{infax.contact_phone}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="status">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>Status</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.status' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let infax" style="text-align:left">
             {{infax.status}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="Timestamp">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>Date and Time</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.date_time' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let infax">
             {{infax.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
           </mat-cell>
         </ng-container>
         <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>{{'outbound_fax.operations' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let infax">
             <button mat-icon-button color="primary" style= "font-size:20px">
               <mat-icon (click)="downloadDocument(infax.transmission_id)"  ><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon>

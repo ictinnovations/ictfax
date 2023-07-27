@@ -306,7 +306,8 @@
     "phone_num":"電話番号",
     "status":"スターテス",
     "Username":"ユーザー名",
-    "date_time":"日時"
+    "date_time":"日時",
+    "Email" : "Eメール"
   },
   "extension": {
     "title": "拡張",

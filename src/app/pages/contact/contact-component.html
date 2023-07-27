@@ -1,47 +1,47 @@
 <nb-card>
   <nb-card-header>
-    Contact List
-    <input style="float:right" class="form-control cc" type="text" #filter placeholder="Filter Contacts">
+    {{'contact.list' | translate}}
+    <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'contact.filter' | translate}}">
   </nb-card-header>
   
   <nb-card-body>
-    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/contact/contacts/new']"><i class="fa fa-plus"></i> Add Contact</button>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/contact/contacts/new']"><i class="fa fa-plus"></i> {{'contact.add' | translate}}</button>
     <br>
     <br>
     <div class="example-container mat-elevation-z8">               
       <mat-table #table [dataSource]="aContact" matSort>
         <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>ID</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.ID' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let contact">
             {{contact.contact_id}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="firstName">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>First Name</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'contact.fname' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let contact" style="text-align:left">
             {{contact.first_name}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="lastName">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'contact.lname' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let contact" style="text-align:left">
             {{contact.last_name}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="Phone" style="text-align:left">
-          <mat-header-cell *matHeaderCellDef mat-sort-header style="text-align:left">Phone</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header style="text-align:left">{{'contact.phone' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let contact" style="text-align:left">
             {{contact.phone}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="Email" style="text-align:left">
-          <mat-header-cell *matHeaderCellDef mat-sort-header style="text-align:left">Email</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header style="text-align:left">{{'contact.email' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let contact" style="text-align:left">
             {{contact.email}}
           </mat-cell>
         </ng-container>
         <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>{{'general.operations' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let contact">
             <button mat-icon-button color="accent" style= "font-size:20px">
               <mat-icon><a routerLink="/pages/contact/contacts/{{contact.contact_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>

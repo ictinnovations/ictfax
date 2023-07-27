@@ -13,6 +13,7 @@ import {MatDatepickerModule} from '@angular/material/datepicker'
 import { MatIconModule } from '@angular/material/icon';
 import { NbIconModule, NbCardModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -30,6 +31,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     ReactiveFormsModule,
     NbIconModule,
     MatButtonModule,
+   TranslateModule
   ],
   declarations: [
     InFaxComponent,

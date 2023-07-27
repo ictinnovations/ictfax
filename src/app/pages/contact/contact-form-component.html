@@ -1,21 +1,21 @@
-<h3>Add::Contact</h3>
+<h3>{{'contact.add' | translate}}</h3>
 <div class="col-lg-12">
   <form id="form1" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        Personal Information
+        {{'contact.personal_info' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="first_name">First Name:</label>
+              <label for="first_name">{{'contact.fname' | translate}}:</label>
               <input [(ngModel)]="contact.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
             </div>
           </div>
           <div class="col-sm-6">
               <div class="form-group">
-                <label for="last_name">Last Name:</label>
+                <label for="last_name">{{'contact.lname' | translate}}:</label>
                 <input [(ngModel)]="contact.last_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="last_name" required/>  
               </div>
           </div>
@@ -25,33 +25,33 @@
 
     <nb-card>
       <nb-card-header>
-        Contact Addresses
+        {{'contact.address' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-9">
           <div class="form-group">
-            <label for="phone">Phone:</label>
+            <label for="phone">{{'contact.phone' | translate}}:</label>
             <input [(ngModel)]="contact.phone" [ngModelOptions]="{standalone: true}" type="phone" id="phone" class="form-control" pattern="[0-9]*" minlength="11" maxlength="16" #phone="ngModel" required/>
             <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger">
-              <div [hidden]="!phone.hasError('required')">Mobile is required</div>
-              <div [hidden]="!phone.hasError('pattern')">Mobile number should be only numbers</div>
+              <div [hidden]="!phone.hasError('required')">{{'contact.required_error' | translate}}</div>
+              <div [hidden]="!phone.hasError('pattern')">{{'contact.pattern_error' | translate}}</div>
             </div>
           </div>
         </div>
         <div class="col-sm-9">
           <div class="form-group">
-            <label for="email">Email:</label>
+            <label for="email">{{'contact.email' | translate}}:</label>
             <input [(ngModel)]="contact.email" [ngModelOptions]="{standalone: true}" type="email" id="email" class="form-control" #email="ngModel" email pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required/>
             <div class="md-errors-spacer" [hidden]="email.valid || email.untouched" class="alert alert-danger">
               <div  *ngIf="email.errors && email.errors.pattern">
-                Email is invalid
+                {{'contact.invalid_email' | translate}}
               </div>
             </div>
           </div>
         </div>
         <div class="col-sm-12">
           <div class="form-group">
-            <label for="address">Address:</label>
+            <label for="address">{{'contact.address' | translate}}:</label>
             <textarea [(ngModel)]="contact.address" [ngModelOptions]="{standalone: true}" type="text" id="address" class="form-control" required></textarea>
           </div>
         </div>
@@ -60,12 +60,12 @@
 
     <nb-card>
       <nb-card-header>
-        Description
+        {{'contact.description' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="description">Description:</label>
+            <label for="description">{{'contact.description' | translate}}:</label>
             <input [(ngModel)]="this.contact.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="description" required/>
           </div>
         </div>
@@ -73,10 +73,10 @@
     </nb-card>
 
     <div *ngIf="(contact_id>0)">
-      <button type="button" class="btn btn-primary" (click)="updateContact()">Update</button>
+      <button type="button" class="btn btn-primary" (click)="updateContact()">{{'contact.update' | translate}}</button>
     </div>
     <div *ngIf="(!contact_id)">
-      <button type="button" class="btn btn-success" (click)="addContact()">Submit</button>
+      <button type="button" class="btn btn-success" (click)="addContact()">{{'contact.submit' | translate}}</button>
     </div>
   </form>
 </div>
