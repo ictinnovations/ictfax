@@ -6,6 +6,7 @@ import { map, takeUntil } from 'rxjs/operators';
 import { Subject } from 'rxjs';
 
 import { NbAuthJWTToken, NbAuthService } from '@nebular/auth';
+import { TranslateService } from '@ngx-translate/core';
 
 @Component({
   selector: 'ngx-header',
@@ -50,7 +51,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   constructor(private sidebarService: NbSidebarService,
               private menuService: NbMenuService,
               private themeService: NbThemeService,
-              private layoutService: LayoutService,
+              private layoutService: LayoutService, public translate: TranslateService,
               private breakpointService: NbMediaBreakpointsService, private authService: NbAuthService) {
 
                 this.authService.onTokenChange()
