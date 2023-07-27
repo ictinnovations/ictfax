@@ -20,6 +20,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatTableModule } from '@angular/material/table';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { CdkTableModule } from '@angular/cdk/table';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -39,7 +40,8 @@ import { CdkTableModule } from '@angular/cdk/table';
     MatTableModule,
     MatPaginatorModule,
     MatSortModule,
-    CdkTableModule
+    CdkTableModule,
+    TranslateModule
   ],
   declarations: [
     DashboardComponent,

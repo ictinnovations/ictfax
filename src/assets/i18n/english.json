@@ -279,7 +279,8 @@
     "phone_num":"Phone number",
     "status" :"Status",
     "Username":"User Name",
-    "date_time":"Date and Time"
+    "date_time":"Date and Time",
+    "Email" :"Email"
   },
   "extension": {
     "title": "Extension",

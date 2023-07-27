@@ -17,7 +17,7 @@ import {MatTabsModule} from '@angular/material/tabs';
 import { Ng2CompleterModule } from "ng2-completer";
 import { NbCardModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
-
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -37,7 +37,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     Ng2CompleterModule,
     NbCardModule,
     FormsModule, 
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    TranslateModule
   ],
   declarations: [
     ...routedComponents,

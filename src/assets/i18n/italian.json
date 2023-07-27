@@ -305,7 +305,8 @@
     "phone_num":"Numero di telefono",
     "status" :"Stato",
     "Username":"Nome utente",
-    "date_time":"Data e ora"
+    "date_time":"Data e ora",
+    "Email" : "E-mail"
   },
   "extension": {
     "title": "Extension",

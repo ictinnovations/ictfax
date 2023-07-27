@@ -1,13 +1,13 @@
-<h3>Send Fax Document Program</h3>
+<h3>{{'outbound_fax.send_fax_doc' | translate}}</h3>
 <div class="col-lg-12">
   <form id="form1" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        Title
+        {{'outbound_fax.title1' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="form-group">
-          <label for="title">Title:</label>
+          <label for="title">{{'outbound_fax.title1' | translate}}:</label>
           <input [(ngModel)]="sendfax.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
         </div>
       </nb-card-body>
@@ -15,12 +15,12 @@
 
     <nb-card>
         <nb-card-header>
-          Choose Document or <a href onclick="return false;" (click)="open(content)">Upload</a>
+          {{'outbound_fax.choose' | translate}} <a href onclick="return false;" (click)="open(content)">{{'outbound_fax.upload' | translate}}</a>
 
         </nb-card-header>
         <nb-card-body>
           <div>  
-            <label for="document">Document:</label>  
+            <label for="document">{{'outbound_fax.document' | translate}}:</label>  
             <select class = "form-control" name = "document" (change)="onSelect($event.target.value)">
               <option *ngFor="let document of documentArray; let i = index"   
                 [value] = "document.document_id" [selected]="i==documentArray.length-1">  
@@ -105,7 +105,7 @@
     
     <nb-card class="classcard">
       <nb-card-header>
-        Destination number
+        {{'outbound_fax.dest' | translate}}
       </nb-card-header>
       <nb-card-body>
         <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
@@ -114,15 +114,15 @@
 
     <nb-card>
       <nb-card-header>
-        Retry
+        {{'outbound_fax.retry' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
             <div>  
-              <label for="try_allowed">Retry:</label>  
+              <label for="try_allowed">{{'outbound_fax.retry' | translate}}:</label>  
               <select class = "form-control" name = "try_allowed" [(ngModel)]= "sendfax.try_allowed" [ngModelOptions]="{standalone: true}">
-                <option value = "">Please Select an Option below</option>  
+                <option value = "">{{'outbound_fax.select' | translate}}</option>  
                 <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
@@ -133,14 +133,14 @@
       </nb-card-body>
     </nb-card>
     <div>
-      <button type="button" class="btn btn-success" (click)="sendnewFax()" [disabled] = "(documentProgram.document_id == undefined || sendfax.title == undefined || sendfax.title == '')">Send Fax</button>
+      <button type="button" class="btn btn-success" (click)="sendnewFax()" [disabled] = "(documentProgram.document_id == undefined || sendfax.title == undefined || sendfax.title == '')">{{'outbound_fax.send_fax' | translate}}</button>
     </div>
   </form>
 </div>
  
 <ng-template #content let-modal>
   <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">Upload Document</h4>
+    <h4 class="modal-title" id="modal-basic-title">{{'outbound_fax.upload_document' | translate}}</h4>
     <button type="button" class="close" aria-label="Close" (click)="onSave()">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -149,7 +149,7 @@
        
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="name">Document Name:</label>
+              <label for="name">{{'outbound_fax.document_name' | translate}}:</label>
               <input [(ngModel)]="document.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="name" required/>
             </div>
           </div>
@@ -158,12 +158,12 @@
         <div class="col-sm-6">
           <div class="form-group">
               
-              <label for="type">Quality Type:</label>  
+              <label for="type">{{'outbound_fax.quality_type' | translate}}:</label>  
               <select class = "form-control" name = "quality" [(ngModel)]= "document.quality" [ngModelOptions]="{standalone: true}" [disabled]="(document_id>0)">
-                <option value = "">Please Select an Option below</option>  
-                <option value="standard">Standard</option>
-                <option value="fine">Fine</option>
-                <option value="super">Super</option>
+                <option value = "">{{'outbound_fax.select' | translate}}</option>  
+                <option value="standard">{{'outbound_fax.standard' | translate}}</option>
+                <option value="fine">{{'outbound_fax.fine' | translate}}</option>
+                <option value="super">{{'outbound_fax.super' | translate}}</option>
               </select>
             
           </div>
@@ -174,14 +174,14 @@
             </div>  
             <div class="row">            
               <div class="col-md-3">
-                <label style="font-size: 10px;">Select File: (pdf, png, tiff and jpeg are supported only)</label><br>
+                <label style="font-size: 10px;">{{'outbound_fax.select_file' | translate}}</label><br>
                 <input type="file" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" ng2FileSelect [uploader]="uploader" multiple  /><br/>
               </div>
             </div>
           </div>
           <div *ngIf="unsupportedErr">
             <br>
-            <label style="color:red" text-center>Unsupported file type</label>
+            <label style="color:red" text-center>{{'outbound_fax.unsupported_file' | translate}}</label>
           </div>
           <div *ngFor="let item of uploader.queue"> 
             <br>
@@ -195,14 +195,14 @@
 
           <div class="col-sm-6">
               <div class="form-group">
-                <label for="description">Description:</label>
+                <label for="description">{{'outbound_fax.description' | translate}}:</label>
                 <input [(ngModel)]="document.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="description" required/>  
               </div>
             </div>
 
 
           <div class="col-sm-6">
-            <button type="button" class="btn btn-success" (click)="file_upload()" [disabled] = "(this.uploader.queue.length - 1 < 0 || (file == '' || document.name == undefined || document.name == '') || this.file_sending == true || this.file_sent == true)">Upload File</button>
+            <button type="button" class="btn btn-success" (click)="file_upload()" [disabled] = "(this.uploader.queue.length - 1 < 0 || (file == '' || document.name == undefined || document.name == '') || this.file_sending == true || this.file_sent == true)">{{'outbound_fax.upload_file' | translate}}</button>
           </div>
   </div>
 </ng-template>
