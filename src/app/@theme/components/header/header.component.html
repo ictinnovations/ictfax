@@ -18,6 +18,16 @@
     theme.name
   }}</nb-option>
 </nb-select>
+&nbsp;&nbsp;&nbsp;
+<nb-select
+  [selected]="translate.currentLang"
+  (selectedChange)="translate.use($event)"
+  status="primary"
+>
+  <nb-option *ngFor="let lang of translate.getLangs()" [value]="lang">{{
+    lang
+  }}</nb-option>
+</nb-select>
 
   <nb-actions size="small">
 
