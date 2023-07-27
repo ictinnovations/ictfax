@@ -44,6 +44,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
   userMenu = [ { title: 'Change Password', link: '/pages/Changepass' }, { title: 'Log out', link: 'auth/logout' } ];
 
+  image_url = "../../../../assets/images/ictfax-logo.png";
+
+
   constructor(private sidebarService: NbSidebarService,
               private menuService: NbMenuService,
               private themeService: NbThemeService,
