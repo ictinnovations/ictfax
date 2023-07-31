@@ -14,6 +14,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { FileUploadModule } from 'ng2-file-upload';
 import { NbCardModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -29,7 +30,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     NbCardModule,
     MatIconModule, 
     FormsModule,
-    ReactiveFormsModule
+    ReactiveFormsModule,
+    TranslateModule
   ],
   declarations: [
     ...routedComponents,

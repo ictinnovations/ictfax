@@ -1,13 +1,13 @@
-<h3>Create Document Campaign</h3>
+<h3>{{'campaigns.create_doc' | translate}}</h3>
 <div class="col-lg-12">
 <form id="form1" #f1="ngForm">
 <nb-card>
   <nb-card-header>
-  Choose Document
+    {{'campaigns.choose_document' | translate}}
   </nb-card-header>
     <nb-card-body>
           <div>  
-            <label for="document">Document:</label>  
+            <label for="document">{{'campaigns.document' | translate}}:</label>  
                 <select class = "form-control" name = "document" [(ngModel)]= "selectedDoc">  
                 <option *ngFor="let document of document"  
                        [ngValue] = "document" >  
@@ -20,11 +20,11 @@
 <div *ngIf="(!campaign_id)">
 <nb-card>
     <nb-card-header>
-        Choose Group
+      {{'campaigns.choose_group' | translate}}
     </nb-card-header>
     <nb-card-body>
             <div *ngIf="(!campaign_id)">  
-                    <label for = "group">Groups:</label>  
+                    <label for = "group">{{'campaigns.group' | translate}}:</label>  
                         <select class = "form-control" name = "group" [(ngModel)]= "selectedGrp">  
                                         <option *ngFor="let group of group"  
                                [ngValue] = "group">  
@@ -37,16 +37,16 @@
 </div>    
 <nb-card>
   <nb-card-header>
-    Retry
+    {{'campaigns.retry' | translate}}
   </nb-card-header>
   <nb-card-body>
     <div class="row">
     <div class="col-sm-6">
         <div class="form-group">
             <div>  
-                <label for="try_allowed">Retry:</label>  
+                <label for="try_allowed">{{'campaigns.retry' | translate}}:</label>  
                     <select class = "form-control" name = "try_allowed" [(ngModel)]= "campaign.try_allowed" [ngModelOptions]="{standalone: true}">
-                    <option value = "">Please Select an Option below</option>  
+                    <option value = "">{{'campaigns.select' | translate}}</option>  
                     <option value="1">1</option>
                     <option value="2">2</option>
                     <option value="3">3</option>
@@ -56,7 +56,7 @@
     </div>
     <div class="col-sm-6">
       <div class="form-group">
-        <label for="delay">Delay b/w Fax in minutes</label>
+        <label for="delay">{{'campaigns.deley_bw_fax' | translate}}</label>
         <input [(ngModel)]="campaign.cpm" [ngModelOptions]="{standalone: true}" type="text" id="delay" class="form-control" placeholder="Delay b/w calls" required/>
       </div>
 </div>
@@ -66,10 +66,10 @@
 
 
 <div *ngIf="(campaign_id>0)">
-    <button type="button" class="btn btn-primary" (click)="updateCampaign()">Update</button>
+    <button type="button" class="btn btn-primary" (click)="updateCampaign()">{{'campaigns.update' | translate}}</button>
 </div>
 <div *ngIf="(!campaign_id)">
-    <button type="button" class="btn btn-success" (click)="addSendDocument()">Submit</button>
+    <button type="button" class="btn btn-success" (click)="addSendDocument()">{{'campaigns.submit' | translate}}</button>
 </div>
 </form>
 </div>

@@ -1,15 +1,15 @@
-<h3>Add::Extension </h3>
+<h3>{{'extension.add' | translate}} </h3>
 <div class="col-lg-12">
   <form id="form" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        Extension Information  
+        {{'extension.extension_info' | translate}} 
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="username">UserName:</label>
+              <label for="username">{{'extension.username' | translate}}:</label>
               <input [(ngModel)]="extension.username" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="username" required/>
             </div>
           </div>
@@ -19,18 +19,18 @@
 
     <nb-card>
       <nb-card-header>
-        Password
+        {{'extension.password' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="passwd">Password</label>
+            <label for="passwd">{{'extension.password' | translate}}</label>
             <input type="password" class="form-control" id="passwd"
             required
             [(ngModel)]="extension.passwd" name="passwd">
           </div>
           <div class="form-group">
-            <label for="passwd_pin">Password Pin</label>
+            <label for="passwd_pin">{{'extension.password_pin' | translate}}</label>
             <input type="password" class="form-control" id="passwd_pin"
             [(ngModel)]="extension.passwd_pin"
             required
@@ -42,19 +42,19 @@
 
     <nb-card>
       <nb-card-header>
-        Name
+        {{'extension.name' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="first_name">First Name:</label>
+              <label for="first_name">{{'extension.fname' | translate}}:</label>
               <input [(ngModel)]="extension.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
             </div>
           </div>
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="last_name">Last Name:</label>
+              <label for="last_name">{{'extension.lname' | translate}}:</label>
               <input [(ngModel)]="extension.last_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="last_name" required/>  
             </div>
           </div>
@@ -64,26 +64,26 @@
 
     <nb-card>
       <nb-card-header>
-        User Address
+        {{'extension.user_address' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="phone">Phone:</label>
+            <label for="phone">{{'extension.phone' | translate}}:</label>
             <input [(ngModel)]="extension.phone" [ngModelOptions]="{standalone: true}" type="phone" id="phone" class="form-control" pattern="[0-9]*" minlength="11" maxlength="16" #phone="ngModel" required/>
             <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger"> 
-              <div [hidden]="!phone.hasError('required')">Mobile is required</div>
-              <div [hidden]="!phone.hasError('pattern')">Mobile numberr should be only numbers</div>
+              <div [hidden]="!phone.hasError('required')">{{'extension.required_error' | translate}}</div>
+              <div [hidden]="!phone.hasError('pattern')">{{'extension.pattern_error' | translate}}</div>
             </div>
           </div>
         </div>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="email">Email:</label>
+            <label for="email">{{'extension.email' | translate}}:</label>
             <input [(ngModel)]="extension.email" [ngModelOptions]="{standalone: true}" type="email" id="email" class="form-control" #email="ngModel" email pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required/>
             <div class="md-errors-spacer" [hidden]="email.valid || email.untouched" class="alert alert-danger">
               <div  *ngIf="email.errors && email.errors.pattern">
-                Email is invalid
+                {{'extension.invalid_email' | translate}}
               </div>
               </div>
             </div>     
@@ -92,15 +92,15 @@
 </nb-card>
     <nb-card>
       <nb-card-header>
-        Active
+        {{'extension.active' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="active">Active:</label>
-              <input [(ngModel)]="extension.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="0"> No
-              <input [(ngModel)]="extension.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="1"> Yes
+              <label for="active">{{'extension.active' | translate}}:</label>
+              <input [(ngModel)]="extension.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="0"> {{'extension.no' | translate}}
+              <input [(ngModel)]="extension.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="1"> {{'extension.yes' | translate}}
             </div>
           </div>
         </div>
@@ -109,13 +109,13 @@
     
     <nb-card>
       <nb-card-header>
-        Settings
+        {{'extension.settings' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <input type="checkbox" [(ngModel)]="sendbody" [ngModelOptions]="{standalone: true}" [checked]="sendbody"> Send Email Body as coversheet<br>
+              <input type="checkbox" [(ngModel)]="sendbody" [ngModelOptions]="{standalone: true}" [checked]="sendbody"> {{'extension.email_body_attachment' | translate}}<br>
             </div>
           </div>
         </div>
@@ -123,10 +123,10 @@
     </nb-card>
 
     <div *ngIf="(account_id>0)">
-      <button type="button" class="btn btn-primary" (click)="updateExtension()">Update</button>
+      <button type="button" class="btn btn-primary" (click)="updateExtension()">{{'buttons.update' | translate}}</button>
     </div>
     <div *ngIf="(!account_id)">
-      <button type="button" class="btn btn-success" (click)="addExtension()">Submit</button>
+      <button type="button" class="btn btn-success" (click)="addExtension()">{{'buttons.submit' | translate}}</button>
     </div>
   </form>
 </div>

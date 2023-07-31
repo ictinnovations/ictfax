@@ -1,39 +1,39 @@
-<h3>DID Numbers</h3>
+<h3>{{'dids.dids_title' | translate}}</h3>
 <div class="col-lg-12">
   <form id="form" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        DID Information  
+        {{'dids.dids_info' | translate}} 
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-9">
             <div class="form-group">
-              <label for="range_from">Range From:</label>
+              <label for="range_from">{{'dids.range_from' | translate}}:</label>
               <input [(ngModel)]="did.range_from" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="range_from" #range_from="ngModel" required/>
               <div [hidden]="range_from.valid || range_from.pristine" class="alert alert-danger">
-                <div [hidden]="!range_from.hasError('required')">Range From field is required.</div>
+                <div [hidden]="!range_from.hasError('required')">{{'dids.rang_form_req' | translate}}.</div>
               </div>
             </div>
           </div>
           <div class="col-sm-9">
             <div class="form-group">
-              <label for="did_number">Range To:</label>
+              <label for="did_number">{{'dids.range_to' | translate}}:</label>
               <input [(ngModel)]="did.range_to" [ngModelOptions]="{standalone: true}" type="text" class="form-control" #range_to="ngModel" id="range_to" required/>
               <div [hidden]="range_to.valid || range_to.pristine" class="alert alert-danger">
-                <div [hidden]="!range_to.hasError('required')">Range to field is required.</div>
+                <div [hidden]="!range_to.hasError('required')">{{'dids.rang_to_req' | translate}}.</div>
               </div>
             </div>
           </div>
           <div class="col-sm-9">
             <div class="form-group">
-              <label for="title">Title:</label>
+              <label for="title">{{'dids.title' | translate}}:</label>
               <input [(ngModel)]="did.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
             </div>
           </div>
         </div>
       </nb-card-body>
     </nb-card>
-    <button type="button" class="btn btn-success" (click)="addDID()">Submit</button>
+    <button type="button" class="btn btn-success" (click)="addDID()">{{'button.submit' | translate}}</button>
   </form>
 </div>

@@ -1,15 +1,15 @@
-<h3>Add::User</h3>
+<h3>{{'user.add' | translate}}</h3>
 <div class="col-lg-12">
   <form id="form" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        User Information
+        {{'user.user_info' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="username">UserName:</label>
+              <label for="username">{{'user.Username' | translate}}:</label>
               <input [(ngModel)]="user.username" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="username" required/>
             </div>
           </div>
@@ -19,22 +19,22 @@
 
     <nb-card>
       <nb-card-header>
-        Password
+        {{'user.password' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="password">Password</label>
+            <label for="password">{{'user.password' | translate}}</label>
             <input type="password" class="form-control" id="password"
             required
             [(ngModel)]="user.password" name="password"
             #password="ngModel">
             <div [hidden]="password.valid || password.pristine" class="alert alert-danger">
-              Password is required
+              {{'user.password_required' | translate}}
             </div>
           </div>
           <div class="form-group">
-            <label for="name">Confirm Password</label>
+            <label for="name">{{'user.confirm_password' | translate}}</label>
             <input type="password" class="form-control" id="confirmPassword"
             required
             ngx_validateEqual="password"
@@ -42,7 +42,7 @@
             #confirmPassword="ngModel">
             <div [hidden]="confirmPassword.valid || confirmPassword.pristine"
               class="alert alert-danger">
-              Passwords did not match
+              {{'user.password_mismatch' | translate}}
             </div>
           </div>
         </div>
@@ -51,19 +51,19 @@
 
     <nb-card>
       <nb-card-header>
-        Name
+        {{'user.name' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="first_name">First Name:</label>
+              <label for="first_name">{{'user.fname' | translate}}:</label>
               <input [(ngModel)]="user.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
             </div>
           </div>
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="last_name">Last Name:</label>
+              <label for="last_name">{{'user.lname' | translate}}:</label>
               <input [(ngModel)]="user.last_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="last_name" required/>  
             </div>
           </div>
@@ -73,33 +73,33 @@
 
     <nb-card>
       <nb-card-header>
-        User Address
+        {{'user.address' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="phone">Phone:</label>
+            <label for="phone">{{'user.phone' | translate}}:</label>
             <input [(ngModel)]="user.phone" [ngModelOptions]="{standalone: true}" type="phone" id="phone" class="form-control" pattern="[0-9]*" minlength="11" maxlength="16" #phone="ngModel" required/>
             <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger">  
-              <div [hidden]="!phone.hasError('required')">Mobile is required</div>
-              <div [hidden]="!phone.hasError('pattern')">Mobile numberr should be only numbers</div>
+              <div [hidden]="!phone.hasError('required')">{{'user.password_required' | translate}}</div>
+              <div [hidden]="!phone.hasError('pattern')">{{'user.phone_shd' | translate }}</div>
             </div>
           </div>
         </div>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="email">Email:</label>
+            <label for="email">{{'user.Email' | translate }}:</label>
             <input [(ngModel)]="user.email" [ngModelOptions]="{standalone: true}" type="email" id="email" class="form-control" #email="ngModel" email pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required/>
             <div class="md-errors-spacer" [hidden]="email.valid || email.untouched" class="alert alert-danger">
               <div  *ngIf="email.errors && email.errors.pattern">
-                Email is invalid
+                {{'user.invalid_email' | translate }}
               </div>
             </div>
           </div>
         </div>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="address">Address:</label>
+            <label for="address">{{'user.address' | translate }}:</label>
             <textarea [(ngModel)]="user.address" [ngModelOptions]="{standalone: true}" class="form-control" id="address" rows="10" cols="30" required></textarea>              
           </div>
         </div>
@@ -108,13 +108,13 @@
 
     <nb-card>
       <nb-card-header>
-        Choose Country & Timezone
+        {{'user.choose_country_timezone' | translate }}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="country_id">Country</label>
+              <label for="country_id">{{'user.country' | translate }}</label>
               <select class = "form-control" name = "country_id" [(ngModel)]= "user.country_id" [ngModelOptions]="{standalone: true}">
                 <option value="4">Afghanistan</option>
                 <option value="248">Åland Islands</option>
@@ -370,7 +370,7 @@
           </div>
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="timezone_id">TimeZone</label>
+              <label for="timezone_id">{{'user.timezone' | translate }}</label>
               <select class = "form-control" name = "timezone_id" [(ngModel)]= "user.timezone_id" [ngModelOptions]="{standalone: true}">
                 <option timezone_id="1" gmtAdjustment="GMT-12:00" useDaylightTime="0" value="-12">(GMT-12:00) International Date Line West</option>
                 <option timezone_id="2" gmtAdjustment="GMT-11:00" useDaylightTime="0" value="-11">(GMT-11:00) Midway Island, Samoa</option>
@@ -463,20 +463,20 @@
 
     <nb-card>
       <nb-card-header>
-        Company & Active
+        {{'user.company_active' | translate }}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="active">Active:</label>
-              <input [(ngModel)]="user.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="0"> No
-              <input [(ngModel)]="user.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="1"> Yes
+              <label for="active">{{'user.active' | translate }}:</label>
+              <input [(ngModel)]="user.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="0"> {{'user.no' | translate }}
+              <input [(ngModel)]="user.active" [ngModelOptions]="{standalone: true}" type="radio"  name="active" value="1"> {{'user.yes' | translate }}
             </div>
           </div>
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="company">Company</label>
+              <label for="company">{{'user.company' | translate }}</label>
               <input [(ngModel)]="user.company" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="company" required/>
             </div>
           </div>
@@ -486,7 +486,7 @@
 
     <nb-card>
       <nb-card-header>
-        Select Role
+        {{'user.select_role' | translate }}
       </nb-card-header>
       <nb-card-body>
           <div *ngFor="let rol of role">
@@ -496,10 +496,10 @@
     </nb-card>
 
     <div *ngIf="(user_id>0)">
-      <button type="button" class="btn btn-primary" (click)="updateUser()">Update</button>
+      <button type="button" class="btn btn-primary" (click)="updateUser()">{{'buttons.update' | translate }}</button>
     </div>
     <div *ngIf="(!user_id)">
-      <button type="button" class="btn btn-success" (click)="addUser()">Submit</button>
+      <button type="button" class="btn btn-success" (click)="addUser()">{{'buttons.submit' | translate }}</button>
     </div>
   </form>
 </div>

@@ -1,37 +1,37 @@
 <nb-card>
     <nb-card-header>
-      Extension List 
-      <input style="float:right" class="form-control cc" type="text" #filter placeholder="Filter Extensions">
+      {{'extension.list' | translate}}
+      <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'extension.filter' | translate}}">
     </nb-card-header>
   
     <nb-card-body>
-        <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/extension/extension/new']"><i class="fa fa-plus"></i>Add Extension</button>
+        <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/extension/extension/new']"><i class="fa fa-plus"></i>{{'extension.add' | translate}}</button>
         <br>
         <br>
       <div class="example-container mat-elevation-z8">
         <mat-table #table [dataSource]="aExtension" matSort>
           <ng-container matColumnDef="ID">
-            <mat-header-cell *matHeaderCellDef mat-sort-header >ID</mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header >{{'general.ID' | translate}}</mat-header-cell>
             <mat-cell *matCellDef="let extension">
               {{extension.account_id}}</mat-cell>
           </ng-container>
           <ng-container matColumnDef="username">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>{{'extension.username' | translate}}</mat-header-cell>
             <mat-cell *matCellDef="let extension" style="text-align:left">
               {{extension.username}}</mat-cell>
           </ng-container>
           <ng-container matColumnDef="phone">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>Phone</mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>{{'extension.phone' | translate}}</mat-header-cell>
             <mat-cell *matCellDef="let extension" style="text-align:left">
               {{extension.phone}}</mat-cell>
           </ng-container>
           <ng-container matColumnDef="email">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+            <mat-header-cell *matHeaderCellDef mat-sort-header>{{'extension.email' | translate}}</mat-header-cell>
             <mat-cell *matCellDef="let extension" style="text-align:left">
               {{extension.email}}</mat-cell>
             </ng-container>                    
             <ng-container cdkColumnDef="Operations">
-                <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+                <mat-header-cell *matHeaderCellDef>{{'general.operations' | translate}}</mat-header-cell>
                 <mat-cell *matCellDef="let extension">
                 <button mat-icon-button color="primary" style= "font-size:20px">
                   <mat-icon><a routerLink="/pages/extension/extension/{{extension.account_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>

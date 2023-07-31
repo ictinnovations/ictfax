@@ -14,6 +14,7 @@ import { MatRadioModule } from '@angular/material/radio';
 import { EqualValidator } from './password.match.directive';
 import { NbCardModule, NbIconModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
+import { TranslateModule } from '@ngx-translate/core';
 
 @NgModule({
   imports: [
@@ -31,7 +32,8 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     MatIconModule,
     MatInputModule,
     MatFormFieldModule,
-    NbIconModule
+    NbIconModule,
+    TranslateModule
   ],
   declarations: [
     EqualValidator,

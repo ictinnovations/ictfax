@@ -1,23 +1,23 @@
-<h3>Add::Provider</h3>
+<h3>{{'provider.add' | translate}}</h3>
 <div class="col-lg-12">
   <form id="form1" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        Provider Information
+        {{'provider.provider_info' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="name">Provider Name:</label>
+              <label for="name">{{'provider.provider_name' | translate}}:</label>
               <input [(ngModel)]="provider.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="name" required/>
             </div>
           </div>
           <div class="col-sm-6">
-              <label for="active">Active:</label>
+              <label for="active">{{'provider.active' | translate}}:</label>
               <br>
-              <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="0"> No<br>
-              <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="1"> Yes<br>
+              <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="0"> {{'provider.no' | translate}}<br>
+              <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="1"> {{'provider.yes' | translate}}<br>
           </div>
         </div>
       </nb-card-body>
@@ -25,18 +25,18 @@
 
     <nb-card>
       <nb-card-header>
-        Gateway Type
+        {{'provider.gateway_type' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
             <div>  
-              <label for="type">Gateway Type:</label>  
+              <label for="type">{{'provider.gateway_type' | translate}}:</label>  
               <select class = "form-control" name = "type" [(ngModel)]= "provider.type" [ngModelOptions]="{standalone: true}" [disabled]="(provider_id>0)">
-                <option value = "">Please Select an Option below</option>  
-                <option value="sip">SIP</option>
-                <option value="smpp">SMPP</option>
-                <option value="smtp">SMTP</option>
+                <option value = "">{{'outbound_fax.select' | translate}}</option>  
+                <option value="sip">{{'provider.sip' | translate}}</option>
+                <option value="smpp">{{'provider.smpp' | translate}}</option>
+                <option value="smtp">{{'provider.smtp' | translate}}</option>
               </select>
             </div>
           </div>
@@ -46,19 +46,19 @@
 
     <nb-card>
       <nb-card-header>
-        Access Credentials
+        {{'provider.access_credentials' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="username">Username:</label>
+              <label for="username">{{'provider.username' | translate}}:</label>
               <input [(ngModel)]="provider.username" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="username" required/>
             </div>
           </div>
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="password">Password:</label>
+              <label for="password">{{'provider.password' | translate}}:</label>
               <input [(ngModel)]="provider.password" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="password" required/>  
             </div>
           </div>
@@ -66,13 +66,13 @@
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="host">Host:</label>
+              <label for="host">{{'provider.host' | translate}}:</label>
               <input [(ngModel)]="provider.host" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="host" required/>
             </div>
           </div>
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="port">Port:</label>
+              <label for="port">{{'provider.port' | translate}}:</label>
               <input [(ngModel)]="provider.port" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="port" required/>
             </div>
           </div>
@@ -82,22 +82,22 @@
 
     <nb-card>
       <nb-card-header>
-        Prefix and Weight
+        {{'provider.prefix_and_weight' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="prefix">Prefix:</label>
+              <label for="prefix">{{'provider.prefix' | translate}}:</label>
               <input [(ngModel)]="provider.prefix" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="prefix" required/>
             </div>
           </div>
           <div class="col-sm-6">
             <div class="form-group">
               <div>  
-                <label for="weight">Weight:</label>  
+                <label for="weight">{{'provider.weight' | translate}}:</label>  
                 <select class = "form-control" name = "weight" [(ngModel)]= "provider.weight" [ngModelOptions]="{standalone: true}">
-                  <option value = "">Please Select an Option below</option>  
+                  <option value = "">{{'outbound_fax.select' | translate}}</option>  
                   <option value="-10">-10</option>
                   <option value="-9">-9</option>
                   <option value="-8">-8</option>
@@ -128,30 +128,30 @@
 
     <nb-card>
       <nb-card-header>
-        Additional Information
+        {{'provider.additional_info' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="settings">Settings:</label>
+            <label for="settings">{{'provider.settings' | translate}}:</label>
             <textarea [(ngModel)]="this.provider.settings" [ngModelOptions]="{standalone: true}" class="form-control" id="settings" rows="10" cols="30" required></textarea>
           </div>
         </div>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="register">Register:</label>  
-            <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="0"> No
-            <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="1"> Yes
+            <label for="register">{{'provider.register' | translate}}:</label>  
+            <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="0"> {{'provider.no' | translate}}
+            <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="1"> {{'provider.yes' | translate}}
           </div>
         </div>
       </nb-card-body>
     </nb-card>    
 
     <div *ngIf="(provider_id>0)">
-      <button type="button" class="btn btn-primary" (click)="updateProvider()">Update</button>
+      <button type="button" class="btn btn-primary" (click)="updateProvider()">{{'buttons.update' | translate}}</button>
     </div>
     <div *ngIf="(!provider_id)">
-      <button type="button" class="btn btn-success" (click)="addProvider()">Submit</button>
+      <button type="button" class="btn btn-success" (click)="addProvider()">{{'buttons.submit' | translate}}</button>
     </div>
   </form>
 </div>
