@@ -1,15 +1,15 @@
-<h3>Add::Document</h3>
+<h3>{{'document.add' | translate}}</h3>
 <div class="col-lg-12">
   <form id="form1" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        Document Information
+        {{'document.document_info' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
-              <label for="name">Document Name:</label>
+              <label for="name">{{'document.document_name' | translate}}:</label>
               <input [(ngModel)]="document.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="name" required/>
             </div>
           </div>
@@ -19,7 +19,7 @@
       
     <nb-card>
       <nb-card-header>
-        Upload Document (pdf, png, tiff and jpeg are supported only)
+        {{'document.supported_document' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="container">
@@ -33,7 +33,7 @@
         </div>
         <div *ngIf="unsupportedErr">
           <br>
-          <label style="color:red" text-center>Unsupported file type</label>
+          <label style="color:red" text-center>{{'document.unsupported_file' | translate}}</label>
         </div>
         <div *ngFor="let item of uploader.queue"> 
           <br>
@@ -50,18 +50,18 @@
 
     <nb-card>
       <nb-card-header>
-        Fax Quality Type
+        {{'document.fax_quality' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
             <div>  
-              <label for="type">Quality Type:</label>  
+              <label for="type">{{'outbound_fax.quality_type' | translate}}:</label>  
               <select class = "form-control" name = "quality" [(ngModel)]= "document.quality" [ngModelOptions]="{standalone: true}" [disabled]="(document_id>0)">
-                <option value = "">Please Select an Option below</option>  
-                <option value="standard">Standard</option>
-                <option value="fine">Fine</option>
-                <option value="super">Super</option>
+                <option value = "">{{'outbound_fax.choose' | translate}}</option>  
+                <option value="standard">{{'outbound_fax.standard' | translate}}</option>
+                <option value="fine">{{'outbound_fax.fine' | translate}}</option>
+                <option value="super">{{'outbound_fax.super' | translate}}</option>
               </select>
             </div>
           </div>
@@ -71,12 +71,12 @@
 
     <nb-card>
       <nb-card-header>
-        Description
+        {{'document.description' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
-            <label for="description">Description:</label>
+            <label for="description">{{'document.description' | translate}}:</label>
             <input [(ngModel)]="document.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="description" required/>  
           </div>
         </div>
@@ -84,10 +84,10 @@
     </nb-card>
 
     <div *ngIf="(document_id>0)">
-      <button type="button" class="btn btn-primary" (click)="updateDocument()">Update</button>
+      <button type="button" class="btn btn-primary" (click)="updateDocument()">{{'button.update' | translate}}</button>
     </div>
     <div *ngIf="(!document_id)">
-      <button type="button" class="btn btn-success" (click)="addDocument()">Submit</button>
+      <button type="button" class="btn btn-success" (click)="addDocument()">{{'button.submit' | translate}}</button>
     </div>
   </form>
 </div>

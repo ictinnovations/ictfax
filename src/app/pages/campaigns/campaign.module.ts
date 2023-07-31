@@ -12,6 +12,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { NbCardModule, NbIconModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { StatusCardComponent } from './status-card/status-card.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -28,6 +29,7 @@ import { StatusCardComponent } from './status-card/status-card.component';
     FormsModule,
     ReactiveFormsModule,
     NbIconModule,
+    TranslateModule
   ],
   declarations: [
     ...routedComponents,

@@ -1,43 +1,50 @@
-import { NbMenuItem } from '@nebular/theme';
+import { MenuItem } from "./menu-item";
 
-export const MENU_ITEMS: NbMenuItem[] = [
+export const MENU_ITEMS: MenuItem[] = [
   {
     title: 'Dashboard',
     link: '/pages/dashboard',
     icon: 'home-outline',
     home: true,
+    key: 'dashboard'
   },
-  /*
-  {
-    title: 'Fax Campaigns',
-    link: '/pages/campaigns/campaigns',
-    icon: 'radio-outline'
-  },
-  */
+  
+  // {
+  //   title: 'Fax Campaigns',
+  //   link: '/pages/campaigns/campaigns',
+  //   icon: 'radio-outline',
+  //   key : 'campaign'
+  // },
+
   {
     title: 'Send Fax',
     icon: 'arrow-upward-outline',
     link: '/pages/sendfax/sendfax',
+    key : 'send_fax'
   },
   {
     title: 'Receive Fax',
     icon: 'arrow-downward-outline',
     link: '/pages/infax',
+    key : 'receive_fax'
   },
   {
     title: 'Contacts',
     icon: 'person-outline',
+    key : 'contact',
     children: [
       {
         title: 'Contacts',
         link: '/pages/contact/contacts',
-        icon: 'person-add-outline'
+        icon: 'person-add-outline',
+        key : 'contact'
       },
       
       {
         title: 'Groups',
         link: '/pages/contact/group',
-        icon: 'people-outline'
+        icon: 'people-outline',
+        key : 'group'
       },
       
     ],
@@ -45,100 +52,137 @@ export const MENU_ITEMS: NbMenuItem[] = [
   {
     title: 'Fax Documents',
     link: '/pages/message/document',
-    icon: 'file-text-outline'
+    icon: 'file-text-outline',
+    key : 'fax_document'
   },
   {
     title: 'My DIDs',
     link: '/pages/incoming_number/incoming_number',
     icon: 'arrow-downward-outline',
+    key : 'my_dids'
   },
   {
     title: 'Administration',
     icon: 'settings-2-outline',
+    key : 'administration',
     children: [
   {
     title: 'DID Numbers',
     link: '/pages/did/did',
     icon: 'smartphone-outline',
+    key : 'did_number'
   },
   {
     title: 'Provider / Trunks',
     link: '/pages/provider/provider',
     icon: 'shuffle-2-outline',
+    key : 'provider'
   },
   {
     title: 'User Management',
     link: '/pages/user/user',
-    icon: 'person-done-outline'
+    icon: 'person-done-outline',
+    key : 'user_management'
   },
   {
     title: 'Extensions',
     link: '/pages/extension/extension',
-    icon: 'hash-outline'
+    icon: 'hash-outline',
+    key : 'extensions'
   },
  ],
 },
 ];
 
-export const userMenuItems: NbMenuItem[] = [
-  {
-    title: 'Dashboard',
-    icon: 'nb-home',
-    link: '/pages/dashboard',
-    home: true,
-  },
-  {
-    title: 'Send Fax',
-    icon: 'ion-arrow-up-c',
-    link: '/pages/sendfax/sendfax',
-  },
-  {
-    title: 'Receive Fax',
-    icon: 'ion-arrow-down-c',
-    link: '/pages/infax',
-  },
-  {
-    title: 'Contacts',
-    icon: 'person-outline',
-    children: [
-      {
-        title: 'Contacts',
-        link: '/pages/contact/contacts',
-        icon: 'person-add-outline'
-      },
-      
-      {
-        title: 'Groups',
-        link: '/pages/contact/group',
-        icon: 'people-outline'
-      },
-      
-    ],
-  },
-  {
-    title: 'Fax Documents',
-    link: '/pages/message/document',
-    icon: 'fa fa-file',
-  },
-  {
-    title: 'My DIDs',
-    link: '/pages/incoming_number/incoming_number',
-    icon: 'arrow-downward-outline',
-  },
-  {
-    title: 'Administration',
-    icon: 'ion-person',
-    children: [
-      {
-        title: 'DID Numbers',
-        link: '/pages/did/did',
-        icon: 'smartphone-outline',
-      },
-  {
-    title: 'Extensions',
-    link: '/pages/extension/extension',
-    icon: 'hash-outline',
-  },
- ],
+export const userMenuItems: MenuItem[] = [   {
+  title: 'Dashboard',
+  link: '/pages/dashboard',
+  icon: 'home-outline',
+  home: true,
+  key: 'dashboard'
+},
+
+// {
+//   title: 'Fax Campaigns',
+//   link: '/pages/campaigns/campaigns',
+//   icon: 'radio-outline',
+//   key : 'campaign'
+// },
+
+{
+  title: 'Send Fax',
+  icon: 'arrow-upward-outline',
+  link: '/pages/sendfax/sendfax',
+  key : 'send_fax'
+},
+{
+  title: 'Receive Fax',
+  icon: 'arrow-downward-outline',
+  link: '/pages/infax',
+  key : 'receive_fax'
+},
+{
+  title: 'Contacts',
+  icon: 'person-outline',
+  key : 'contact',
+  children: [
+    {
+      title: 'Contacts',
+      link: '/pages/contact/contacts',
+      icon: 'person-add-outline',
+      key : 'contact'
+    },
+    
+    {
+      title: 'Groups',
+      link: '/pages/contact/group',
+      icon: 'people-outline',
+      key : 'group'
+    },
+    
+  ],
+},
+{
+  title: 'Fax Documents',
+  link: '/pages/message/document',
+  icon: 'file-text-outline',
+  key : 'fax_document'
+},
+{
+  title: 'My DIDs',
+  link: '/pages/incoming_number/incoming_number',
+  icon: 'arrow-downward-outline',
+  key : 'my_dids'
+},
+{
+  title: 'Administration',
+  icon: 'settings-2-outline',
+  key : 'administration',
+  children: [
+{
+  title: 'DID Numbers',
+  link: '/pages/did/did',
+  icon: 'smartphone-outline',
+  key : 'did_number'
+},
+{
+  title: 'Provider / Trunks',
+  link: '/pages/provider/provider',
+  icon: 'shuffle-2-outline',
+  key : 'provider'
+},
+{
+  title: 'User Management',
+  link: '/pages/user/user',
+  icon: 'person-done-outline',
+  key : 'user_management'
+},
+{
+  title: 'Extensions',
+  link: '/pages/extension/extension',
+  icon: 'hash-outline',
+  key : 'extensions'
+},
+],
 },
 ];

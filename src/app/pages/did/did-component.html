@@ -1,11 +1,11 @@
 <nb-card>
   <nb-card-header>
-    DID List 
+    {{'dids.list' | translate}}
   </nb-card-header>
   
   <nb-card-body>
-    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/new']"><i class="fa fa-plus"></i>Add DID</button>&nbsp;
-    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/batch']">Create DIDs in batch</button>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/new']"><i class="fa fa-plus"></i>{{'dids.add' | translate}}</button>&nbsp;
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/batch']">{{'dids.add_in_batch' | translate}}</button>
     <!--
     <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/import']">Import DID List</button>
     !-->
@@ -14,19 +14,19 @@
     <div class="example-container mat-elevation-z8">
       <mat-table #table [dataSource]="aDID" matSort>
         <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header >Number</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header >{{'dids.number' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let did">
             {{did.phone}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="first_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>Title</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'dids.title' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let did" style="text-align:left">
             {{did.first_name}}
           </mat-cell>
         </ng-container>     
         <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>{{'general.ID' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let did">
             <button mat-icon-button color="primary" style= "font-size:20px">
               <mat-icon><a routerLink="/pages/did/did/{{did.account_id}}" title="Edit"><i class="fa fa-pencil-square-o"></i></a></mat-icon>

@@ -1,47 +1,47 @@
 <nb-card>
   <nb-card-header>
-    User List
-    <input style="float:right" class="form-control cc" type="text" #filter placeholder="Filter Users">
+    {{'user.list' | translate}}
+    <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'user.filter' | translate}}">
   </nb-card-header>
 
   <nb-card-body>
-    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/user/user/new']"><i class="fa fa-plus"></i> Add User</button>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/user/user/new']"><i class="fa fa-plus"></i> {{'user.add' | translate}}</button>
     <br>
     <br>
     <div class="example-container mat-elevation-z8">
       <mat-table #table [dataSource]="aUser" matSort>
         <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header >ID</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header >{{'general.ID' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let user">
             {{user.user_id}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="username">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>User Name</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.Username' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let user" style="text-align:left">
             {{user.username}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="first_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>First Name</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.fname' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let user" style="text-align:left">
             {{user.first_name}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="last_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>Last Name</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.lname' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let user" style="text-align:left">
             {{user.last_name}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="email">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>Email</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.Email' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let user" style="text-align:left">
             {{user.email}}
           </mat-cell>
         </ng-container>                    
         <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>Operations</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>{{'general.operations' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let user">
             <button mat-icon-button color="primary" style= "font-size:20px">
               <mat-icon><a routerLink="/pages/user/user/{{user.user_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>

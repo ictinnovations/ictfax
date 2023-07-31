@@ -37,18 +37,16 @@
     "dashboard": "Dashboard",
     "features": "Features",
     "campaigns": "Campaigns",
-    "leads": "Leads",
-    "opportunity": "Opportunity",
-    "account": "Accounts",
-    "crm campaign": "CRM Campaigns",
-    "report": "Reports",
     "transmissions": "Transmissions",
     "send_fax": "Send Fax",
     "receive_fax": "Receive Fax",
     "my_dids": "My DIDs",
     "cdr_reports": "CDR Reports",
     "ivr": "IVR",
-    "contacts": "Contacts",
+    "contacts": {
+      "contact": "Contacts",
+      "group": "Group"
+    },
     "resources": {
       "resources": "Resources",
       "voice_recording": "Voice Recordings",
@@ -58,13 +56,13 @@
     },
     "administration": {
       "administration": "Administration",
-      "branding": "Branding",
+    
       "user": "User Management",
       "extensions": "Extensions",
-      "tenants": "Tenants",
+     
       "did_number": "DID Number",
-      "providers": "Providers / Trunks",
-      "fax_setting": "Fax Settings"
+      "providers": "Providers / Trunks"
+    
     },
     "routings": {
       "routings": "Routings",
@@ -76,7 +74,7 @@
     }
   },
   "contact": {
-    "title": "Contact",
+    "title": "Contacts",
     "list": "Contact List",
     "add": "Add Contact",
     "filter": "Filter Contacts",
@@ -119,7 +117,7 @@
     "operations": "Operations"
   },
   "group": {
-    "title": "Group",
+    "title": "Groups",
     "list": "Group List",
     "add": "Add Group",
     "filter": "Filter Group",
@@ -207,7 +205,11 @@
     "settings": "Settings",
     "settings_placeholder": "Any additional configuration required by this provider",
     "register": "Register",
-    "type": "Type"
+    "type": "Type",
+    "sip": "SIP",
+    "smpp": "SMPP",
+    "smtp": "SMTP",
+    "prefix_and_weight": "Prefix And Weight"
   },
   "branding": {
     "title_footer_info": "Domain and Footer Information",
@@ -276,11 +278,13 @@
     "select_role": "Select Role",
     "password_required": "Password is required",
     "password_mismatch": "Passwords did not match",
-    "phone_num":"Phone number",
-    "status" :"Status",
-    "Username":"User Name",
-    "date_time":"Date and Time",
-    "Email" :"Email"
+    "phone_num": "Phone number",
+    "status": "Status",
+    "Username": "User Name",
+    "date_time": "Date and Time",
+    "Email": "Email",
+    "phone_shd": "Mobile number Should be only Numbers",
+    "invalid_email": "Email is invalid"
   },
   "extension": {
     "title": "Extension",
@@ -489,7 +493,7 @@
     "add": "Add DID",
     "add_in_batch": "Create DIDs in batch",
     "number": "Number",
-    "title":"Title",
+    "title": "Title",
     "assign_did": "Assign DID",
     "assigned_to": "Assigned to",
     "assign_to_user": "Assign to User",
