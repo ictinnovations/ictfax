@@ -31,13 +31,13 @@ export const MENU_ITEMS: MenuItem[] = [
   {
     title: 'Contacts',
     icon: 'person-outline',
-    key : 'contact',
+    key : 'contacts',
     children: [
       {
         title: 'Contacts',
         link: '/pages/contact/contacts',
         icon: 'person-add-outline',
-        key : 'contact'
+        key : 'contacts'
       },
       
       {
@@ -53,7 +53,7 @@ export const MENU_ITEMS: MenuItem[] = [
     title: 'Fax Documents',
     link: '/pages/message/document',
     icon: 'file-text-outline',
-    key : 'fax_document'
+    key : 'fax_documents'
   },
   {
     title: 'My DIDs',
@@ -76,7 +76,7 @@ export const MENU_ITEMS: MenuItem[] = [
     title: 'Provider / Trunks',
     link: '/pages/provider/provider',
     icon: 'shuffle-2-outline',
-    key : 'provider'
+    key : 'providers'
   },
   {
     title: 'User Management',

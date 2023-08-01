@@ -7,94 +7,25 @@
     "outbound_fax": "in uscita_fax",
     "inbound_fax":"Fax in entrata",
     "dids": "Utenti",
-    "users": "Inquiline",
-    "transmission": {
-      "title": "Send a Single Transmission",
-      "description": "ICTCore allows to support different kind of transmissions like Voice Call, SMS, Email and Fax to send message to a single contact.",
-      "voice": {
-        "title": "Voice call",
-        "description": "This transmission dials number from a contact list and on answer plays a recorded message."
-      },
-      "sms": {
-        "title": "SMS Transmission",
-        "description": "This transmission selects number from a contact list and simply broadcast a text message to the contact group."
-      },
-      "email": {
-        "title": "Email Transmission",
-        "description": "This transmission sends email to the specified email address of your contact."
-      },
-      "fax": {
-        "title": "Fax Transmission",
-        "description": "This transmission dials number from a contact list and on answer transfer fax documents. "
-      },
-      "ivr": {
-        "title": "IVR Transmission",
-        "description": "This transmission dials number from a contact list and on answer plays the IVR menu. "
-      }
-    },
-    "campaigns": {
-      "title": "Launch a Campaign",
-      "description": "ICTCore supports complete campaign management. Each user can manage, monitor, and run multiple campaigns separately and independently to send message to contact group.",
-      "voice": {
-        "title": "Voice Campaign",
-        "description": "This campaign dials number from a contact list and on answer plays a recorded message."
-      },
-      "sms": {
-        "title": "SMS Campaign",
-        "description": "This campaign selects number from a contact list and simply broadcast a text message to the contact. "
-      },
-      "email": {
-        "title": "Email Campaign",
-        "description": "This campaign sends email to the specified email address of your contact group."
-      },
-      "fax": {
-        "title": "Fax Campaign",
-        "description": "This campaign dials number from a contact list and on answer transfer fax documents."
-      },
-      "ivr": {
-        "title": "IVR Campaign",
-        "description": "This campaign dials number from a contact list and on answer play the IVR menu."
-      }
-    }
+    "users": "Inquiline"
   },
   "menu": {
     "dashboard": "Dashboard",
-    "features": "Caratteristiche",
     "campaigns": "Campagne",
-    "transmissions": "Trasmissioni",
     "send_fax": "Fax inviati",
     "receive_fax": "Fax ricevuti",
     "my_dids": "DIDs",
-    "cdr_reports": "CDR Reports",
-    "ivr": "IVR",
+    "fax_documents":"Documento fax",
     "contacts": {
       "contacts": "contatti",
-      "groups": "gruppo"
-    },
-    "resources": {
-      "resources": "Risorse",
-      "voice_recording": "Registrazione vocale",
-      "fax_documents": "Documenti",
-      "email_template": "Impostazioni fax",
-      "text_message": "Messaggi di testo"
+      "group": "gruppo"
     },
     "administration": {
       "administration": "Amministrazione",
-      "branding": "Marchio",
-      "user": "Gestione utenti",
-      "extensions": "Estensioni",
-      "tenants": "Inquiline",
+      "user_management": "Gestione utenti",
+      "extensions": "Estensioni", 
       "did_number": "Numero DID",
-      "providers": "Fornitrici / Tronchi",
-      "fax_setting": "Impostazioni fax"
-    },
-    "routings": {
-      "routings": "Percorsi",
-      "providers": "Fornitrici / Tronchi",
-      "regions": "Regioni",
-      "countries": "Paesi",
-      "destinations": "Destinazioni",
-      "routes": "Itinerari"
+      "providers": "Fornitrici / Tronchi"
     }
   },
   "contact": {
@@ -128,18 +59,6 @@
     "contact_count": "Conteggio dei contatti",
     "operations": "Operazioni"
   },
-  "recording": {
-    "title": "Recording",
-    "list": "Recording List",
-    "add": "Add Recording",
-    "filter": "Filter Recording",
-    "recording_name": "Recording Name",
-    "upload_recording": "Upload Recording",
-    "description": "Description",
-    "type": "Type",
-    "length": "Length",
-    "recording_info": "Recording Information"
-  },
   "document": {
     "title": "Documenti",
     "list": "Lista documenti",
@@ -153,39 +72,6 @@
     "supported_document": "pdf, png, tiff and jpeg file supportati",
     "unsupported_file": "File non supportato",
     "upload_file": "Upload"
-  },
-  "button":{
-    "update":"Aggiorna",
-    "submit":"Invia"
-  },
-  "email": {
-    "title": "Email",
-    "list": "Email list",
-    "add": "Add Template",
-    "filter": "Filter emails",
-    "email_info": "Email information",
-    "email_name": "Email Name",
-    "further_info": "Further information",
-    "subject": "Subject",
-    "message": "Message",
-    "plain_message": "Plain message",
-    "plain_message_placeholder": "Alternative text message",
-    "upload_attachment": "Upload Attachment",
-    "description": "Description",
-    "type": "Type"
-  },
-  "text": {
-    "title": "Text",
-    "list": "Text list",
-    "add": "Add Text",
-    "filter": "Filter text",
-    "text_info": "Text information",
-    "text_name": "Text name",
-    "text_data": "Text Data",
-    "message": "Message",
-    "description": "Description",
-    "type": "Type",
-    "length": "Length"
   },
   "provider": {
     "title": "Fornitore",
@@ -210,47 +96,6 @@
     "register": "Registrati",
     "type": "Tipo",
     "prefix_and_weight" :"Prefisso E Peso"
-  },
-  "branding": {
-    "title_footer_info": "Informazioni sul dominio e sul piè di pagina",
-    "domain": "Nome del dominio",
-    "title": "Titolo di dominio",
-    "footer": "Testo a piè di pagina",
-    "upload_logo": "Carica logo"
-  },
-  "tenant": {
-    "title": "Tenant",
-    "list": "Tenant list",
-    "add": "Add Tenant",
-    "filter": "Filter Tenant",
-    "update": "Update Tenant",
-    "user_info": "Tenant information",
-    "username": "API Username",
-    "password": "Password",
-    "confirm_password": "Confirm Password",
-    "name": "Name",
-    "fname": "First name",
-    "lname": "Last name",
-    "user_address": "Tenant Address",
-    "phone": "Phone",
-    "email": "Email Address",
-    "address": "Address",
-    "choose_country_timezone": "Choose country & timezone",
-    "country": "Country",
-    "timezone": "Timezone",
-    "company_active": "Comapny & active",
-    "active": "Active",
-    "yes": "Yes",
-    "no": "No",
-    "company": "Company",
-    "select_role": "Select Role",
-    "password_required": "Password is required",
-    "password_mismatch": "Passwords did not match",
-    "srole": "Role",
-    "footer": "Footer",
-    "support_email": "Support Email",
-    "upload_logo": "Upload Logo",
-    "title_footer_info": "Title and Footer Information"
   },
   "user": {
     "title": "Utente",
@@ -313,7 +158,7 @@
     "required_error": "È richiesto il cellulare",
     "pattern_error": "Il numero di cellulare dovrebbe essere solo numeri",
     "invalid_email": "L'email non è valida",
-    "extension_number": "Numero interno"
+    "extension_number": "Numero interno "
   },
   "campaigns": {
     "title": "Campagne",
@@ -335,62 +180,6 @@
       "delay_bw_fax":"Ritardo tra i fax",
       "update":"Aggiornamento",
       "submit":"Invia"  
-  },
-  "transmission": {
-    "list": "Transmission List",
-    "sms": {
-      "title": "Send SMS",
-      "program": "Send SMS Program",
-      "choose_text": "Choose your Text",
-      "text": "Text"
-    },
-    "email": {
-      "title": "Send Email",
-      "program": "Send Email Program",
-      "choose_template": "Choose template",
-      "template": "Template",
-      "email_destination": "Email of Destination Contact"
-    },
-    "fax": {
-      "title": "Invia fax",
-      "program": "Send Fax Document Program",
-      "choose_document": "Seleziona un documento",
-      "document": "Documento",
-      "send_fax": "Invia fax"
-    },
-    "voice": {
-      "title": "Voice call",
-      "program": "Send Voice Message",
-      "choose_voice": "Choose Voice Recording",
-      "voice_message": "Voice message"
-    },
-    "ivr": {
-      "title": "Send IVR",
-      "program": "Send IVR Program",
-      "choose_ivr": "Choose IVR",
-      "ivr": "IVR"
-    },
-    "title": "Titolo",
-    "retry": "Riprova",
-    "destination_contact": "Destination Contact",
-    "phone_num_destination_contact": "Phone number of Destination Contact",
-    "contact_id": "Contact ID",
-    "program_name": "Program name",
-    "status": "Stato",
-    "choose_contact": "Choose Contact",
-    "enter_manually": "Enter Manually"
-  },
-  "ivr": {
-    "title": "IVR",
-    "list": "IVR List",
-    "add": "New IVR",
-    "filter": "Filter IVR",
-    "ivr_info": "IVR Information",
-    "name": "IVR name",
-    "ivr_design": "IVR Design",
-    "applications": "Applications",
-    "description": "Description",
-    "req_name": "Name is required"
   },
   "buttons": {
     "submit": "Invia",
@@ -475,30 +264,5 @@
     "range_from_req": "Il campo Intervallo da è obbligatorio.",
     "range_to_req": "L'intervallo al campo è obbligatorio.",
     "did_req": "Il campo Numero DID è obbligatorio."
-  },
-  "fax_settings": {
-    "title": "Settings",
-    "cover": "Send Cover page",
-    "body": "Send Email Body as page"
-  },
-  "cdr": {
-    "title": "CDR Report",
-    "export_to_csv": "Esporta in formato CSV",
-    "time_start": "Data inizio",
-    "time_connect": "Data connessione",
-    "time_end": "Data fine",
-    "contact_phone": "Numero di destinazione",
-    "account_phone": "ID chiamante",
-    "status": "Stato",
-    "cost": "Costo",
-    "pages": "Pagine",
-    "amount": "Amount",
-    "campaign_cdr": "Campaign CDR Report",
-    "direction": "direzione",
-    "company": "azienda"
-  },
-  "fax_viewer": {
-    "title": "Visualizza Documento Fax",
-    "description": "Visualizza documento fax."
   }
-}
+ }

@@ -24,6 +24,7 @@ export class AppService {
   public def: any;
   public err_code: string;
   public err_message: string;
+  public success_message: string;
 
   apiUrl= environment.API_URL;
 
