@@ -7,94 +7,26 @@
     "outbound_fax": "アウトバウンドファックス",
     "inbound_fax": "インバウンドファックス",
     "dids": "DIDs",
-    "users": "ユーザー",
-    "transmission": {
-      "title": "単一の送信を送信する",
-      "description": "ICTCoreを使用すると、音声通話、SMS、電子メール、ファックスなどのさまざまな種類の送信をサポートして、単一の連絡先にメッセージを送信できます。.",
-      "voice": {
-        "title": "音声電話",
-        "description": "この送信は連絡先リストから番号をダイヤルし、応答時に録音されたメッセージを再生します."
-      },
-      "sms": {
-        "title": "SMS送信",
-        "description": "この送信では、連絡先リストから番号を選択し、テキストメッセージを連絡先グループにブロードキャストするだけです。."
-      },
-      "email": {
-        "title": "メール送信",
-        "description": "この送信により、連絡先の指定された電子メールアドレスに電子メールが送信されます."
-      },
-      "fax": {
-        "title": "ファックス送信",
-        "description": "この送信は、連絡先リストおよび応答転送ファックス文書から番号をダイヤルします. "
-      },
-      "ivr": {
-        "title": "IVR送信",
-        "description": "この送信は連絡先リストから番号をダイヤルし、応答時にIVRメニューを再生します. "
-      }
-    },
-    "campaigns": {
-      "title": "キャンペーンを開始する",
-      "description": "ICTCoreは完全なキャンペーン管理をサポートします。各ユーザーは、複数のキャンペーンを個別に独立して管理、監視、および実行して、連絡先グループにメッセージを送信できます。.",
-      "voice": {
-        "title": "音声キャンペーン",
-        "description": "このキャンペーンは連絡先リストから番号をダイヤルし、応答時に録音されたメッセージを再生します."
-      },
-      "sms": {
-        "title": "SMSキャンペーン",
-        "description": "このキャンペーンでは、連絡先リストから番号を選択し、テキストメッセージを連絡先にブロードキャストするだけです。. "
-      },
-      "email": {
-        "title": "メールキャンペーン",
-        "description": "このキャンペーンは、連絡先グループの指定された電子メールアドレスに電子メールを送信します."
-      },
-      "fax": {
-        "title": "ファックスキャンペーン",
-        "description": "このキャンペーンは、連絡先リストおよび応答転送ファックス文書から番号をダイヤルします."
-      },
-      "ivr": {
-        "title": "IVRキャンペーン",
-        "description": "このキャンペーンは連絡先リストから番号をダイヤルし、応答時にIVRメニューを再生します."
-      }
-    }
+    "users": "ユーザー"
   },
   "menu": {
     "dashboard": "ダッシュボード",
     "features": "特徴",
     "campaigns": "キャンペーン",
-    "transmissions": "トランスミッション",
     "send_fax": "ファックスを送信する",
     "receive_fax": "ファックスを受信する",
     "my_dids": "私のDID",
-    "cdr_reports": "CDRレポート",
-    "ivr": "IVR",
+    "fax_documents" :"ユーザー管理",
     "contacts": {
       "contacts": "連絡先",
-      "groups": "グループ"
-    },
-    "resources": {
-      "resources": "リソース",
-      "voice_recording": "音声録音",
-      "fax_documents": "ファックス文書",
-      "email_template": "メールテンプレート",
-      "text_message": "テキストメッセージ"
+      "group": "グループ"
     },
     "administration": {
       "administration": "管理",
-      "branding": "ブランディング",
-      "user": "ユーザー管理",
+      "user_management": "ユーザー管理",
       "extensions": "拡張機能",
-      "tenants": "テナント",
       "did_number": "DID番号",
-      "providers": "プロバイダー/トランク",
-      "fax_setting": "ファックス設定"
-    },
-    "routings": {
-      "routings": "ルーティング",
-      "providers": "プロバイダー/トランク",
-      "regions": "地域",
-      "countries": "国",
-      "destinations": "目的地",
-      "routes": "ルート"
+      "providers": "プロバイダー/トランク"
     }
   },
   "contact": {
@@ -128,18 +60,6 @@
     "contact_count": "連絡先数",
     "operations": "操作"
   },
-  "recording": {
-    "title": "録音",
-    "list": "録音リスト",
-    "add": "録音を追加",
-    "filter": "フィルター記録",
-    "recording_name": "録音名",
-    "upload_recording": "録音のアップロード",
-    "description": "説明",
-    "type": "タイプ",
-    "length": "長さ",
-    "recording_info": "記録情報"
-  },
   "document": {
     "title": "資料",
     "dids_info" : "DID 情報",
@@ -155,39 +75,6 @@
     "supported_document": "pdf、png、tiff、jpegのみがサポートされています",
     "unsupported_file": "サポートされていないファイルタイプ",
     "upload_file": "ファイルをアップロードする"
-  },
-  "button":{
-    "update":"更新",
-    "submit":"参加する"
-  },
-  "email": {
-    "title": "Eメール",
-    "list": "メーリングリスト",
-    "add": "テンプレートを追加",
-    "filter": "メールをフィルタリングする",
-    "email_info": "メール情報",
-    "email_name": "メール名",
-    "further_info": "さらに詳しい情報",
-    "subject": "件名",
-    "message": "メッセージ",
-    "plain_message": "わかりやすいメッセージ",
-    "plain_message_placeholder": "代替テキストメッセージ",
-    "upload_attachment": "添付ファイルをアップロード",
-    "description": "説明",
-    "type": "タイプ"
-  },
-  "text": {
-    "title": "テキスト",
-    "list": "テキストリスト",
-    "add": "テキストを追加",
-    "filter": "テキストをフィルタリングする",
-    "text_info": "テキスト情報",
-    "text_name": "テキスト名",
-    "text_data": "テキストデータ",
-    "message": "メッセージ",
-    "description": "説明",
-    "type": "タイプ",
-    "length": "長さ"
   },
   "provider": {
     "title": "プロバイダー",
@@ -213,45 +100,6 @@
     "register": "登録",
     "type": "タイプ",
     "prefix_and_weight" :"プレフィックスと重み"
-  },
-  "branding": {
-    "title_footer_info": "ドメインとフッターの情報",
-    "domain": "ドメイン名",
-    "title": "ドメインタイトル",
-    "footer": "フッターテキスト",
-    "upload_logo": "ロゴをアップロード"
-  },
-  "tenant": {
-    "title": "テナント",
-    "list": "テナントリスト",
-    "add": "テナントを追加する",
-    "filter": "テナントのフィルター",
-    "user_info": "テナント情報",
-    "username": "APIユーザー名",
-    "password": "パスワード",
-    "confirm_password": "パスワードを認証する",
-    "name": "名前",
-    "fname": "ファーストネーム",
-    "lname": "苗字",
-    "user_address": "ユーザーアドレス",
-    "phone": "電話",
-    "email": "電子メールアドレス",
-    "address": "住所",
-    "choose_country_timezone": "国とタイムゾーンを選択してください",
-    "country": "国",
-    "timezone": "タイムゾーン",
-    "company_active": "コマプニー＆アクティブ",
-    "active": "アクティブ",
-    "yes": "はい",
-    "no": "番号",
-    "company": "会社",
-    "select_role": "役割を選択",
-    "user": "ユーザー",
-    "admin": "管理者",
-    "footer": "フッター",
-    "support_email": "サポートメール",
-    "upload_logo": "ロゴをアップロード",
-    "title_footer_info": "タイトルとフッター情報"
   },
   "user": {
     "title": "ユーザー",
@@ -341,62 +189,6 @@
       "update":"アップデート",
       "submit":"送信"  
   },
-  "transmission": {
-    "list": "送信リスト",
-    "sms": {
-      "title": "SMSを送信",
-      "program": "SMSプログラムを送信する",
-      "choose_text": "テキストを選択してください",
-      "text": "テキスト"
-    },
-    "email": {
-      "title": "メールを送る",
-      "program": "電子メールプログラムを送信する",
-      "choose_template": "テンプレートを選択",
-      "template": "Template",
-      "email_destination": "宛先連絡先の電子メール"
-    },
-    "fax": {
-      "title": "ファックスを送信する",
-      "program": "ファックスドキュメントプログラムを送信する",
-      "choose_document": "ドキュメントを選択",
-      "document": "資料",
-      "send_fax": "ファックスを送信する"
-    },
-    "voice": {
-      "title": "音声電話",
-      "program": "ボイスメッセージを送信する",
-      "choose_voice": "音声録音を選択します",
-      "voice_message": "ボイスメッセージ"
-    },
-    "ivr": {
-      "title": "IVRを送信する",
-      "program": "IVRプログラムを送信する",
-      "choose_ivr": "IVRを選択",
-      "ivr": "IVR"
-    },
-    "title": "題名",
-    "retry": "リトライ",
-    "destination_contact": "宛先連絡先",
-    "phone_num_destination_contact": "宛先連絡先の電話番号",
-    "contact_id": "連絡先ID",
-    "program_name": "プログラム名",
-    "status": "状態",
-    "choose_contact": "連絡先を選択",
-    "enter_manually": "手動で入力します"
-  },
-  "ivr": {
-    "title": "IVR",
-    "list": "IVRリスト",
-    "add": "新しいIVR",
-    "filter": "IVRをフィルタリングする",
-    "ivr_info": "IVR情報",
-    "name": "IVR名",
-    "ivr_design": "IVR設計",
-    "applications": "アプリケーション",
-    "description": "説明",
-    "req_name": "名前が必要です"
-  },
   "buttons": {
     "submit": "参加する",
     "update": "更新"
@@ -477,30 +269,5 @@
     "range_from_req": "RangeFromフィールドは必須です.",
     "range_to_req": "フィールドまでの範囲が必要です.",
     "did_req": "DID番号フィールドは必須です."
-  },
-  "fax_settings": {
-    "title": "設定",
-    "cover": "表紙を送る",
-    "body": "メール本文をページとして送信"
-  },
-  "cdr": {
-    "title": "CDRレポート",
-    "export_to_csv": "CSVにエクスポート",
-    "time_start": "タイムスタート",
-    "time_connect": "タイムコネクト",
-    "time_end": "時間の終わり",
-    "contact_phone": "宛先番号",
-    "account_phone": "発信者ID",
-    "status": "状態",
-    "cost": "費用",
-    "pages": "ページ",
-    "amount": "量",
-    "campaign_cdr": "キャンペーンCDRレポート",
-    "direction": "方向",
-    "company": "会社"
-  },
-  "fax_viewer": {
-    "title": "ファックスドキュメントを表示",
-    "description": "ファックスドキュメントを表示します。"
   }
 }

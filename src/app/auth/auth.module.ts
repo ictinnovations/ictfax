@@ -14,6 +14,7 @@ import { NbAlertModule, NbButtonModule, NbCheckboxModule, NbInputModule } from '
 
 import { LoginComponent } from './login/login.component';
 import { LogoutComponent } from './logout/logout.component';
+import { TranslateModule } from '@ngx-translate/core';
 
 
 @NgModule({
@@ -25,7 +26,7 @@ import { LogoutComponent } from './logout/logout.component';
     NbButtonModule,
     NbCheckboxModule,
     AuthRoutingModule,
-
+    TranslateModule,
     NbAuthModule,
   ],
   declarations: [
