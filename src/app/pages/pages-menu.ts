@@ -9,12 +9,12 @@ export const MENU_ITEMS: MenuItem[] = [
     key: 'dashboard'
   },
   
-  // {
-  //   title: 'Fax Campaigns',
-  //   link: '/pages/campaigns/campaigns',
-  //   icon: 'radio-outline',
-  //   key : 'campaign'
-  // },
+  {
+    title: 'Fax Campaigns',
+    link: '/pages/campaigns/campaigns',
+    icon: 'radio-outline',
+    key : 'campaigns'
+  },
 
   {
     title: 'Send Fax',
@@ -102,12 +102,12 @@ export const userMenuItems: MenuItem[] = [   {
   key: 'dashboard'
 },
 
-// {
-//   title: 'Fax Campaigns',
-//   link: '/pages/campaigns/campaigns',
-//   icon: 'radio-outline',
-//   key : 'campaign'
-// },
+{
+  title: 'Fax Campaigns',
+  link: '/pages/campaigns/campaigns',
+  icon: 'radio-outline',
+  key : 'campaigns'
+},
 
 {
   title: 'Send Fax',

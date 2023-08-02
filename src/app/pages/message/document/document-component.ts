@@ -5,8 +5,16 @@ import { MatPaginator } from '@angular/material/paginator';
 import { DocumentDatabase } from './document-database.component';
 import { DocumentDataSource } from './document-datasource.component';
 import { ModalComponent } from '../../../modal.component';
-import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
-import { Observable } from 'rxjs/Rx';
+import { NgbModal, ModalDismissReasons, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { fromEvent } from 'rxjs';
+import 'rxjs/add/operator/debounceTime';
+import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { ContactService } from '../../contact/contact.service';
+import { Contact } from '../../contact/contact';
+import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
+import { SendFax } from '../../sendfax/sendfax';
+import { SendFaxService } from '../../sendfax/sendfax.service';
+import { DocumentProgram } from '../../campaigns/campaign';
 
 @Component({
   selector: 'ngx-document-component',
@@ -15,22 +23,39 @@ import { Observable } from 'rxjs/Rx';
 })
 
 export class FormsDocumentComponent implements OnInit {
-  constructor(private document_service: DocumentService, private modalService: NgbModal) { }
+  constructor(
+    private document_service: DocumentService,
+    private modalService: NgbModal,
+    private contact_service: ContactService,
+    private sendfax_service: SendFaxService) { }
 
   aDocument: DocumentDataSource | null;
   length: number;
   closeResult: any;
 
+  contactArray: Contact[] = [];
+  trans_id:any;
+  documentProgram: DocumentProgram = new DocumentProgram;
+  private modalRef: NgbModalRef;
   displayedColumns= ['ID', 'name', 'Operations'];
+  documentURL: string;
+  // documentURL: string = "http://demo.ictfax.com/data/document/document_0_74.tif.pdf";
+  // faxDocumentURL: string = "https://vadimdez.github.io/ng2-pdf-viewer/assets/pdf-test.pdf";
+  faxDocumentURL: string;
+  totalPages: number = 0;
+  page: number = 1;
+  isLoaded: boolean = false;
 
   @ViewChild(MatSort, {static: false}) sort: MatSort;
 
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
+  sendfax: SendFax = new SendFax;  
 
   ngOnInit() {
     this.getDocumentlist();
+    
   }
 
   getDocumentlist() {
@@ -46,10 +71,10 @@ export class FormsDocumentComponent implements OnInit {
       this.sort.sortChange.emit(sortState);
 
       // Observable for the filter
-      Observable.fromEvent(this.filter.nativeElement, 'keyup')
-     .debounceTime(150)
-     .distinctUntilChanged()
-     .subscribe(() => {
+      fromEvent(this.filter.nativeElement, 'keyup')
+      .pipe(debounceTime(150),
+      distinctUntilChanged())
+      .subscribe(() => {
        if (!this.aDocument) { return; }
        this.aDocument.filter = this.filter.nativeElement.value;
       });
@@ -58,8 +83,7 @@ export class FormsDocumentComponent implements OnInit {
 
   deleteDocument(document_id): void {
     this.document_service.delete_Document(document_id)
-    .then(response => {
-    })
+    .then(response => {})
     .catch(this.handleError);
     this.getDocumentlist();
   }
@@ -93,8 +117,77 @@ export class FormsDocumentComponent implements OnInit {
     }
   }
 
+  // Send Fax related Form
+  open(content, document_id) {
+    this.documentProgram.document_id = document_id;
+    this.modalRef = this.modalService.open(content,  { size: 'md' });
+
+    this.modalRef.result.then((result) => {
+      // this.closeResult = `Closed with: ${result}`;
+    }, (reason) => {
+      // this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
+    });
+  }
+
+  // Show Fax PDF
+  showPDF(content, document_id) {
+    this.modalRef = this.modalService.open(content,  { size: 'md' });    
+    this.viewFaxDocument(document_id);
+  }
+  // Load PDF document
+  viewFaxDocument(document_id) {
+    this.totalPages = 0;
+    this.isLoaded = false;
+    const url = this.document_service.get_ViewFaxDocument(document_id);
+    this.faxDocumentURL = url;
+  }
+  nextPage() {
+    this.page += 1;
+  }
+  previousPage() {
+    this.page -= 1;
+  }
+  afterLoadComplete(pdfData: any) {
+    this.totalPages = pdfData.numPages;
+    this.isLoaded = true;
+  }
+
+  closeModal() {
+    this.modalRef.close();
+  }
+
+ 
+
+  onSelected(item: CompleterItem) {
+    if (item != null) {
+      this.sendfax.contact_id = item.originalObject.contact_id;
+    }
+    else {
+      this.sendfax.contact_id = undefined;
+    }
+  }
+  addSendDocument(): void {
+    if (this.sendfax.contact_id != undefined) {
+        this.sendfax.phone = undefined;
+    }
+    this.sendfax_service.add_senddocument(this.documentProgram).then(response => {
+      const program_id = response;
+      this.sendfax.program_id = program_id;
+      this.AddTransmission();
+      this.closeModal();
+    });
+  }
+  AddTransmission(): void {
+    this.sendfax_service.add_SendFax(this.sendfax).then(response => {
+      const transmission_id = response;  
+    });
+  }
+ 
+
+
+
   downloadDocument(document_id): void {
-    this.document_service.get_Documentdownload(document_id);
+    this.documentURL = this.document_service.get_Documentdownload(document_id);
   }
 
   private handleError(error: any): Promise<any> {

@@ -13,6 +13,8 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { NbCardModule, NbIconModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { Ng2CompleterModule } from "ng2-completer";
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 
 @NgModule({
@@ -30,7 +32,9 @@ import { TranslateModule } from '@ngx-translate/core';
       ReactiveFormsModule,
       MatIconModule,
       NbIconModule,
-      TranslateModule
+      TranslateModule,
+      Ng2CompleterModule,
+      PdfViewerModule
     ],
     declarations: [
       ...routedComponents,

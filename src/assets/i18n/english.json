@@ -74,6 +74,9 @@
     "unsupported_file": "Unsupported file type",
     "upload_file": "Upload File"
   },
+  "fax_viewe":{
+    "title":"View Fax Document"
+  },
   "provider": {
     "title": "Provider",
     "list": "Provider list",
@@ -176,7 +179,19 @@
     "total": "Total",
     "done": "Done",
     "successful": "Successful",
-    "failed": "Failed"
+    "failed": "Failed",
+    "choose_group": "Choose Group",
+    "groups": "Groups",
+    "retry": "Retry",
+    "delay_bw_fax": "Delay between fax",
+    "cpm": "Calls per minute",
+    "group":"Group",
+    "choose_document":"Choose Document",
+    "create_doc":"Create Document",
+    "new":"New Campaigns",
+   "document" :"Document",
+   "select":"Please Select an Option "
+
   },
  
   "buttons": {
@@ -199,6 +214,50 @@
     "code": "404 Page Not Found",
     "message": "The page you were looking for doesn't exist",
     "take_home": "Take me home"
+  },
+  "transmission": {
+    "list": "Transmission List",
+    "sms": {
+      "title": "Send SMS",
+      "program": "Send SMS Program",
+      "choose_text": "Choose your Text",
+      "text": "Text"
+    },
+    "email": {
+      "title": "Send Email",
+      "program": "Send Email Program",
+      "choose_template": "Choose template",
+      "template": "Template",
+      "email_destination": "Email of Destination Contact"
+    },
+    "fax": {
+      "title": "Send Fax",
+      "program": "Send Fax Document Program",
+      "choose_document": "Choose Document",
+      "document": "Document",
+      "send_fax": "Send Fax"
+    },
+    "voice": {
+      "title": "Voice call",
+      "program": "Send Voice Message",
+      "choose_voice": "Choose Voice Recording",
+      "voice_message": "Voice message"
+    },
+    "ivr": {
+      "title": "Send IVR",
+      "program": "Send IVR Program",
+      "choose_ivr": "Choose IVR",
+      "ivr": "IVR"
+    },
+    "title": "Title",
+    "retry": "Retry",
+    "destination_contact": "Destination Contact",
+    "phone_num_destination_contact": "Phone number of Destination Contact",
+    "contact_id": "Contact ID",
+    "program_name": "Program name",
+    "status": "Status",
+    "choose_contact": "Choose Contact",
+    "enter_manually": "Enter Manually"
   },
   "outbound_fax": {
     "send_fax_doc": "Send Fax Document Program",
