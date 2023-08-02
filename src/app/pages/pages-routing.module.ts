@@ -5,6 +5,7 @@ import { PagesComponent } from './pages.component';
 import { DashboardComponent } from './dashboard/dashboard.component';
 import { InFaxComponent } from './infax/infax-component';
 import { ChangePasswordComponent } from './changepassword/changepassword-component';
+import { CampaignComponent } from './campaigns/campaign.component';
 
 const routes: Routes = [{
   path: '',
@@ -17,6 +18,7 @@ const routes: Routes = [{
     path: 'infax',
     component: InFaxComponent
   },
+ 
   {  
     path: 'Changepass',
     component: ChangePasswordComponent
@@ -25,7 +27,13 @@ const routes: Routes = [{
     path: 'contact',
     loadChildren: () => import('./contact/contact.module')
     .then(m => m.ContactModule),
-  }, {
+  },
+  
+  {
+    path: 'campaigns',
+    loadChildren: () => import('./campaigns/campaign.module')
+    .then(m => m.CampaignModule),
+  },{
     path: 'message',
     loadChildren: () => import('./message/message.module')
     .then(m => m.MessageModule),

@@ -38,6 +38,23 @@ export class DocumentService {
     .then(response => response.json() as Document).catch(response => this.app_service.handleError(response));
   }
 
+  get_ViewFaxDocument(document_id): any {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({ headers: headers});
+    options.responseType = ResponseContentType.Blob;
+    const url = `${this.app_service.apiUrlDocument}/${document_id}/media`;
+    return url;
+    // this.http.get(url, options).subscribe(res => {
+    //   return res.url;
+    //   // console.log(res.url);
+    //   // const fileName = getFileNameFromResponseContentDisposition(res);
+    //   // saveFile(res.blob(), fileName);
+    // }, error => {
+    //   this.app_service.downloadError(error);
+    // });
+  }
+
   get_Documentdownload(document_id): any {
     const headers = new Headers();
     this.app_service.createAuthorizationHeader(headers);

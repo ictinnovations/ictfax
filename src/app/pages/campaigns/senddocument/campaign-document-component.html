@@ -56,8 +56,8 @@
     </div>
     <div class="col-sm-6">
       <div class="form-group">
-        <label for="delay">{{'campaigns.deley_bw_fax' | translate}}</label>
-        <input [(ngModel)]="campaign.cpm" [ngModelOptions]="{standalone: true}" type="text" id="delay" class="form-control" placeholder="Delay b/w calls" required/>
+        <label for="delay">{{'campaigns.delay_bw_fax' | translate}}:</label>
+        <input [(ngModel)]="campaign.cpm" [ngModelOptions]="{standalone: true}" type="text" id="delay" class="form-control" placeholder="Delay b/w Fax" required/>
       </div>
 </div>
     </div>
@@ -66,10 +66,10 @@
 
 
 <div *ngIf="(campaign_id>0)">
-    <button type="button" class="btn btn-primary" (click)="updateCampaign()">{{'campaigns.update' | translate}}</button>
+    <button type="button" class="btn btn-primary" (click)="updateCampaign()">{{'buttons.update' | translate}}</button>
 </div>
 <div *ngIf="(!campaign_id)">
-    <button type="button" class="btn btn-success" (click)="addSendDocument()">{{'campaigns.submit' | translate}}</button>
+    <button type="button" class="btn btn-success" (click)="addSendDocument()">{{'buttons.submit' | translate}}</button>
 </div>
 </form>
 </div>
