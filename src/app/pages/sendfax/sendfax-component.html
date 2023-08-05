@@ -40,6 +40,17 @@
             {{sendfax.status}}
           </mat-cell>
         </ng-container>
+        <ng-container matColumnDef="operations">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.operations' | translate}}</mat-header-cell>
+        <mat-cell *matCellDef="let sendfax">
+        <!-- <button mat-icon-button color="primary" style="font-size:20px">
+        <mat-icon (click)="downloadDocument(sendfax.doument_id)"> <nb-icon icon="download-outline" title="download"></nb-icon></mat-icon>
+        </button> -->
+       <button mat-icon-button color="warn" style="font-size:20px">
+        <mat-icon (click)="deleteDocument(sendfax.transmission_id)"> <nb-icon icon="trash-2-outline" title="delete"></nb-icon></mat-icon>     
+        </button>  
+      </mat-cell>
+        </ng-container>
         <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
         <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
       </mat-table>

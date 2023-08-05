@@ -16,7 +16,7 @@ export class InFaxService {
     const headers = new Headers();
     this.app_service.createAuthorizationHeader(headers);
     const options = new RequestOptions({ headers: headers});
-    const getUrl = `${this.app_service.apiUrlTransmission}?service_flag=2&direction=inbound`;
+    const getUrl = `${this.app_service.apiUrlTransmission}`;
     return this.http.get(getUrl, options).toPromise()
     .then(response => response.json()).catch(response => this.app_service.handleError(response));
   }
@@ -42,5 +42,21 @@ export class InFaxService {
     const getUrl = `${this.app_service.apiUrlTransmission}/${transmission_id}/results?name=document`;
     return this.http.get(getUrl, options).toPromise()
     .then(response => response.json()).catch(response => this.app_service.handleError(response));
+  }
+  delete_Transmission(transmission_id): Promise<any> {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({headers: headers});
+    const deletetransmissionUrl = `${this.app_service.apiUrlTransmission}/${transmission_id}`;
+    return this.http.delete(deletetransmissionUrl, options).toPromise().then(response => response.json())
+    .catch(response => this.app_service.handleError(response));
+  }
+  confirmed_Download(transmission_id): Promise<any> {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({headers: headers});
+    const confirmedtransmissionUrl = `${this.app_service.apiUrlTransmission}/downloaded/${transmission_id}`;
+    return this.http.delete(confirmedtransmissionUrl, options).toPromise().then(response => response.json())
+    .catch(response => this.app_service.handleError(response));
   }
 }

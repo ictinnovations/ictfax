@@ -4,12 +4,16 @@ import { Router } from '@angular/router';
 import { Headers, RequestOptions, Http } from '@angular/http';
 import { Transmission } from '../transmission/transmission';
 import { InFaxService } from './infax.service';
-import { MatSort,Sort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
+import { MatSort,  Sort } from '@angular/material/sort';
+import { MatPaginator } from '@angular/material/paginator'; 
 import { InFaxDataSource } from './infax-datasource.component';
 import { InFaxDatabase } from './infax-database.component';
 import { DocumentService } from '../message/document/document.service';
+import { ModalComponent } from '../../modal.component';
+import { NgbModal, ModalDismissReasons, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { DocumentProgram } from '../campaigns/campaign';
 import { Observable } from 'rxjs/Rx';
+import { ConfirmationModalComponent } from '../confirmation-modal.component';
 
 @Component({
   selector: 'ngx-infax-component',
@@ -19,20 +23,26 @@ import { Observable } from 'rxjs/Rx';
 
 export class InFaxComponent implements OnInit {
 
-  constructor(private router: Router, private infax_service: InFaxService, private document_service: DocumentService
+  constructor(private router: Router, private infax_service: InFaxService, private modalService: NgbModal,    private document_service: DocumentService
   ,private app_service: AppService, private http: Http) { }
 
   aInFax: InFaxDataSource | null;
   length: number;
   document_id:any;
+  documentProgram: DocumentProgram = new DocumentProgram;
+  private modalRef: NgbModalRef;
+  faxDocumentURL: string;
+  totalPages: number = 0;
+  page: number = 1;
+  isLoaded: boolean = false;
 
-  displayedColumns= ['ID', 'phone', 'status', 'Timestamp', 'Operations'];
+  displayedColumns= ['ID','username', 'phone', 'status', 'Timestamp', 'Operations'];
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
+  @ViewChild(MatSort) sort: MatSort;
 
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+  @ViewChild(MatPaginator) paginator: MatPaginator;
 
-  @ViewChild('filter', {static: false}) filter: ElementRef;
+  @ViewChild('filter') filter: ElementRef;
 
 
   ngOnInit() {
@@ -42,7 +52,6 @@ export class InFaxComponent implements OnInit {
   getInFaxList() {
     this.infax_service.get_InFaxTransmissionList().then(data => {
       this.length = data.length;
-
       data.forEach(element => {
         if (element.contact_phone == null) {
           element.contact_phone = 'N/A';
@@ -52,7 +61,6 @@ export class InFaxComponent implements OnInit {
       this.aInFax = new InFaxDataSource(new InFaxDatabase( data ), this.sort, this.paginator);
 
       //Sort the data automatically
-
       const sortState: Sort = {active: 'ID', direction: 'desc'};
       this.sort.active = sortState.active;
       this.sort.direction = sortState.direction;
@@ -66,14 +74,87 @@ export class InFaxComponent implements OnInit {
        if (!this.aInFax) { return; }
        this.aInFax.filter = this.filter.nativeElement.value;
       });
+    });    
+  }
+
+  downloadDocument(document_id) {
+    this.document_service.get_Documentdownload(document_id);
+  }
+  // async downloadDocument(transmission_id): Promise<any> {
+  //   await this.infax_service.getTransmissionResult(transmission_id).then(response => this.document_id = response[0].data);
+  //   await this.document_service.get_Documentdownload(this.document_id);
+    
+  //   setTimeout(() => {
+  //     this.openConfirmationModal(transmission_id);
+  //     // if (confirm('Has your FAX been received?')) {
+  //     //   alert("Thank you, fax will now be deleted from AireFax.");
+  //     //   // Delete fax
+  //     //   this.infax_service.delete_Transmission(transmission_id);
+  //     //   this.document_service.delete_Document(this.document_id);
+  //     //   this.getInFaxList();
+  //     // } else{
+  //     //   alert("Please try a different browser and download again.")
+  //     // }
+  //     // // Update is downloaded status
+  //     // this.infax_service.confirmed_Download(transmission_id);
+  //   }, 2000);
+  // }
+
+  // Get Confirmation after download finished
+  openConfirmationModal(transmission_id): void {
+    const modalRef = this.modalService.open(ConfirmationModalComponent);
+    modalRef.componentInstance.title = 'Confirmation';
+    modalRef.componentInstance.message = 'Has your FAX been received?';
+
+    modalRef.result.then((result) => {
+      // Handle user choice
+      if (result === true) {
+        alert("Thank you, fax will now be deleted from AireFax.");
+        this.infax_service.delete_Transmission(transmission_id);
+        this.document_service.delete_Document(this.document_id);
+        this.getInFaxList();
+      } else {
+        alert("Please try a different browser and download again.")
+      }
     });
   }
 
-  downloadDocument(transmission_id) {
-    this.infax_service.getTransmissionResult(transmission_id).then(response =>  {
-      this.document_id = response[0].data;
-      this.document_service.get_Documentdownload(this.document_id);
+  // Send Fax related Form
+  open(content, document_id) {
+    this.documentProgram.document_id = document_id;
+    this.modalRef = this.modalService.open(content,  { size: 'md' });
+
+    this.modalRef.result.then((result) => {
+      // this.closeResult = `Closed with: ${result}`;
+    }, (reason) => {
+      // this.closeResult = `Dismissed ${this.getDismissReason(reason)}`;
     });
+  }
+
+  showPDF(pdfViewer, document_id: any) {
+    this.modalRef = this.modalService.open(pdfViewer,  { size: 'md' });    
+    this.viewFaxDocument(document_id);
+  }
+  // Load PDF document
+  viewFaxDocument(document_id) {
+    this.totalPages = 0;
+    this.isLoaded = false;
+    const url = this.document_service.get_ViewFaxDocument(document_id);
+    this.faxDocumentURL = url;
+  }
+  nextPage() {
+    this.page += 1;
+  }
+  previousPage() {
+    this.page -= 1;
+  }
+  afterLoadComplete(pdfData: any) {
+    this.totalPages = pdfData.numPages;
+    this.isLoaded = true;
+  }
+
+  closeModal() {
+    this.modalRef.close();
   }
 
   async get_ContactData(contact_id) {
@@ -85,3 +166,4 @@ export class InFaxComponent implements OnInit {
     .catch(err => this.app_service.handleError(err));
   }
 }
+

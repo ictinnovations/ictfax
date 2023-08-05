@@ -1,7 +1,7 @@
 <nb-card>
-  <nb-card-header> 
-   {{'general.inbound_fax' | translate }}
-    <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'outbound_fax.filter' | translate}}">
+  <nb-card-header>
+    {{ 'general.inbound_fax' | translate}}
+    <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'outbound_fax.filter' | translate }}">
   </nb-card-header>
 
   <nb-card-body>
@@ -13,27 +13,37 @@
             {{infax.transmission_id}}
           </mat-cell>
         </ng-container>
+
+        <ng-container matColumnDef="username">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.username' | translate }}</mat-header-cell>
+          <mat-cell *matCellDef="let infax">
+            {{infax.username}}
+          </mat-cell>
+        </ng-container>
         <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.phone_num' | translate}}</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.phone_num' | translate }}</mat-header-cell>
           <mat-cell *matCellDef="let infax" style="text-align:left">
             {{infax.contact_phone}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="status">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.status' | translate}}</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'transmission.status' | translate }}</mat-header-cell>
           <mat-cell *matCellDef="let infax" style="text-align:left">
             {{infax.status}}
           </mat-cell>
         </ng-container>
         <ng-container matColumnDef="Timestamp">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.date_time' | translate}}</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.date_time' | translate }}</mat-header-cell>
           <mat-cell *matCellDef="let infax">
             {{infax.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
           </mat-cell>
         </ng-container>
         <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>{{'outbound_fax.operations' | translate}}</mat-header-cell>
+          <mat-header-cell *matHeaderCellDef>{{ 'general.operations' | translate}}</mat-header-cell>
           <mat-cell *matCellDef="let infax">
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon (click)="showPDF(pdfViewer, infax?.document_id)" ><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon>                
+            </button>
             <button mat-icon-button color="primary" style= "font-size:20px">
               <mat-icon (click)="downloadDocument(infax.transmission_id)"  ><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon>
             </button>
@@ -51,3 +61,35 @@
     </div>
   </nb-card-body>
 </nb-card>
+
+<ng-template #pdfViewer let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ 'fax_viewer.title' | translate}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="pdf-loading">Loading, please wait ...</div>
+    <ng-template [ngIf]="totalPages > 1">
+      <div class="pagination">
+        <button class="prv-page" (click)="previousPage()" [disabled]="page === 1">
+          < Previous
+        </button>
+        <button class="nxt-page" (click)="nextPage()" [disabled]="totalPages === 1 || page === totalPages">
+          Next >
+        </button>
+        <p class="all-pages">Pages {{ page }} / {{ totalPages }}</p>
+      </div>
+    </ng-template>
+    <pdf-viewer [src]="faxDocumentURL"
+      [render-text]="true"
+      [original-size]="false"
+      [show-all]="false"
+      [page]="page"
+      (after-load-complete)="afterLoadComplete($event)"
+      style="width: 100%; height: 65vh; overflow-x: hidden!important;"
+      >
+    </pdf-viewer>
+  </div>
+</ng-template>

@@ -20,6 +20,7 @@ import { Observable } from 'rxjs';
 import 'rxjs/add/observable/fromEvent';
 import { AppService } from '../../app.service';
 import { TransmissionService } from '../transmission/transmission.service';
+import { DocumentService } from '../message/document/document.service';
 
 
 @Component({
@@ -30,14 +31,14 @@ import { TransmissionService } from '../transmission/transmission.service';
 
 export class FormsSendFaxComponent implements OnInit {
   constructor(private sendfax_service: SendFaxService, private contact_service: ContactService, private http: Http
-  ,private app_service: AppService) { }
+  ,private app_service: AppService, private documnet_service:DocumentService) { }
 
   aSendFax: SendFaxDataSource | null;
   public length: number;
 
   private timerSubscription: any;
 
-  displayedColumns= ['ID', 'phone', 'Timestamp', 'username', 'status'];
+  displayedColumns= ['ID', 'phone', 'Timestamp', 'username', 'status','operations'];
 
   @ViewChild(MatSort, {static: false}) sort: MatSort;
 
@@ -107,6 +108,12 @@ export class FormsSendFaxComponent implements OnInit {
       });
     });
     this.subscribeToData();
+  }
+  downloadDocument(document_id){
+    this.documnet_service.get_Documentdownload(document_id);
+  }
+  deleteDocument(transmission_id){
+this.sendfax_service.delete_Document(transmission_id)
   }
 
   private subscribeToData(): void {

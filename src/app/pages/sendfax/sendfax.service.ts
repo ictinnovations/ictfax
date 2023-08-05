@@ -48,6 +48,14 @@ export class SendFaxService {
     return this.http.post(addSendFaxUrl, body, options).toPromise().then(response => response.json() as Number)
     .catch(response => this.app_service.handleError(response));
   }
+  delete_Document(transmission_id): Promise<any> {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({headers: headers});
+    const deletetransmissionUrl = `${this.app_service.apiUrlTransmission}/${transmission_id}`;
+    return this.http.delete(deletetransmissionUrl, options).toPromise().then(response => response.json() as SendFax)
+    .catch(response => this.app_service.handleError(response));
+  }
 
   send_transmission(transmission_id): Promise<any> {
     const headers = new Headers();
