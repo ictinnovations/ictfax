@@ -48,6 +48,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatToolbarModule } from '@angular/material/toolbar';
 import { MatListModule } from '@angular/material/list';
 import { MatTableModule } from '@angular/material/table';
+import { MatIconModule } from '@angular/material/icon';
 /* Changes end here. */
  
  // AoT requires an exported function for factories
@@ -73,6 +74,7 @@ import { MatTableModule } from '@angular/material/table';
      MatTableModule,
      RouterModule,
      HttpClientModule,
+     MatIconModule,
      ThemeModule.forRoot(),
  
      NbSidebarModule.forRoot(),

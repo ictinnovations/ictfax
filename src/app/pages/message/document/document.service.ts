@@ -14,7 +14,7 @@ import { getFileNameFromResponseContentDisposition, saveFile } from '../../../fi
 export class DocumentService {
 
   aDocument: Document[] = [];
-  document_id: any = null;
+  document_id:any =null;
   document: Document = new Document;
 
   constructor(private http: Http, private app_service: AppService) { }

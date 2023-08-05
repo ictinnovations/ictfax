@@ -27,6 +27,7 @@ export class FormsDocumentComponent implements OnInit {
     private document_service: DocumentService,
     private modalService: NgbModal,
     private contact_service: ContactService,
+    private completerService: CompleterService,
     private sendfax_service: SendFaxService) { }
 
   aDocument: DocumentDataSource | null;
@@ -34,6 +35,7 @@ export class FormsDocumentComponent implements OnInit {
   closeResult: any;
 
   contactArray: Contact[] = [];
+  dataService: CompleterData;
   trans_id:any;
   documentProgram: DocumentProgram = new DocumentProgram;
   private modalRef: NgbModalRef;
@@ -55,7 +57,7 @@ export class FormsDocumentComponent implements OnInit {
 
   ngOnInit() {
     this.getDocumentlist();
-    
+    this.getContactList();
   }
 
   getDocumentlist() {
@@ -156,7 +158,12 @@ export class FormsDocumentComponent implements OnInit {
     this.modalRef.close();
   }
 
- 
+  getContactList() {
+    this.contact_service.get_ContactList().then(data => {
+      this.contactArray = data;
+      this.dataService = this.completerService.local(this.contactArray, 'phone', 'phone');
+    })
+  }
 
   onSelected(item: CompleterItem) {
     if (item != null) {
@@ -166,6 +173,7 @@ export class FormsDocumentComponent implements OnInit {
       this.sendfax.contact_id = undefined;
     }
   }
+
   addSendDocument(): void {
     if (this.sendfax.contact_id != undefined) {
         this.sendfax.phone = undefined;
@@ -177,17 +185,22 @@ export class FormsDocumentComponent implements OnInit {
       this.closeModal();
     });
   }
+
   AddTransmission(): void {
     this.sendfax_service.add_SendFax(this.sendfax).then(response => {
-      const transmission_id = response;  
+      const transmission_id = response;
+      this.trans_id = transmission_id;
+      this.AddSend(this.trans_id);
     });
   }
- 
 
+  AddSend(trans_id): void {
+    this.sendfax_service.send_transmission(this.trans_id).then(response => {
+    });
+  }
 
-
-  downloadDocument(document_id): void {
-    this.documentURL = this.document_service.get_Documentdownload(document_id);
+  downloadDocument(document_id) {
+    this.document_service.get_Documentdownload(document_id);
   }
 
   private handleError(error: any): Promise<any> {

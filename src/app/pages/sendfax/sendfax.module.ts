@@ -18,6 +18,8 @@ import { Ng2CompleterModule } from "ng2-completer";
 import { NbCardModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { MatIconModule } from '@angular/material/icon';
+import { NbIconModule,NbTableModule } from '@nebular/theme';
 
 
 @NgModule({
@@ -38,7 +40,9 @@ import { TranslateModule } from '@ngx-translate/core';
     NbCardModule,
     FormsModule, 
     ReactiveFormsModule,
-    TranslateModule
+    TranslateModule,
+    MatIconModule,
+    NbIconModule,
   ],
   declarations: [
     ...routedComponents,
