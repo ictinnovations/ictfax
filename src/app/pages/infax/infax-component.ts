@@ -13,7 +13,6 @@ import { ModalComponent } from '../../modal.component';
 import { NgbModal, ModalDismissReasons, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
 import { DocumentProgram } from '../campaigns/campaign';
 import { Observable } from 'rxjs/Rx';
-import { ConfirmationModalComponent } from '../confirmation-modal.component';
 
 @Component({
   selector: 'ngx-infax-component',
@@ -80,44 +79,9 @@ export class InFaxComponent implements OnInit {
   downloadDocument(document_id) {
     this.document_service.get_Documentdownload(document_id);
   }
-  // async downloadDocument(transmission_id): Promise<any> {
-  //   await this.infax_service.getTransmissionResult(transmission_id).then(response => this.document_id = response[0].data);
-  //   await this.document_service.get_Documentdownload(this.document_id);
-    
-  //   setTimeout(() => {
-  //     this.openConfirmationModal(transmission_id);
-  //     // if (confirm('Has your FAX been received?')) {
-  //     //   alert("Thank you, fax will now be deleted from AireFax.");
-  //     //   // Delete fax
-  //     //   this.infax_service.delete_Transmission(transmission_id);
-  //     //   this.document_service.delete_Document(this.document_id);
-  //     //   this.getInFaxList();
-  //     // } else{
-  //     //   alert("Please try a different browser and download again.")
-  //     // }
-  //     // // Update is downloaded status
-  //     // this.infax_service.confirmed_Download(transmission_id);
-  //   }, 2000);
-  // }
+ 
 
-  // Get Confirmation after download finished
-  openConfirmationModal(transmission_id): void {
-    const modalRef = this.modalService.open(ConfirmationModalComponent);
-    modalRef.componentInstance.title = 'Confirmation';
-    modalRef.componentInstance.message = 'Has your FAX been received?';
-
-    modalRef.result.then((result) => {
-      // Handle user choice
-      if (result === true) {
-        alert("Thank you, fax will now be deleted from AireFax.");
-        this.infax_service.delete_Transmission(transmission_id);
-        this.document_service.delete_Document(this.document_id);
-        this.getInFaxList();
-      } else {
-        alert("Please try a different browser and download again.")
-      }
-    });
-  }
+ 
 
   // Send Fax related Form
   open(content, document_id) {

@@ -112,7 +112,7 @@
       </nb-card-body>
     </nb-card>
 
-    <nb-card>
+    <!-- <nb-card>
       <nb-card-header>
         {{'outbound_fax.retry' | translate}}
       </nb-card-header>
@@ -131,7 +131,7 @@
           </div>
         </div>
       </nb-card-body>
-    </nb-card>
+    </nb-card> -->
     <div>
       <button type="button" class="btn btn-success" (click)="sendnewFax()" [disabled] = "(documentProgram.document_id == undefined || sendfax.title == undefined || sendfax.title == '')">{{'outbound_fax.send_fax' | translate}}</button>
     </div>

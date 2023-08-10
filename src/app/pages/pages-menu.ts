@@ -9,12 +9,12 @@ export const MENU_ITEMS: MenuItem[] = [
     key: 'dashboard'
   },
   
-  {
-    title: 'Fax Campaigns',
-    link: '/pages/campaigns/campaigns',
-    icon: 'radio-outline',
-    key : 'campaigns'
-  },
+  // {
+  //   title: 'Fax Campaigns',
+  //   link: '/pages/campaigns/campaigns',
+  //   icon: 'radio-outline',
+  //   key : 'campaigns'
+  // },
 
   {
     title: 'Send Fax',
@@ -28,11 +28,7 @@ export const MENU_ITEMS: MenuItem[] = [
     link: '/pages/infax',
     key : 'receive_fax'
   },
-  {
-    title: 'Contacts',
-    icon: 'person-outline',
-    key : 'contacts',
-    children: [
+  
       {
         title: 'Contacts',
         link: '/pages/contact/contacts',
@@ -40,15 +36,14 @@ export const MENU_ITEMS: MenuItem[] = [
         key : 'contacts'
       },
       
-      {
-        title: 'Groups',
-        link: '/pages/contact/group',
-        icon: 'people-outline',
-        key : 'group'
-      },
+      // {
+      //   title: 'Groups',
+      //   link: '/pages/contact/group',
+      //   icon: 'people-outline',
+      //   key : 'group'
+      // },
       
-    ],
-  },
+   
   {
     title: 'Fax Documents',
     link: '/pages/message/document',
@@ -102,12 +97,12 @@ export const userMenuItems: MenuItem[] = [   {
   key: 'dashboard'
 },
 
-{
-  title: 'Fax Campaigns',
-  link: '/pages/campaigns/campaigns',
-  icon: 'radio-outline',
-  key : 'campaigns'
-},
+// {
+//   title: 'Fax Campaigns',
+//   link: '/pages/campaigns/campaigns',
+//   icon: 'radio-outline',
+//   key : 'campaigns'
+// },
 
 {
   title: 'Send Fax',
@@ -121,11 +116,7 @@ export const userMenuItems: MenuItem[] = [   {
   link: '/pages/infax',
   key : 'receive_fax'
 },
-{
-  title: 'Contacts',
-  icon: 'person-outline',
-  key : 'contact',
-  children: [
+
     {
       title: 'Contacts',
       link: '/pages/contact/contacts',
@@ -133,15 +124,14 @@ export const userMenuItems: MenuItem[] = [   {
       key : 'contact'
     },
     
-    {
-      title: 'Groups',
-      link: '/pages/contact/group',
-      icon: 'people-outline',
-      key : 'group'
-    },
+    // {
+    //   title: 'Groups',
+    //   link: '/pages/contact/group',
+    //   icon: 'people-outline',
+    //   key : 'group'
+    // },
     
-  ],
-},
+  
 {
   title: 'Fax Documents',
   link: '/pages/message/document',

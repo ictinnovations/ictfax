@@ -16,10 +16,7 @@
     "receive_fax": "Fax ricevuti",
     "my_dids": "DIDs",
     "fax_documents":"Documento fax",
-    "contacts": {
       "contacts": "contatti",
-      "group": "gruppo"
-    },
     "administration": {
       "administration": "Amministrazione",
       "user_management": "Gestione utenti",
@@ -202,6 +199,52 @@
     "message": "La pagina che cercavi non esiste",
     "take_home": "Vai alla pagina iniziale"
   },
+
+  "transmission": {
+    "list": "Transmission List",
+    "sms": {
+      "title": "Send SMS",
+      "program": "Send SMS Program",
+      "choose_text": "Choose your Text",
+      "text": "Text"
+    },
+    "email": {
+      "title": "Send Email",
+      "program": "Send Email Program",
+      "choose_template": "Choose template",
+      "template": "Template",
+      "email_destination": "Email of Destination Contact"
+    },
+    "fax": {
+      "title": "Invia fax",
+      "program": "Invia programma documento fax",
+      "choose_document": "Scegli Documento",
+      "document": "Documento",
+      "send_fax": "Invia fax"
+    },
+    "voice": {
+      "title": "Voice call",
+      "program": "Send Voice Message",
+      "choose_voice": "Choose Voice Recording",
+      "voice_message": "Voice message"
+    },
+    "ivr": {
+      "title": "Send IVR",
+      "program": "Send IVR Program",
+      "choose_ivr": "Choose IVR",
+      "ivr": "IVR"
+    },
+    "title": "titolo",
+    "retry": "Riprova",
+    "destination_contact": "Contatto di destinazione",
+    "phone_num_destination_contact": "Numero di telefono del contatto di destinazione",
+    "contact_id": "Contact ID",
+    "program_name": "Program name",
+    "status": "Status",
+    "choose_contact": "Choose Contact",
+    "enter_manually": "Enter Manually"
+  },
+
   "outbound_fax": {
     "send_fax_doc": "Invia programma documento fax",
     "choose": "Scegli Documento o",

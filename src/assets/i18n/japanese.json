@@ -17,10 +17,7 @@
     "receive_fax": "ファックスを受信する",
     "my_dids": "私のDID",
     "fax_documents" :"ユーザー管理",
-    "contacts": {
       "contacts": "連絡先",
-      "group": "グループ"
-    },
     "administration": {
       "administration": "管理",
       "user_management": "ユーザー管理",
@@ -210,6 +207,52 @@
     "message": "探していたページが存在しません",
     "take_home": "家まで連れて帰ってください"
   },
+
+  "transmission": {
+    "list": "Transmission List",
+    "sms": {
+      "title": "Send SMS",
+      "program": "Send SMS Program",
+      "choose_text": "Choose your Text",
+      "text": "Text"
+    },
+    "email": {
+      "title": "Send Email",
+      "program": "Send Email Program",
+      "choose_template": "Choose template",
+      "template": "Template",
+      "email_destination": "Email of Destination Contact"
+    },
+    "fax": {
+      "title": "ファックスを送信する",
+      "program": "FAX文書送信プログラム",
+      "choose_document": "ドキュメントの選択",
+      "document": "書類",
+      "send_fax": "ファックスを送信する"
+    },
+    "voice": {
+      "title": "Voice call",
+      "program": "Send Voice Message",
+      "choose_voice": "Choose Voice Recording",
+      "voice_message": "Voice message"
+    },
+    "ivr": {
+      "title": "Send IVR",
+      "program": "Send IVR Program",
+      "choose_ivr": "Choose IVR",
+      "ivr": "IVR"
+    },
+    "title": "タイトル",
+    "retry": "リトライ",
+    "destination_contact": "目的地の連絡先",
+    "phone_num_destination_contact": "目的地の連絡先の電話番号",
+    "contact_id": "Contact ID",
+    "program_name": "Program name",
+    "status": "Status",
+    "choose_contact": "Choose Contact",
+    "enter_manually": "Enter Manually"
+  },
+
   "outbound_fax": {
     "send_fax_doc": "FAX文書送信プログラム",
     "choose": "ドキュメントを選択するか、",

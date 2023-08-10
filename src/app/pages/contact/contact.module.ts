@@ -12,6 +12,8 @@ import { FileUploadModule } from 'ng2-file-upload';
 import { NbCardModule, NbIconModule } from '@nebular/theme';
 import { ReactiveFormsModule, FormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { Ng2CompleterModule } from "ng2-completer";
+
 
 @NgModule({
   imports: [
@@ -28,7 +30,8 @@ import { TranslateModule } from '@ngx-translate/core';
     FormsModule,
     ReactiveFormsModule,
     NbIconModule,
-    TranslateModule
+    TranslateModule,
+    Ng2CompleterModule
   ],
   declarations: [
     ...routedComponents,
