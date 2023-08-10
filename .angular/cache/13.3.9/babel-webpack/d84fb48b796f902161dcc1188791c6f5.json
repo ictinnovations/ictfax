@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n/**\n * @param func\n * @return {Observable<R>}\n * @method let\n * @owner Observable\n */\n\nfunction letProto(func) {\n  return func(this);\n}\n\nexports.letProto = letProto; //# sourceMappingURL=let.js.map","map":null,"metadata":{},"sourceType":"script"}

@@ -62,21 +62,21 @@
   </div>
   <div class="modal-body">
        
-    <div class="col-sm-6">
+    <div class="col-sm-12">
       <div class="form-group">
         <label for="title">{{ 'transmission.title' | translate}}:</label>
         <input  [(ngModel)]="sendfax.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
       </div>
     </div>
 
-    <div class="col-sm-6">
+    <div class="col-sm-12">
       <div class="form-group">
         <label for="phone">{{ 'transmission.phone_num_destination_contact' | translate}}:</label>
         <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
       </div>
     </div> 
 
-    <div class="col-sm-6">
+    <!-- <div class="col-sm-6">
       <div class="form-group">
           
           <label for="retry">{{ 'transmission.retry' | translate}}:</label>  
@@ -88,7 +88,7 @@
           </select>
         
       </div>
-    </div>
+    </div> -->
     
     <br>
     <div class="col-sm-6">

@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar timeout_1 = require(\"../../operator/timeout\");\n\nrxjs_1.Observable.prototype.timeout = timeout_1.timeout; //# sourceMappingURL=timeout.js.map","map":null,"metadata":{},"sourceType":"script"}

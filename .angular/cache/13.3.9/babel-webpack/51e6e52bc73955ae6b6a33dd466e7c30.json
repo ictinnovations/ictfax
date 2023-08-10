@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar single_1 = require(\"../../operator/single\");\n\nrxjs_1.Observable.prototype.single = single_1.single; //# sourceMappingURL=single.js.map","map":null,"metadata":{},"sourceType":"script"}

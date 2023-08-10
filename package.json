@@ -31,6 +31,7 @@
   "dependencies": {
     "@abacritt/angularx-social-login": "^1.1.0",
     "@agm/core": "^1.1.0",
+    "@angular/animations": "^16.1.8",
     "@angular/cdk": "^13.3.9",
     "@angular/common": "^13.3.6",
     "@angular/compiler": "^13.3.6",

@@ -1,1 +1,0 @@
-{"ast":null,"code":"/**\n * zrender: 生成唯一id\n *\n * @author errorrik (errorrik@gmail.com)\n */\nvar idStart = 0x0907;\n\nfunction _default() {\n  return idStart++;\n}\n\nmodule.exports = _default;","map":null,"metadata":{},"sourceType":"script"}

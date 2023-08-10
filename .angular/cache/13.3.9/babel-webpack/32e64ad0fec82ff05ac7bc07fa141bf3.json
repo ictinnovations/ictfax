@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar mapTo_1 = require(\"../../operator/mapTo\");\n\nrxjs_1.Observable.prototype.mapTo = mapTo_1.mapTo; //# sourceMappingURL=mapTo.js.map","map":null,"metadata":{},"sourceType":"script"}

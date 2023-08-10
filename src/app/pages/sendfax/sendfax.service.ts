@@ -11,6 +11,9 @@ import { Observable } from 'rxjs/Observable';
 @Injectable()
 
 export class SendFaxService {
+  get_ConatctList() {
+    throw new Error('Method not implemented.');
+  }
 
   aSendFax: SendFax[] = [];
   transmission_id: any = null;
@@ -37,6 +40,15 @@ export class SendFaxService {
     const addTransmissionUrl = `${this.app_service.apiUrlTransmission}`;
     return this.http.post(addTransmissionUrl, body, options).toPromise().then(response => response.json() as Number)
     .catch(response => this.app_service.handleError(response));
+  }
+
+  get_AccountList(): Promise<any[]> {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({ headers: headers});
+    const getUrl = `${this.app_service.apiUrlContacts}`;
+    return this.http.get(getUrl, options).toPromise()
+    .then(response => response.json()).catch(response => this.app_service.handleError(response));
   }
 
   add_senddocument(documentProgram: DocumentProgram): Promise<number> {

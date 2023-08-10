@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar webSocket_1 = require(\"rxjs/webSocket\");\n\nrxjs_1.Observable.webSocket = webSocket_1.webSocket; //# sourceMappingURL=webSocket.js.map","map":null,"metadata":{},"sourceType":"script"}

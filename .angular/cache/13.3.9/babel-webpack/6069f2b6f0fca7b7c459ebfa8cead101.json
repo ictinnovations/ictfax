@@ -1,1 +1,0 @@
-{"ast":null,"code":"import { BehaviorSubject } from 'rxjs/BehaviorSubject';\nexport class ContactDatabase {\n  constructor(aContact) {\n    this.dataChange = new BehaviorSubject([]);\n    const contactData = aContact.slice();\n    this.dataChange.next(contactData);\n  }\n\n  get data() {\n    return this.dataChange.value;\n  }\n\n}","map":null,"metadata":{},"sourceType":"module"}

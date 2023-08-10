@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nexports.BehaviorSubject = rxjs_1.BehaviorSubject; //# sourceMappingURL=BehaviorSubject.js.map","map":null,"metadata":{},"sourceType":"script"}

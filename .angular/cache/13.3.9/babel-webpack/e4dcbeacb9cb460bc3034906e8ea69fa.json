@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar skipLast_1 = require(\"../../operator/skipLast\");\n\nrxjs_1.Observable.prototype.skipLast = skipLast_1.skipLast; //# sourceMappingURL=skipLast.js.map","map":null,"metadata":{},"sourceType":"script"}

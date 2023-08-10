@@ -1,1 +1,0 @@
-{"ast":null,"code":"export class SubscriptionLog {\n  constructor(subscribedFrame, unsubscribedFrame = Number.POSITIVE_INFINITY) {\n    this.subscribedFrame = subscribedFrame;\n    this.unsubscribedFrame = unsubscribedFrame;\n  }\n\n} //# sourceMappingURL=SubscriptionLog.js.map","map":null,"metadata":{},"sourceType":"module"}

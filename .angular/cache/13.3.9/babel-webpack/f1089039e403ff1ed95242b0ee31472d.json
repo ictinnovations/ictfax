@@ -1,1 +1,0 @@
-{"ast":null,"code":"// HACK: does nothing, because `toPromise` now lives on the `Observable` itself.\n// leaving this module here to prevent breakage.\n//# sourceMappingURL=toPromise.js.map","map":null,"metadata":{},"sourceType":"script"}

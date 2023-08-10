@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar ajax_1 = require(\"rxjs/ajax\");\n\nrxjs_1.Observable.ajax = ajax_1.ajax; //# sourceMappingURL=ajax.js.map","map":null,"metadata":{},"sourceType":"script"}

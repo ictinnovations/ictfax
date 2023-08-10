@@ -1,1 +1,0 @@
-{"ast":null,"code":"var ContextCachedBy = {\n  NONE: 0,\n  STYLE_BIND: 1,\n  PLAIN_TEXT: 2\n}; // Avoid confused with 0/false.\n\nvar WILL_BE_RESTORED = 9;\nexports.ContextCachedBy = ContextCachedBy;\nexports.WILL_BE_RESTORED = WILL_BE_RESTORED;","map":null,"metadata":{},"sourceType":"script"}

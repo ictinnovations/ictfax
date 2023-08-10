@@ -1,1 +1,0 @@
-{"ast":null,"code":"var _config = require(\"../config\");\n\nvar debugMode = _config.debugMode;\n\nvar logError = function () {};\n\nif (debugMode === 1) {\n  logError = console.error;\n}\n\nvar _default = logError;\nmodule.exports = _default;","map":null,"metadata":{},"sourceType":"script"}

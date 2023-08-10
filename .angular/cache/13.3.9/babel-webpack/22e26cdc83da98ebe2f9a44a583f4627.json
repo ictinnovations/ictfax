@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar subscribeOn_1 = require(\"../../operator/subscribeOn\");\n\nrxjs_1.Observable.prototype.subscribeOn = subscribeOn_1.subscribeOn; //# sourceMappingURL=subscribeOn.js.map","map":null,"metadata":{},"sourceType":"script"}

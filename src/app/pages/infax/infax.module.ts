@@ -14,6 +14,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { NbIconModule, NbCardModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
+import { PdfViewerModule } from 'ng2-pdf-viewer';
 
 @NgModule({
   imports: [
@@ -31,7 +32,8 @@ import { TranslateModule } from '@ngx-translate/core';
     ReactiveFormsModule,
     NbIconModule,
     MatButtonModule,
-   TranslateModule
+   TranslateModule,
+   PdfViewerModule
   ],
   declarations: [
     InFaxComponent,

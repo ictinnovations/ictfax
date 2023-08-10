@@ -1,1 +1,0 @@
-{"ast":null,"code":"require(\"./graphic\");\n\nvar _zrender = require(\"../zrender\");\n\nvar registerPainter = _zrender.registerPainter;\n\nvar Painter = require(\"./Painter\");\n\nregisterPainter('vml', Painter);","map":null,"metadata":{},"sourceType":"script"}

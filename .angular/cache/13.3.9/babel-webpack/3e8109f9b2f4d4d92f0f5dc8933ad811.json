@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar throttle_1 = require(\"../../operator/throttle\");\n\nrxjs_1.Observable.prototype.throttle = throttle_1.throttle; //# sourceMappingURL=throttle.js.map","map":null,"metadata":{},"sourceType":"script"}

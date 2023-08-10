@@ -1,1 +1,0 @@
-{"ast":null,"code":"\"use strict\";\n\nObject.defineProperty(exports, \"__esModule\", {\n  value: true\n});\n\nvar rxjs_1 = require(\"rxjs\");\n\nvar pairwise_1 = require(\"../../operator/pairwise\");\n\nrxjs_1.Observable.prototype.pairwise = pairwise_1.pairwise; //# sourceMappingURL=pairwise.js.map","map":null,"metadata":{},"sourceType":"script"}
