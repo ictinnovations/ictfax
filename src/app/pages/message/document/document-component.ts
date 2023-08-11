@@ -15,6 +15,7 @@ import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
 import { SendFax } from '../../sendfax/sendfax';
 import { SendFaxService } from '../../sendfax/sendfax.service';
 import { DocumentProgram } from '../../campaigns/campaign';
+import { DID } from '../../did/did';
 
 @Component({
   selector: 'ngx-document-component',
@@ -37,6 +38,7 @@ export class FormsDocumentComponent implements OnInit {
   contactArray: Contact[] = [];
   dataService: CompleterData;
   trans_id:any;
+  accountArray : DID[]=[]
   documentProgram: DocumentProgram = new DocumentProgram;
   private modalRef: NgbModalRef;
   displayedColumns= ['ID', 'name', 'Operations'];
@@ -58,6 +60,7 @@ export class FormsDocumentComponent implements OnInit {
   ngOnInit() {
     this.getDocumentlist();
     this.getContactList();
+    this.getAccountList()
   }
 
   getDocumentlist() {
@@ -201,6 +204,23 @@ export class FormsDocumentComponent implements OnInit {
 
   downloadDocument(document_id) {
     this.document_service.get_Documentdownload(document_id);
+  }
+
+
+  getAccountList(){
+    this.sendfax_service.get_AccountList().then(data =>{
+      this.accountArray=data;
+      this.sendfax.account_id = this.accountArray[this.accountArray.length-1].account_id
+    })
+  }
+
+  onSelectedAccount(value){
+    if(value ! =0){
+      this.sendfax.account_id = value;
+;    }
+else{
+  this.sendfax.account_id = undefined
+}
   }
 
   private handleError(error: any): Promise<any> {

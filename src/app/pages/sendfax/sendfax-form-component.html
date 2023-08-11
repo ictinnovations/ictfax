@@ -103,14 +103,15 @@
 
             !-->
     
-    <nb-card class="classcard">
-      <nb-card-header>
-        {{'outbound_fax.dest' | translate}}
-      </nb-card-header>
-      <nb-card-body>
-        <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
-      </nb-card-body>
-    </nb-card>
+            <nb-card class="classcard">  
+              <nb-card-header>{{'outbound_fax.dest' | translate}}</nb-card-header>
+              <nb-card-body>
+                <div>
+                  <label for="phone">{{'transmission.phone_num_destination_contact' | translate}}</label>
+                <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
+              </div>
+              </nb-card-body>
+            </nb-card>
 
     <!-- <nb-card>
       <nb-card-header>
@@ -132,6 +133,21 @@
         </div>
       </nb-card-body>
     </nb-card> -->
+
+    <nb-card>
+      <nb-card-header>
+        {{'account.title' | translate}}
+      </nb-card-header>
+      <nb-card-body>
+        <div>  
+          <label for="account">{{'account.choose_caller_id' | translate}}:</label>  
+          <select class = "form-control" name = "account" (change)="onSelectAccount($event.target.value)">
+            <option *ngFor="let acc of accountArray; let i = index" [value] = "acc.account_id" [selected]="i===accountArray.length-1">{{acc.phone}} </option>  
+          </select>  
+        </div>
+      </nb-card-body>
+    </nb-card>
+
     <div>
       <button type="button" class="btn btn-success" (click)="sendnewFax()" [disabled] = "(documentProgram.document_id == undefined || sendfax.title == undefined || sendfax.title == '')">{{'outbound_fax.send_fax' | translate}}</button>
     </div>
@@ -141,37 +157,31 @@
 <ng-template #content let-modal>
   <div class="modal-header">
     <h4 class="modal-title" id="modal-basic-title">{{'outbound_fax.upload_document' | translate}}</h4>
-    <button type="button" class="close" aria-label="Close" (click)="onSave()">
-      <span aria-hidden="true">&times;</span>
-    </button>
+    <button type="button" class="close" aria-label="Close" (click)="onSave()"><span aria-hidden="true">&times;</span></button>
   </div>
+
   <div class="modal-body">
-       
-          <div class="col-sm-6">
+        <div class="col-sm-6">
             <div class="form-group">
               <label for="name">{{'outbound_fax.document_name' | translate}}:</label>
               <input [(ngModel)]="document.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="name" required/>
             </div>
           </div>
         
-
-        <div class="col-sm-6">
+      <div class="col-sm-6">
           <div class="form-group">
-              
-              <label for="type">{{'outbound_fax.quality_type' | translate}}:</label>  
+               <label for="type">{{'outbound_fax.quality_type' | translate}}:</label>  
               <select class = "form-control" name = "quality" [(ngModel)]= "document.quality" [ngModelOptions]="{standalone: true}" [disabled]="(document_id>0)">
                 <option value = "">{{'outbound_fax.select' | translate}}</option>  
                 <option value="standard">{{'outbound_fax.standard' | translate}}</option>
                 <option value="fine">{{'outbound_fax.fine' | translate}}</option>
                 <option value="super">{{'outbound_fax.super' | translate}}</option>
-              </select>
-            
+              </select>  
           </div>
         </div>
 
         <div class="container">
-            <div class="navbar navbar-default">
-            </div>  
+            <div class="navbar navbar-default"></div>  
             <div class="row">            
               <div class="col-md-3">
                 <label style="font-size: 10px;">{{'outbound_fax.select_file' | translate}}</label><br>
@@ -200,8 +210,7 @@
               </div>
             </div>
 
-
-          <div class="col-sm-6">
+            <div class="col-sm-6">
             <button type="button" class="btn btn-success" (click)="file_upload()" [disabled] = "(this.uploader.queue.length - 1 < 0 || (file == '' || document.name == undefined || document.name == '') || this.file_sending == true || this.file_sent == true)">{{'outbound_fax.upload_file' | translate}}</button>
           </div>
   </div>

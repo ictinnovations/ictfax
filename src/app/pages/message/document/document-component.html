@@ -76,6 +76,15 @@
       </div>
     </div> 
 
+    <div class="col-sm-12">
+      <div class="form-grpup">
+        <label for="account">{{'account.choose_caller_id' | translate}}:</label>
+        <select class="form-control" name="account" (change)="onSelectedAccount($event.target.value)">
+       <option *ngFor="let acc of accountArray; let i = index" [value]=" acc.account_id" [selected]="i === accountArray.length-1">{{acc.phone}}</option>
+        </select>
+      </div>
+    </div>
+
     <!-- <div class="col-sm-6">
       <div class="form-group">
           

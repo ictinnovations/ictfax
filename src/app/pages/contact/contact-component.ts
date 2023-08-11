@@ -13,6 +13,7 @@ import { SendFaxService } from '../sendfax/sendfax.service';
 import { DocumentService } from '../message/document/document.service';
 import { Document } from '../message/document/document';
 import { Contact } from './contact';
+import { DID } from '../did/did';
 
 
 
@@ -36,6 +37,7 @@ export class FormsContactComponent implements OnInit {
   length: number;
   closeResult: any;
   contactArray: Contact[] =[]
+  accountArray :DID[]=[]
   trans_id:any;
   documentProgram: DocumentProgram = new DocumentProgram;
   private modalRef: NgbModalRef;
@@ -60,6 +62,7 @@ export class FormsContactComponent implements OnInit {
     this.getContactlist();
     this.getDocumentlist();
     this.getdestination();
+    this.getAccountList()
   }
 
   getContactlist() {
@@ -135,8 +138,6 @@ export class FormsContactComponent implements OnInit {
     })
     }
 
- 
-
   onSelected(item: CompleterItem) {
     if (item != null) {
       this.sendfax.contact_id = item.originalObject.contact_id;
@@ -191,6 +192,21 @@ export class FormsContactComponent implements OnInit {
     console.log(this.documentProgram.document_id);
   }
   
+  getAccountList(){
+    this.sendfax_service.get_AccountList().then(data => {
+      this.accountArray =data;
+      this.sendfax.account_id = this.accountArray[this.accountArray.length-1].account_id;
+    })
+  }
+
+  onSelectedAccount(value){
+    if(value ! = 0){
+      this.sendfax.account_id = value
+    }
+    else{
+      this.sendfax.account_id = undefined;
+    }
+  }
 
   private getDismissReason(reason: any): string {
     if (reason === ModalDismissReasons.ESC) {
