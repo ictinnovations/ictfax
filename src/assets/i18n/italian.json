@@ -307,5 +307,10 @@
     "range_from_req": "Il campo Intervallo da è obbligatorio.",
     "range_to_req": "L'intervallo al campo è obbligatorio.",
     "did_req": "Il campo Numero DID è obbligatorio."
+  },
+  "account" : {
+    "title": "ID chiamante",
+    "choose_caller_id": "Scegli ID chiamante"
+
   }
  }

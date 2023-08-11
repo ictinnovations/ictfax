@@ -14,6 +14,7 @@ import { Contact } from '../contact/contact';
 import { ContactService } from '../contact/contact.service';
 import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
 import { NgbActiveModal, NgbModal, ModalDismissReasons, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
+import { DID } from '../did/did';
 
 @Component({
   selector: 'ngx-add-sendfax-component',
@@ -34,6 +35,7 @@ export class AddSendFaxComponent implements OnInit {
   sendfax: SendFax = new SendFax;
   documentArray: Document[] = [];
   document: Document = new Document;
+  accountArray: DID[]=[]
   selectedDocument: any;
   trans_id: number;
   dataService: CompleterData;
@@ -60,7 +62,7 @@ export class AddSendFaxComponent implements OnInit {
   ngOnInit(): void {
 
     this.getDocumentlist();
-
+    this.getAccountlist();
     this.getContactlist();
 
     this.selectedDocument = 0;
@@ -74,7 +76,7 @@ export class AddSendFaxComponent implements OnInit {
     };
     
     this.uploader.onAfterAddingFile = (response: any) => {
-      console.log(response);
+      // console.log(response);
       this.file = response;
       if (response.file.type == 'application/pdf' || response.file.type == 'image/png' || response.file.type == 'image/jpg' || response.file.type == 'image/jpeg' || response.file.type == 'image/tiff' || response.file.type == 'image/tif') {
         
@@ -145,7 +147,7 @@ export class AddSendFaxComponent implements OnInit {
   getDocumentlist() {
     this.document_service.get_DocumentList().then(data => {
       this.documentArray = data;
-      console.log(this.documentArray);
+      // console.log(this.documentArray);
       this.documentProgram.document_id = this.documentArray[this.documentArray.length -1].document_id;
       console.log(this.documentProgram.document_id);
       /*
@@ -180,6 +182,23 @@ export class AddSendFaxComponent implements OnInit {
   upload () {
     this.file_sending = true;
     this.uploader.uploadAll();
+  }
+
+
+  getAccountlist() {
+    this.sendfax_service.get_AccountList().then(data => {
+      this.accountArray = data;
+      this.sendfax.account_id = this.accountArray[this.accountArray.length -1].account_id;
+    })
+  }
+
+  onSelectAccount(value) {
+    if (value != 0) {
+      this.sendfax.account_id = value;
+    }
+    else {
+      this.sendfax.account_id = undefined;
+    }
   }
 
   private hasBaseDropZoneOver = false;

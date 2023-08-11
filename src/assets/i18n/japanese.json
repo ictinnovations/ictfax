@@ -312,5 +312,9 @@
     "range_from_req": "RangeFromフィールドは必須です.",
     "range_to_req": "フィールドまでの範囲が必要です.",
     "did_req": "DID番号フィールドは必須です."
+  },
+  "account" : {
+    "title": "発信者ID",
+    "choose_caller_id": "発信者番号を選択してください"
   }
 }

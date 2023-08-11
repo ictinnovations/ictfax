@@ -46,7 +46,7 @@ export class SendFaxService {
     const headers = new Headers();
     this.app_service.createAuthorizationHeader(headers);
     const options = new RequestOptions({ headers: headers});
-    const getUrl = `${this.app_service.apiUrlContacts}`;
+    const getUrl = `${this.app_service.apiUrlAccounts}`;
     return this.http.get(getUrl, options).toPromise()
     .then(response => response.json()).catch(response => this.app_service.handleError(response));
   }

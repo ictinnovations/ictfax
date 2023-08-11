@@ -316,5 +316,9 @@
     "range_from_req": "Range From field is required.",
     "range_to_req": "Range to field is required.",
     "did_req": "DID Number field is required."
+  },
+  "account" : {
+    "title": "Caller ID",
+    "choose_caller_id": "Choose Caller ID"
   }
 }
