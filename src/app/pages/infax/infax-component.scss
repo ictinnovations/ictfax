@@ -2,7 +2,7 @@
   display: flex;
   flex-direction: column;
   min-width: 300px;
-} 
+}
 .example-header {
   min-height: 64px;
   display: flex;
@@ -61,24 +61,24 @@ a:hover {
 .pagination {
   display: block;
 }
-.pagination .prv-page{
+.pagination .prv-page {
   position: relative;
   padding: 0;
   margin: 0;
   line-height: 15px;
-  border: 0px;
+  border: 0;
   background: none;
   height: 20px;
   font-size: 11px;
   font-weight: 600;
   float: left;
 }
-.pagination .nxt-page{
+.pagination .nxt-page {
   position: relative;
   padding: 0;
   margin: 0;
   line-height: 15px;
-  border: 0px;
+  border: 0;
   background: none;
   height: 20px;
   font-size: 11px;
@@ -99,7 +99,7 @@ a:hover {
   text-align: center;
   font-size: 16px;
 }
-.ng2-pdf-viewer-container[_ngcontent-yff-c423]{
+.ng2-pdf-viewer-container[_ngcontent-yff-c423] {
   overflow-x: hi;
 }
 
