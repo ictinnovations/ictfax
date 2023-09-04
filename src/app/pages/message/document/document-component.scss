@@ -61,27 +61,28 @@ a:hover {
   width: 40%;
 }
 
+
 .pagination {
   display: block;
 }
-.pagination .prv-page {
+.pagination .prv-page{
   position: relative;
   padding: 0;
   margin: 0;
   line-height: 15px;
-  border: 0;
+  border: 0px;
   background: none;
   height: 20px;
   font-size: 11px;
   font-weight: 600;
   float: left;
 }
-.pagination .nxt-page {
+.pagination .nxt-page{
   position: relative;
   padding: 0;
   margin: 0;
   line-height: 15px;
-  border : 0;
+  border: 0px;
   background: none;
   height: 20px;
   font-size: 11px;
@@ -103,5 +104,11 @@ a:hover {
   font-size: 16px;
 }
 .ng2-pdf-viewer-container[_ngcontent-yff-c423] {
-  overflow-x: hi;
+  overflow-x: hidden; /* Fix the value here */
 }
+
+
+
+
+
+

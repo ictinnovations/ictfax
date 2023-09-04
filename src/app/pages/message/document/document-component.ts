@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, TemplateRef } from '@angular/core';
 import { DocumentService } from './document.service';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -16,6 +16,7 @@ import { SendFax } from '../../sendfax/sendfax';
 import { SendFaxService } from '../../sendfax/sendfax.service';
 import { DocumentProgram } from '../../campaigns/campaign';
 import { DID } from '../../did/did';
+
 
 @Component({
   selector: 'ngx-document-component',
@@ -49,18 +50,20 @@ export class FormsDocumentComponent implements OnInit {
   totalPages: number = 0;
   page: number = 1;
   isLoaded: boolean = false;
+  ocrData: string;
+
 
   @ViewChild(MatSort, {static: false}) sort: MatSort;
 
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
-  sendfax: SendFax = new SendFax;  
+  sendfax: SendFax = new SendFax;
 
   ngOnInit() {
     this.getDocumentlist();
     this.getContactList();
-    this.getAccountList()
+    this.getAccountList();
   }
 
   getDocumentlist() {
@@ -134,32 +137,39 @@ export class FormsDocumentComponent implements OnInit {
     });
   }
 
-  // Show Fax PDF
-  showPDF(content, document_id) {
-    this.modalRef = this.modalService.open(content,  { size: 'md' });    
-    this.viewFaxDocument(document_id);
-  }
-  // Load PDF document
-  viewFaxDocument(document_id) {
-    this.totalPages = 0;
-    this.isLoaded = false;
-    const url = this.document_service.get_ViewFaxDocument(document_id);
-    this.faxDocumentURL = url;
-  }
-  nextPage() {
-    this.page += 1;
-  }
-  previousPage() {
-    this.page -= 1;
-  }
-  afterLoadComplete(pdfData: any) {
-    this.totalPages = pdfData.numPages;
-    this.isLoaded = true;
-  }
+// Show Fax PDF
+showPDF(content, document_id) {
+  this.modalRef = this.modalService.open(content,  { size: 'md' });
+  this.viewFaxDocument(document_id);
+}
+// Load PDF document
+viewFaxDocument(document_id) {
+  this.totalPages = 0;
+  this.isLoaded = false;
+  const url = this.document_service.get_ViewFaxDocument(document_id);
+  this.faxDocumentURL = url;
+}
+nextPage() {
+  this.page += 1;
+}
+previousPage() {
+  this.page -= 1;
+}
+afterLoadComplete(pdfData: any) {
+  this.totalPages = pdfData.numPages;
+  this.isLoaded = true;
+}
 
-  closeModal() {
-    this.modalRef.close();
-  }
+closeModal() {
+  this.modalRef.close();
+}
+
+showOCR(content, ocr) {
+  this.modalRef = this.modalService.open(content, { size: 'md' });
+  // Set the ocrData property with the OCR data
+  this.ocrData = ocr;
+}
+
 
   getContactList() {
     this.contact_service.get_ContactList().then(data => {
@@ -179,7 +189,7 @@ export class FormsDocumentComponent implements OnInit {
 
   addSendDocument(): void {
     if (this.sendfax.contact_id != undefined) {
-        this.sendfax.phone = undefined;
+      this.sendfax.phone = undefined;
     }
     this.sendfax_service.add_senddocument(this.documentProgram).then(response => {
       const program_id = response;
@@ -202,26 +212,93 @@ export class FormsDocumentComponent implements OnInit {
     });
   }
 
-  downloadDocument(document_id) {
-    this.document_service.get_Documentdownload(document_id);
+  downloadDocument(document_id): void {
+    this.documentURL = this.document_service.get_Documentdownload(document_id);
   }
 
 
-  getAccountList(){
-    this.sendfax_service.get_AccountList().then(data =>{
-      this.accountArray=data;
-      this.sendfax.account_id = this.accountArray[this.accountArray.length-1].account_id
+  getAccountList() {
+    this.sendfax_service.get_AccountList().then(data => {
+      this.accountArray = data;
+      this.sendfax.account_id = this.accountArray[this.accountArray.length - 1].account_id
     })
   }
 
-  onSelectedAccount(value){
-    if(value ! =0){
+  onSelectedAccount(value) {
+    if (value! = 0) {
       this.sendfax.account_id = value;
-;    }
-else{
-  this.sendfax.account_id = undefined
-}
+      ;
+    }
+    else {
+      this.sendfax.account_id = undefined
+    }
   }
+
+  // async extractTextFromImage(url: string): Promise<string> {
+  //   console.log("Image URL:", url);
+
+  //   const worker = await createWorker();
+  //   await worker.loadLanguage('eng');
+  //   await worker.initialize('eng');
+
+  //   try {
+  //     const { data: { text } } = await worker.recognize(url);
+  //     await worker.terminate();
+  //     return text;
+  //   } catch (error) {
+  //     console.error("Error during image text extraction:", error);
+  //     await worker.terminate();
+  //     throw error;
+  //   }
+  // }
+  // async extractTextFromPDF(url: string): Promise<string> {
+  //   console.log('Extracting text from PDF...');
+  //   const pdf = await pdfjsLib.getDocument(url).promise;
+  //   const numPages = pdf.numPages;
+  //   const pageTexts = [];
+  //   for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+  //     const page = await pdf.getPage(pageNum);
+  //     const textContent = await page.getTextContent();
+  //     const pageText = textContent.items.map(item => this.getTextFromItem(item)).join(' ');
+  //     pageTexts.push(pageText);
+  //   }
+  //   const extractedText = pageTexts.join('\n');
+  //   console.log('Text extracted from PDF:', extractedText);
+  //   return extractedText;
+  // }
+  // getTextFromItem(item) {
+  //   if (typeof item.str === 'string') {
+  //     return item.str;
+  //   } else if (typeof item.markedContent === 'string') {
+  //     return item.markedContent;
+  //   } else {
+  //     return '';
+  //   }
+  // }
+  // async showOCR(content, document_id) {
+  //   this.modalRef = this.modalService.open(content, { size: 'md' });
+  //   const url = this.document_service.get_ViewFaxDocument(document_id);
+  //   const isPDF = url.toLowerCase().endsWith('.pdf');
+  //   console.log('URL:', url);
+  //   console.log('isPDF:', isPDF);
+  //   try {
+  //     let extractedText;
+  //     if (isPDF) {
+  //       extractedText = await this.extractTextFromPDF(url);
+
+  //     } else {
+  //       extractedText = await this.extractTextFromImage(url);
+  //     }
+  //     this.extractedText = extractedText;
+  //   } catch (error) {
+  //     console.error("Error during text extraction:", error);
+  //     this.extractedText = "Error extracting text.";
+  //   }
+  // }
+
+
+
+
 
   private handleError(error: any): Promise<any> {
     console.error('An error occurred', error);

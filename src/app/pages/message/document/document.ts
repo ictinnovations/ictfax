@@ -5,4 +5,6 @@ export class Document {
   type: string;
   description: string;
   quality: any;
+  text: String;
+  ocr: String;
 }

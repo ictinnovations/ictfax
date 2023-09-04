@@ -25,8 +25,7 @@
         <div class="container">
           <div class="navbar navbar-default">
           </div>  
-          <div class="row">            
-            <div class="col-md-3">
+            <!-- <div class="col-md-3">
               <input type="file" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" ng2FileSelect [uploader]="uploader" multiple  /><br/>
             </div>
           </div>
@@ -38,13 +37,30 @@
         <div *ngFor="let item of uploader.queue"> 
           <br>
           <label>{{ item?.file?.name }}</label>
-          <i class="nb-close smmmm" (click)="item.remove()"></i>
+          <i class="nb-close smmmm" (click)="item.remove()"></i> -->
           <!--
           <button type="button" class="btn btn-primary btn-icon btn-xs smmmm" (click)="item.remove()">
             <i class="nb-close" (click)="item.remove()"></i>
           </button>
           !-->
+
+
+          
+          <div class="col-4">
+            <input type="file" class="file-input" accept=".png,.jpg,.pdf,.tiff,.tif" ng2FileSelect [uploader]="uploader" (change)="onFileSelected($event)">
         </div>
+        <!-- <div class="row">
+            <div class="col-sm-12">
+                <div class="form-group">
+                    <textarea [(ngModel)]="document.ocr" [ngModelOptions]="{ standalone: true }" type="text" class="form-control" id="ocr" required></textarea>
+                </div>
+            </div>
+        </div> -->
+        
+          
+          
+        </div>
+        
       </nb-card-body>
     </nb-card>
 
