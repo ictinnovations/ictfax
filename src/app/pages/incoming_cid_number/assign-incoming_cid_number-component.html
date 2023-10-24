@@ -1,0 +1,21 @@
+<h4>{{ 'cids.assign_cid' | translate }}</h4>
+<br>
+<div class="col-lg-12">
+  <nb-card>
+    <nb-card-body>
+      <label for="phone">{{ 'my_cids.cid_number' | translate }}</label>
+      <br>
+      <input [(ngModel)]="incomingNumber.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="phone" disabled required/>
+      <br>
+      <label>{{ 'cids.assign_to_user' | translate }}</label><br>
+      <select class = "form-control" name = "user" [(ngModel)]= "selectedUsr">  
+        <option *ngFor="let user of user"  
+          [ngValue] = "user" >  
+          {{user.username}} <ng-template [ngIf]="user.company">- {{user.company}}</ng-template> 
+        </option>  
+      </select>
+    </nb-card-body>
+  </nb-card>
+  
+  <button type="button" class="btn btn-primary" (click)="forwardDID()">{{'buttons.submit' | translate}}</button>
+</div>

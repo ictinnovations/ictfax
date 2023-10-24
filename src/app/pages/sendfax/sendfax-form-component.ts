@@ -14,7 +14,7 @@ import { Contact } from '../contact/contact';
 import { ContactService } from '../contact/contact.service';
 import { CompleterService, CompleterData, CompleterItem } from 'ng2-completer';
 import { NgbActiveModal, NgbModal, ModalDismissReasons, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { DID } from '../did/did';
+import { CID } from '../cid/cid';
 
 @Component({
   selector: 'ngx-add-sendfax-component',
@@ -35,7 +35,7 @@ export class AddSendFaxComponent implements OnInit {
   sendfax: SendFax = new SendFax;
   documentArray: Document[] = [];
   document: Document = new Document;
-  accountArray: DID[]=[]
+  accountArray: CID[] = [];
   selectedDocument: any;
   trans_id: number;
   dataService: CompleterData;

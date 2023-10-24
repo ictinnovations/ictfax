@@ -7,6 +7,7 @@
     "outbound_fax": "アウトバウンドファックス",
     "inbound_fax": "インバウンドファックス",
     "dids": "DIDs",
+    "cids": "CIDs",
     "users": "ユーザー"
   },
   "menu": {
@@ -23,6 +24,7 @@
       "user_management": "ユーザー管理",
       "extensions": "拡張機能",
       "did_number": "DID番号",
+      "cid_number": "CID番号",
       "providers": "プロバイダー/トランク"
     }
   },
@@ -314,6 +316,49 @@
     "range_to_req": "フィールドまでの範囲が必要です.",
     "did_req": "DID番号フィールドは必須です."
   },
+<<<<<<< HEAD
+=======
+
+   "my_cids": {
+    "cid_title": "私のCID",
+    "cid_number": "CID番号",
+    "title": "題名",
+    "forward_CID": "フォワードCID",
+    "cid_info": "CID情報",
+    "select_service": "サービスを選択",
+    "please_select_service": "サービスを選択してください",
+    "no_service": "サービス無し",
+    "fax_to_email": "電子メールへのファックス",
+    "forward_to_ext": "拡張機能に転送",
+    "extension_info": "拡張情報",
+    "select_extension": "拡張機能を選択",
+    "please_select_extension": "拡張子を選択してください",
+    "For___ward_to":"先へ"
+  },
+  
+
+   "cids": {
+    "list": "CIDリスト",
+    "add": "CIDを追加",
+    "add_in_batch": "CIDをバッチで作成する",
+    "number": "数",
+    "assign_cid": "CIDを割り当てる",
+    "assigned_to": "に割り当てられた",
+    "assign_to_user": "ユーザーに割り当てる",
+    "range_from": "の範囲",
+    "range_to": "範囲",
+    "range_from_req": "RangeFromフィールドは必須です.",
+    "range_to_req": "フィールドまでの範囲が必要です.",
+    "cid_req": "CID番号フィールドは必須です."
+  },
+
+  "fax_settings": {
+    "title": "設定",
+    "cover": "表紙を送る",
+    "body": "メール本文をページとして送信"
+  },
+  
+>>>>>>> 720be21 (CID support added)
   "account" : {
     "title": "発信者ID",
     "choose_caller_id": "発信者番号を選択してください"

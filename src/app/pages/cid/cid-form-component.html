@@ -1,0 +1,41 @@
+<div *ngIf="isError" class="ict_error">
+  <p *ngFor="let err of errorText">{{err}}</p>
+</div>
+
+<h3>{{ 'cids.add' | translate }} </h3>
+<div class="col-lg-12">
+  <form id="form" #f1="ngForm">
+    <nb-card>
+      <nb-card-header>
+        {{ 'my_cids.cid_info' | translate }}
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-9">
+            <div class="form-group">
+              <label for="phone">{{ 'my_cids.cid_number' | translate }}:</label>
+              <input [(ngModel)]="cid.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="phone" #phone="ngModel" required/>
+              <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger">
+                <div [hidden]="!phone.hasError('required')">{{ 'cids.cid_req' | translate }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-9">
+            <div class="form-group">
+              <label for="first_name">{{ 'my_cids.title' | translate }}:</label>
+              <input [(ngModel)]="cid.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+
+    <div *ngIf="(account_id>0)">
+      <button type="button" class="btn btn-primary" (click)="updateCID()">{{ 'buttons.update' | translate }}</button>
+    </div>
+    <div *ngIf="(!account_id)">
+      <button type="button" class="btn btn-success" (click)="addCID()">{{ 'buttons.submit' | translate }}</button>
+    </div>
+  </form>
+</div>

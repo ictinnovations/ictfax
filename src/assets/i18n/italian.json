@@ -7,6 +7,7 @@
     "outbound_fax": "in uscita_fax",
     "inbound_fax":"Fax in entrata",
     "dids": "Utenti",
+    "cids" :"CIDs",
     "users": "Inquiline"
   },
   "menu": {
@@ -15,6 +16,7 @@
     "send_fax": "Fax inviati",
     "receive_fax": "Fax ricevuti",
     "my_dids": "DIDs",
+    "my_cids": "CIDs",
     "fax_documents":"Documento fax",
       "contacts": "contatti",
     "administration": {
@@ -308,6 +310,49 @@
     "range_to_req": "L'intervallo al campo è obbligatorio.",
     "did_req": "Il campo Numero DID è obbligatorio."
   },
+<<<<<<< HEAD
+=======
+
+  "my_cids": {
+    "cid_title": "My CIDs",
+    "cid_number": "CID Number",
+    "title": "Titolo",
+    "forward_cid": "Forward CID",
+    "cid_info": "CID Info",
+    "select_service": "Select Service",
+    "please_select_service": "Please Select Service",
+    "no_service": "No Service",
+    "fax_to_email": "Fax to Email",
+    "forward_to_ext": "Forward to Extension",
+    "extension_info": "Extension information",
+    "select_extension": "Select Extension",
+    "please_select_extension": "Please Select Extension",
+    "service": "Service",
+    "For___ward_to" : "Inoltra_a"
+ },
+
+ "cids": {
+    "list": "CID List",
+    "add": "Add CID",
+    "add_in_batch": "Create CIDs in batch",
+    "number": "Number",
+    "assign_cid": "Assign CID",
+    "assigned_to": "Assigned to",
+    "assign_to_user": "Assign to User",
+    "range_from": "Range From",
+    "range_to": "Range To",
+    "range_from_req": "Range From field is required.",
+    "range_to_req": "Range to field is required.",
+    "cid_req": "CID Number field is required."
+ },
+
+  "fax_settings": {
+    "title": "Settings",
+    "cover": "Send Cover page", 
+    "body": "Send Email Body as page"
+  },
+
+>>>>>>> 720be21 (CID support added)
   "account" : {
     "title": "ID chiamante",
     "choose_caller_id": "Scegli ID chiamante"

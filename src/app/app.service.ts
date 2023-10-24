@@ -42,6 +42,7 @@ export class AppService {
   apiUrlDashboard = `${this.apiUrl}/statistics`;
   apiUrlAccounts = `${this.apiUrl}/accounts`;
   apiUrlDid = `${this.apiUrl}/dids`;
+  apiUrlCid = `${this.apiUrl}/cids`;
   apiUrlRoles = `${this.apiUrl}/roles`;
 
   createAuthorizationHeader(headers: Headers) {

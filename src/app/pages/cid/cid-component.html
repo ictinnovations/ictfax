@@ -1,0 +1,56 @@
+<nb-card>
+  <nb-card-header>
+    {{ 'cids.list' | translate }}
+  </nb-card-header>
+  
+  <nb-card-body>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/cid/cid/new']"><i class="fa fa-plus"></i>{{ 'cids.add' | translate }}</button>&nbsp;&nbsp;
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/cid/cid/batch']">{{ 'cids.add_in_batch' | translate }}</button>
+    <!--
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/cid/cid/import']">Import DID List</button>
+    !-->
+    <br>
+    <br>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aCID" matSort>
+        <ng-container matColumnDef="phone">
+          <mat-header-cell *matHeaderCellDef mat-sort-header >{{ 'cids.number' | translate }}</mat-header-cell>
+          <mat-cell *matCellDef="let cid">
+            {{cid.phone}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="first_name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'my_cids.title' | translate }}</mat-header-cell>
+          <mat-cell *matCellDef="let cid" style="text-align:left">
+            {{cid.first_name}}</mat-cell>
+        </ng-container>     
+        <ng-container matColumnDef="assigned_to">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'cids.assigned_to' | translate }}</mat-header-cell>
+          <mat-cell *matCellDef="let cid" style="text-align:left">
+            {{cid.name}}</mat-cell>
+        </ng-container>  
+        <ng-container cdkColumnDef="Operations">
+          <mat-header-cell *matHeaderCellDef>{{ 'general.operations' | translate }}</mat-header-cell>
+          <mat-cell *matCellDef="let cid">
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/cid/cid/{{cid.account_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
+            </button>
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/cid/cid/{{cid.account_id}}/assign" title="Assign"><i class="ion-forward"></i></a></mat-icon>
+            </button>
+            <button mat-icon-button color="primary" style= "font-size:20px">  
+              <mat-icon style="color: red" (click)="showStaticModal(cid.first_name, cid.account_id)" ><nb-icon icon="trash-2-outline"></nb-icon></mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>

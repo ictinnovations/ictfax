@@ -6,6 +6,9 @@ import { DashboardComponent } from './dashboard/dashboard.component';
 import { InFaxComponent } from './infax/infax-component';
 import { ChangePasswordComponent } from './changepassword/changepassword-component';
 import { CampaignComponent } from './campaigns/campaign.component';
+import { CIDComponent } from './cid/cid.component';
+import { IncomingCIDNumberComponent } from './incoming_cid_number/incoming_cid_number.component';
+
 
 const routes: Routes = [{
   path: '',
@@ -22,6 +25,19 @@ const routes: Routes = [{
   {  
     path: 'Changepass',
     component: ChangePasswordComponent
+  },
+  {
+
+    path: 'faxsettings',
+    component: FaxSettingsComponent,
+  },
+  {
+    path: 'cid',
+    component: CIDComponent,
+  },
+  {
+    path: 'incoming_cid_number',
+    component: IncomingCIDNumberComponent,
   },
   {
     path: 'contact',
@@ -65,6 +81,16 @@ const routes: Routes = [{
     path: 'did',
     loadChildren: () => import('./did/did.module')
       .then(m => m.DIDModule),
+  },
+  {
+    path: 'cid',
+    loadChildren: () => import('./cid/cid.module')
+      .then(m => m.CIDModule),
+  },
+  {
+    path: 'incoming_cid_number',
+    loadChildren: () => import('./incoming_cid_number/incoming_cid_number.module')
+      .then(m => m.IncomingCIDNumberModule),
   },
    {
     path: '',
