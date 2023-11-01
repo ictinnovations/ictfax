@@ -43,6 +43,13 @@ export const MENU_ITEMS: MenuItem[] = [
       //   key : 'group'
       // },
       
+      {
+        title: 'Contact DNC',
+        link: '/pages/contact_dnc/contact_dnc',
+        icon :'person-add-outline',
+         key:'contact_dnc'
+       },
+      
    
   {
     title: 'Fax Documents',

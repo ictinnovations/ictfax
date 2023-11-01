@@ -1,0 +1,104 @@
+<h1>{{ 'contact_dnc.add' | translate}}</h1>
+<div class="col-lg-12">
+  <form id="form1" #f1="ngForm">
+    <nb-card>
+      <nb-card-header> <b> {{ 'contact_dnc.personal_info' | translate}} </b>
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="first_name">{{ 'contact_dnc.first_name' | translate}}:</label>
+              <input [(ngModel)]="contact_dnc.first_name" [ngModelOptions]="{ standalone: true }" class="form-control" placeholder="" id="first_name" required/>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="last_name"> {{ 'contact_dnc.last_name' | translate}}:</label>
+              <input [(ngModel)]="contact_dnc.last_name" [ngModelOptions]="{ standalone: true }" type="text" class="form-control" placeholder="" id="last_name" required />
+            </div>
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="phone">{{ 'contact_dnc.phone' | translate}}:</label>
+              <input [(ngModel)]="contact_dnc.phone" [ngModelOptions]="{standalone: true}" type="phone" id="phone" class="form-control" pattern="[0-9]*" minlength="11" maxlength="16" #phone="ngModel" required/>
+              <div
+                [hidden]="phone.valid || phone.pristine" class="alert alert-danger">
+                <div [hidden]="!phone.hasError('required')"> {{ 'contact_dnc.required_error' | translate}}
+                </div>
+                <div [hidden]="!phone.hasError('pattern')"> {{ 'contact_dnc.pattern_error' | translate}} </div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="email"> {{ 'contact_dnc.email' | translate}}:</label>
+              <input [(ngModel)]="contact_dnc.email" [ngModelOptions]="{ standalone: true }" type="email" id="email" placeholder="" class="form-control" email pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" #email="ngModel" required />
+            </div>
+            <div class="md-errors-spacer" [hidden]="email.valid || email.untouched" class="alert alert-danger" >
+              <div *ngIf="email.errors && email.errors.pattern"> {{ 'contact_dnc.invalid_email' | translate}} </div>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header> {{ 'contact_dnc.address' | translate}}: </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-12">
+          <div class="form-group">
+            <label for="address">{{ 'contact_dnc.address' | translate}}:</label>
+            <textarea  [(ngModel)]="contact_dnc.address" [ngModelOptions]="{standalone: true}" type="text" id="address"  placeholder="{{ 'contact_dnc.address' | translate}}" class="form-control" required ></textarea>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+    <nb-card>
+      <nb-card-header> {{ 'contact_dnc.custom_data' | translate}} </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="custom1">{{ 'contact_dnc.custom_1' | translate}}:</label>
+            <input [(ngModel)]="contact_dnc.custom1" [ngModelOptions]="{standalone: true}" type="text" id="custom1" class="form-control" required />
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="custom2">{{ 'contact_dnc.custom_2' | translate}}:</label>
+            <input [(ngModel)]="contact_dnc.custom2" [ngModelOptions]="{standalone: true}" type="text" id="custom2" class="form-control" required/>
+          </div>
+        </div>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="custom3">{{ 'contact_dnc.custom_3' | translate}}:</label>
+            <input [(ngModel)]="contact_dnc.custom3" [ngModelOptions]="{standalone: true}" type="text" id="custom3" class="form-control" required/>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header> {{ 'contact_dnc.description' | translate}} </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="description">{{ 'contact_dnc.description' | translate}}:</label>
+            <input [(ngModel)]="this.contact_dnc.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="description" required />
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+
+    <div *ngIf="(contact_dnc_id>0)">
+      <button type="button" class="btn btn-primary" (click)="updateContactDNC()">{{ 'buttons.update' | translate}}</button>
+    </div>
+    <div *ngIf="(!contact_dnc_id)">
+      <button type="button" class="btn btn-success" (click)="addContactDNC()">{{ 'buttons.submit' | translate}}</button>
+    </div>
+  </form>
+</div>

@@ -18,7 +18,9 @@
     "receive_fax": "ファックスを受信する",
     "my_dids": "私のDID",
     "fax_documents" :"ユーザー管理",
-      "contacts": "連絡先",
+    "contacts": "連絡先",
+    "contact_dnc": "連絡先 DNC",
+
     "administration": {
       "administration": "管理",
       "user_management": "ユーザー管理",
@@ -47,6 +49,45 @@
     "update": "アップデート",
     "operations": "操作"
   },
+
+  "contact_dnc": {
+    "title": "連絡先 DNC",
+    "list": "連絡先リスト DNC",
+    "add": "連絡先を追加 DNC",
+    "filter": "連絡先のフィルター DNC" ,
+    "personal_info": "個人情報",
+    "first_name": "ファーストネーム",
+    "last_name": "苗字",
+    "phone": "電話",
+    "email": "Eメール",
+    "address": "住所",
+    "custom_data": "カスタムデータ",
+    "custom_1": "カスタム1",
+    "custom_2": "カスタム2",
+    "custom_3": "カスタム3",
+    "description": "説明",
+    "required_error": "モバイルが必要です",
+    "pattern_error": "携帯電話番号は数字のみである必要があります",
+    "invalid_email": "メールが無効です",
+    "unsupported_file": "サポートされていないファイル",
+    "export": "輸出",
+    "upload": "アップロード",
+    "new": "新しい",
+    "invalid": "無効",
+    "rejected": "拒否されました",
+    "complete": "完了",
+    "organization_name": "組織名",
+    "job_title": "職名",
+    "status_description": "ステータスの説明",
+    "status": "スターテス",
+    "account_name": "アカウント名",
+    "lead_conversion": "リードの変換",
+    "do_not_call": "電話はしないで下さい",
+    "assigned_owner": "割り当てられた所有者",
+    "import": "輸入"
+  },
+
+
   "group": {
     "title": "グループ",
     "list": "グループリスト",

@@ -1,0 +1,89 @@
+<nb-card>
+  <nb-card-header>
+    {{ 'contact_dnc.list' | translate}}
+     <input style="float: right" class="form-control cc" type="text" #filter placeholder="{{ 'contact_dnc.filter' | translate}}"/>
+  </nb-card-header>
+  <nb-card-body>
+    <button type="button" mat-raised-button color="primary" style="font-size: 15px" [routerLink]="['/pages/contact_dnc/contact_dnc/new']"><i class="fa fa-plus"></i> {{ 'contact_dnc.add' | translate}}</button>&nbsp;
+    <button type="button" mat-raised-button color="primary" style="font-size: 15px" (click)="getCSV()">
+      <i class="fa fa-file" title="DNC File download"> {{ 'contact_dnc.export' | translate}}</i>
+    </button>&nbsp; &nbsp;
+    <dialog #dialog>
+      <div class="dialog-header">
+        <button type="button" class="close" aria-label="Close" (click)="dialog.close()"><span aria-hidden="true">&times;</span> </button>
+      </div>
+      <div>
+        <input type="file" accept="text/csv" ng2FileSelect [uploader]="uploader" multiple /> &nbsp;
+        <button mat-raised-button color="primary" style="font-size: 15px">
+          <i class="fa fa-upload" (click)="uploadFiles()" title="Import DNC file" (click)="dialog.close()">{{ 'contact_dnc.upload' | translate }}</i>
+        </button>
+      </div>
+      <div *ngIf="unsupportedErr"><br />
+        <label style="color: red" text-center>{{ 'contact_dnc.unsupported_file' | translate }}</label>
+      </div>
+      <div *ngFor="let item of uploader.queue"><br />
+        <label>{{ item?.file?.name }}</label> <i class="nb-close smmmm" (click)="item.remove()"></i>
+      </div>
+    </dialog>
+    <button (click)="dialog.showModal()" type="button" mat-raised-button color="primary" style="font-size: 15px">
+      <i class="fa fa-upload" title="Import DNC file"> {{'contact_dnc.import' | translate}}</i>
+    </button> <br /><br />
+    <div class="example-container mat-elevation-z8">
+      <mat-table table [dataSource]="aContactDNC" matSort>
+        <ng-container matColumnDef="ID"><mat-header-cell *matHeaderCellDef mat-sort-header>ID</mat-header-cell>
+          <mat-cell *matCellDef="let contact_dnc">{{contact_dnc.contact_dnc_id}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="first_name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'contact_dnc.first_name' | translate}}</mat-header-cell>
+          <mat-cell *matCellDef="let contact_dnc">{{contact_dnc.first_name}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="last_name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'contact_dnc.last_name' | translate}}</mat-header-cell >
+          <mat-cell *matCellDef="let contact_dnc">{{contact_dnc.last_name}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="phone">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'contact_dnc.phone' | translate}}</mat-header-cell>
+          <mat-cell *matCellDef="let contact_dnc">{{contact_dnc.phone}}</mat-cell>
+        </ng-container>
+
+        <!-- <ng-container matColumnDef="date_created">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.date_time' | translate }}</mat-header-cell>
+          <mat-cell *matCellDef="let sendfax">
+            {{sendfax.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
+          </mat-cell>
+        </ng-container> -->
+
+        <ng-container matColumnDef="email">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'contact_dnc.email' | translate}}</mat-header-cell>
+          <mat-cell *matCellDef="let contact_dnc">{{contact_dnc.email}}</mat-cell>
+        </ng-container>
+
+        <ng-container matColumnDef="operation">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.operations' | translate}}</mat-header-cell>
+          <mat-cell *matCellDef="let contact_dnc">{{contact_dnc.operation}}
+             <button mat-icon-button color="accent" style="font-size: 20px">
+              <mat-icon><a routerLink="/pages/contact_dnc/contact_dnc/{{contact_dnc.contact_dnc_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
+            </button>
+            <button mat-icon-button color="warn" style="font-size: 20px" (click)="deleteContactDNC(contact_dnc.contact_dnc_id)"(click)="showStaticModal(contact_dnc.first_name, contact_dnc.contact_dnc_id)">
+              <nb-icon icon="trash-2-outline" title="Delete"> </nb-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let contact_dnc; columns: displayedColumns"></mat-row>
+      </mat-table>
+      <mat-paginator
+        paginator
+        [length]="length"
+        [pageIndex]="0"
+        [pageSize]="5"
+        [pageSizeOptions]="[5, 10, 25, 100]"
+      >
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>

@@ -29,6 +29,7 @@ export class AppService {
   apiUrl= environment.API_URL;
 
   apiUrlContacts= `${this.apiUrl}/contacts`;
+  apiUrlContactDNC= `${this.apiUrl}/contact_dncs`
   apiUrlDocument= `${this.apiUrl}/documents`;
   apiUrlText= `${this.apiUrl}/texts`;
   apiUrlRecording= `${this.apiUrl}/recordings`;

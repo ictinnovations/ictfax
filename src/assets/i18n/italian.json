@@ -18,7 +18,9 @@
     "my_dids": "DIDs",
     "my_cids": "CIDs",
     "fax_documents":"Documento fax",
-      "contacts": "contatti",
+    "contacts": "contatti",
+    "contact_dnc": "Contatti DNC",
+
     "administration": {
       "administration": "Amministrazione",
       "user_management": "Gestione utenti",
@@ -46,6 +48,43 @@
     "update": "Aggiorna",
     "operations": "operazioni"
   },
+
+  "contact_dnc": {
+    "title": "Contatto DNC",
+    "list": "Lista contatti DNC",
+    "add": "Aggiungi contatto DNC",
+    "filter": "Cerca ",
+    "personal_info": "Informazioni personali",
+    "firs_name": "Nome",
+    "last_name": "Cognome",
+    "phone": "Telefono",
+    "email": "Email",
+    "address": "Indirizzo",
+    "custom_data": "Custom data",
+    "custom_1": "Custom 1",
+    "custom_2": "Custom 2",
+    "custom_3": "Custom 3",
+    "description": "Descrizione",
+    "required_error": "Telefono obbligatorio",
+    "pattern_error": "Il telefono deve essere formato da soli numeri",
+    "invalid_email": "Email non corretta",
+    "unsupported_file": "File non supportato",
+    "export": "Esportare",
+    "upload": "Caricamento",
+    "organization_name": "Nome dell'organizzazione",
+    "opportunity_name": "Nome opportunità",
+    "opportunity_amount": "Importo opportunità",
+    "job_title": "Titolo di lavoro",
+    "status_description": "Descrizione dello stato",
+    "status": "Stato",
+    "account_name": "Nome utente",
+    "lead_conversion": "Conversione di piombo",
+    "do_not_call": "Non chiamare",
+    "assigned_owner": "Proprietario assegnato",
+    "import": "Importare"
+  },
+
+  
   "group": {
     "title": "Gruppo",
     "list": "Elenco gruppi",

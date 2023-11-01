@@ -1,0 +1,21 @@
+.cc {
+  width: 40%;
+}
+.example-container {
+  display: flex;
+  flex-direction: column;
+  min-width: 300px;
+  max-height: 500px;
+}
+dialog {
+  border-color: transparent;
+  overflow: hidden;
+  border-radius: 5px;
+  cursor: pointer;
+  height: 100px;
+  width: 500px;
+  bottom: 400px;
+  right: 45px;
+}
+
+

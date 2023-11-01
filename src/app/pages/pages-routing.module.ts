@@ -74,6 +74,10 @@ const routes: Routes = [{
     loadChildren: () => import('./incoming_number/incoming_number.module')
       .then(m => m.IncomingNumberModule),
   }, {
+    path: 'contact_dnc',
+    loadChildren: () => import('./contact_dnc/contact_dnc.module')
+      .then(m => m.ContactDNCModule),
+  }, {
     path: 'sendfax',
     loadChildren: () => import('./sendfax/sendfax.module')
       .then(m => m.SendFaxModule),
