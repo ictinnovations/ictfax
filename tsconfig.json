@@ -10,7 +10,7 @@
     "emitDecoratorMetadata": true,
     "experimentalDecorators": true,
     "target": "es2017",
-    "types": ["webgl2", "offscreencanvas"],
+    "types": ["webgl2",],
     "typeRoots": [
       "node_modules/@types"
     ],

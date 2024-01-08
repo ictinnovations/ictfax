@@ -10,9 +10,9 @@ import { AppService } from '../../../app.service';
 import { FileUploader, FileUploaderOptions } from 'ng2-file-upload';
 import { FileSelectDirective, FileDropDirective } from 'ng2-file-upload/ng2-file-upload';
 import { NgClass, NgStyle } from '@angular/common';
-import { createWorker, Worker } from 'tesseract.js';
-import * as Tesseract from 'tesseract.js';
-import * as pdfjsLib from 'pdfjs-dist';
+// import { createWorker, Worker } from 'tesseract.js';
+// import * as Tesseract from 'tesseract.js';
+// import * as pdfjsLib from 'pdfjs-dist';
 
 
 
@@ -40,7 +40,7 @@ export class AddDocumentComponent implements OnInit {
 
   unsupportedErr: any = false;
   text: string = '';
-  worker: Tesseract.Worker | null = null; 
+  // worker: Tesseract.Worker | null = null;
   isError = false;
   errorText: any = [];
   
@@ -48,11 +48,11 @@ export class AddDocumentComponent implements OnInit {
 
   ngOnInit(): void {
 
-    createWorker({
-      logger: m => console.log(m),
-    }).then(worker => {
-      this.worker = worker;
-    });
+    // createWorker({
+    //   logger: m => console.log(m),
+    // }).then(worker => {
+    //   this.worker = worker;
+    // });
     this.route.params.subscribe(params => {
       this.document_id = +params['id'];
       const test_url = this.router.url.split('/');
@@ -139,35 +139,36 @@ export class AddDocumentComponent implements OnInit {
     // if (this.file == null) this.errorText.push("Document file is required.");
   }
 
-  async recognizeText(path: string, isPDF: boolean = false) {
-    await this.worker.loadLanguage('eng');
-    await this.worker.initialize('eng');
-    let extractedText; // Rename the local variable to avoid conflicts with this.text
+  // async recognizeText(path: string, isPDF: boolean = false) {
+  //   await this.worker.loadLanguage('eng');
+  //   await this.worker.initialize('eng');
+  //   let extractedText; // Rename the local variable to avoid conflicts with this.text
 
-    if (isPDF) {
-      const pdf = await pdfjsLib.getDocument(path).promise;
-      const numPages = pdf.numPages;
-      const pageTexts = [];
+  //   // if (isPDF) {
+  //   //   const pdf = await pdfjsLib.getDocument(path).promise;
+  //   //   const numPages = pdf.numPages;
+  //   //   const pageTexts = [];
 
-      for (let pageNum = 1; pageNum <= numPages; pageNum++) {
-        const page = await pdf.getPage(pageNum);
-        const textContent = await page.getTextContent();
-        const pageText = textContent.items.map(item => this.getTextFromItem(item)).join(' ');
-        pageTexts.push(pageText);
-      }
+  //   //   for (let pageNum = 1; pageNum <= numPages; pageNum++) {
+  //   //     const page = await pdf.getPage(pageNum);
+  //   //     const textContent = await page.getTextContent();
+  //   //     const pageText = textContent.items.map(item => this.getTextFromItem(item)).join(' ');
+  //   //     pageTexts.push(pageText);
+  //   //   }
 
-      extractedText = pageTexts.join('\n');
-    } else {
-      const { data: { text } } = await this.worker.recognize(path);
-      extractedText = text; // Assign extracted text to the local variable
-      console.log('Extracted Text:', text);
-    }
+  //   //   extractedText = pageTexts.join('\n');
+  //   // }
+  //    if (isPDF) {
+  //     const { data: { text } } = await this.worker.recognize(path);
+  //     extractedText = text; // Assign extracted text to the local variable
+  //     console.log('Extracted Text:', text);
+  //   }
 
-    // Update the document.ocr field with the extracted text
-    this.document.ocr = extractedText; // Use the local variable to assign the text
+  //   // Update the document.ocr field with the extracted text
+  //   this.document.ocr = extractedText; // Use the local variable to assign the text
 
-    await this.worker.terminate();
-  }
+  //   await this.worker.terminate();
+  // }
 
 
   getTextFromItem(item) {
@@ -185,13 +186,14 @@ export class AddDocumentComponent implements OnInit {
     if (file) {
       const path = (window.URL || window.webkitURL).createObjectURL(file);
 
-      if (file.type === 'application/pdf') {
-        await this.recognizeText(path, true);
-      } else if (file.type === 'image/jpeg' || file.type === 'image/png') {
-        await this.recognizeText(path);
-      } else {
-        console.log('Unsupported file type');
-      }
+      // if (file.type === 'application/pdf') {
+      //   await this.recognizeText(path, true);
+      // }
+      //  if (file.type === 'image/jpeg' || file.type === 'image/png') {
+      //   await this.recognizeText(path);
+      // } else {
+      //   console.log('Unsupported file type');
+      // }
     }
   }
   

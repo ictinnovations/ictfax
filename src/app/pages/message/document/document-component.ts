@@ -164,11 +164,11 @@ closeModal() {
   this.modalRef.close();
 }
 
-showOCR(content, ocr) {
-  this.modalRef = this.modalService.open(content, { size: 'md' });
-  // Set the ocrData property with the OCR data
-  this.ocrData = ocr;
-}
+// showOCR(content, ocr) {
+//   this.modalRef = this.modalService.open(content, { size: 'md' });
+//   // Set the ocrData property with the OCR data
+//   this.ocrData = ocr;
+// }
 
 
   getContactList() {
