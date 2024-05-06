@@ -5,7 +5,7 @@ import { Component } from '@angular/core';
   styleUrls: ['./footer.component.scss'],
   template: `
   <span class="created-by">
-  Developed by <b><a href="http://ictfax.org" target="_blank">Fiza Khan</a></b> Copyright ICT Innovations 2020, all right reserved
+    <a href="https://ictfax.com">ICTFax</a> is a product developed by <a href="https://ictinnovations.com"> ICT Innovations. </a>
   </span>
   <div class="socials">
     <a href="https://github.com/ictinnovations/ictfax" target="_blank" class="ion ion-social-github"></a>

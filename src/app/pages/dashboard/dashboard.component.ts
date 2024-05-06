@@ -237,7 +237,7 @@ export class DashboardComponent implements OnInit {
 
   get_didStat() {
     this.dashboard_service.get_didStat().then(res => {
-      const did_total = this.abbreviateNumber(res.account_total);
+      const did_total = this.abbreviateNumber(res.did_total);
       this.did_total = did_total;
     })
   }

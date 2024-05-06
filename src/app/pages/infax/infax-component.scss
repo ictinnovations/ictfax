@@ -3,7 +3,6 @@
   flex-direction: column;
   min-width: 300px;
 }
-  
 .example-header {
   min-height: 64px;
   display: flex;
@@ -11,19 +10,13 @@
   padding-left: 24px;
   font-size: 20px;
 }
-  
-
 .mat-table {
   overflow: auto;
   max-height: 500px;
 }
-
-
 .mat-header-cell .mat-sort-header-sorted {
   color: black;
 }
-
-
 .cdk-visually-hidden {
   border: 0;
   clip: rect(0 0 0 0);
@@ -34,71 +27,58 @@
   position: absolute;
   width: 1px;
 }
-
-
 .example-button-row {
   display: flex;
   align-items: center;
   justify-content: space-around;
 }
-
-
 .mat-form-field {
   font-size: 14px;
   flex-grow: 1;
   margin-left: 32px;
 }
-
-
 a:hover {
   color: rgb(10, 238, 10);
 }
-
-
 .fa-trash:hover {
   color: rgb(138, 4, 4);
 }
-
 .fa-play-circle:hover {
   color: darkblue;
 }
-
 .fa-stop:hover {
   color: darkblue;
 }
-
 .mat-input-container {
   font-size: 14px;
   flex-grow: 1;
   margin-left: 32px;
   margin-top: 8px;
 }
-
 .cc {
   width: 40%;
 }
-
 .pagination {
   display: block;
 }
-.pagination .prv-page{
+.pagination .prv-page {
   position: relative;
   padding: 0;
   margin: 0;
   line-height: 15px;
-  border: 0px;
+  border: 0;
   background: none;
   height: 20px;
   font-size: 11px;
   font-weight: 600;
   float: left;
 }
-.pagination .nxt-page{
+.pagination .nxt-page {
   position: relative;
   padding: 0;
   margin: 0;
   line-height: 15px;
-  border: 0px;
+  border: 0;
   background: none;
   height: 20px;
   font-size: 11px;
@@ -119,7 +99,7 @@ a:hover {
   text-align: center;
   font-size: 16px;
 }
-.ng2-pdf-viewer-container[_ngcontent-yff-c423]{
+.ng2-pdf-viewer-container[_ngcontent-yff-c423] {
   overflow-x: hi;
 }
 
