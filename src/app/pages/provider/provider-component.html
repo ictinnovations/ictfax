@@ -1,56 +1,43 @@
 <nb-card>
-    <nb-card-header>
-      {{'provider.title' | translate}}
-      <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'provider.filter' | translate}}">
-    </nb-card-header>
-  
-    <nb-card-body>
-        <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/provider/provider/new']"><i class="fa fa-plus"></i> {{'provider.add' | translate}}</button>
-        <br>
-        <br>
-      <div class="example-container mat-elevation-z8">
-        <mat-table #table [dataSource]="aProvider" matSort>
-          <ng-container matColumnDef="ID">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.ID' | translate}}</mat-header-cell>
-            <mat-cell *matCellDef="let provider">
-              {{provider.provider_id}}</mat-cell>
+  <nb-card-header>
+    {{ 'provider.list' | translate}}
+    <input style="float:right" class="form-control cc" nbInput fullWidth type="text" #filter placeholder="{{ 'provider.filter' | translate}}">
+  </nb-card-header>
+
+  <nb-card-body>
+      <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/provider/provider/new']"><i class="fa fa-plus"></i> {{ 'provider.add' | translate}}</button>
+      <br>
+      <br>
+    <div class="example-container mat-elevation-z8">
+      <table nbTreeGrid [nbTreeGrid]="ProviderDataSource">
+        <ng-container nbTreeGridColumnDef="ID">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate}}<th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row" > {{row.data.provider_id}}</td>
+        </ng-container>
+        <ng-container nbTreeGridColumnDef="Name">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'provider.provider_name' | translate}}<th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">  {{row.data.name}}</td>
+        </ng-container>
+        <ng-container nbTreeGridColumnDef="host">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'provider.host' | translate}}<th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row" > {{row.data.host}}</td>
+        </ng-container>
+        <ng-container nbTreeGridColumnDef="type">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'provider.type' | translate}}<th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.type}}</td>
+        </ng-container>
+        <ng-container nbTreeGridColumnDef="Operations">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let provider">
+               <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/provider/provider/{{provider.provider_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon></button>
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon style="color: red" (click)="showStaticModal(deleteTemplate,provider.name, provider.provider_id)" ><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon></button>
+            </td>
           </ng-container>
-          <ng-container matColumnDef="Name">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>{{'provider.provider_name' | translate}}</mat-header-cell>
-            <mat-cell *matCellDef="let provider" style="text-align:left">
-              {{provider.name}}</mat-cell>
-          </ng-container>
-          <ng-container matColumnDef="host">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>{{'provider.host' | translate}}</mat-header-cell>
-            <mat-cell *matCellDef="let provider">
-              {{provider.host}}</mat-cell>
-          </ng-container>
-          <ng-container matColumnDef="type">
-              <mat-header-cell *matHeaderCellDef mat-sort-header>{{'provider.type' | translate}}</mat-header-cell>
-              <mat-cell *matCellDef="let provider" style="text-align:left">
-                {{provider.type}}</mat-cell>
-            </ng-container>
-          <ng-container cdkColumnDef="Operations">
-              <mat-header-cell *matHeaderCellDef>{{'general.operations' | translate}}</mat-header-cell>
-              <mat-cell *matCellDef="let provider">
-              <button mat-icon-button color="primary" style= "font-size:20px">
-                <mat-icon><a routerLink="/pages/provider/provider/{{provider.provider_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
-              </button>
-              <button mat-icon-button color="primary" style= "font-size:20px">
-                <mat-icon style="color: red" (click)="showStaticModal(provider.name, provider.provider_id)" ><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>                
-              </button>
-              </mat-cell>
-              </ng-container>
-        <mat-header-row
-          *matHeaderRowDef="displayedColumns"></mat-header-row>
-          <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-    </mat-table>
-    <mat-paginator #paginator
-    [length] = "length"
-    [pageIndex]="0"
-    [pageSize]="10"
-    [pageSizeOptions]="[5, 10, 25, 100]">
-  </mat-paginator>
-  </div>
-</nb-card-body>
-</nb-card>
+          <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+          <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    </nb-card-body>
+  </nb-card>

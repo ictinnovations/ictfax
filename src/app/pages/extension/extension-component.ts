@@ -7,6 +7,9 @@ import { ExtensionDataSource } from './extension-datasource.component';
 import { ModalComponent } from '../../modal.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { Observable } from 'rxjs/Rx';
+import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+import { Extension } from './extension';
+
 
 @Component({
   selector: 'ngx-extension-component',
@@ -15,9 +18,13 @@ import { Observable } from 'rxjs/Rx';
 })
 
 export class FormsExtensionComponent implements OnInit {
-  constructor(private extension_service: ExtensionService, private modalService: NgbModal) { }
+  constructor(private extension_service: ExtensionService,
+   private dataSourceBuilder: NbTreeGridDataSourceBuilder<Extension>,
+   private modalService: NgbModal) { }
 
-  aExtension: ExtensionDataSource | null;
+  aExtension: Extension[];
+  ExtensionDataSource: NbTreeGridDataSource<Extension>;
+
   length: number;
   closeResult: any;
 
@@ -36,7 +43,7 @@ export class FormsExtensionComponent implements OnInit {
   getExtensionlist() {
     this.extension_service.get_ExtensionList().then(data => {
       this.length = data.length;
-      this.aExtension = new  ExtensionDataSource(new ExtensionDatabase( data ), this.sort, this.paginator);
+      this.ExtensionDataSource = this. dataSourceBuilder.create( this. aExtension.map(item => ({ data: item})),);
 
       // Observable for the filter
       Observable.fromEvent(this.filter.nativeElement, 'keyup')

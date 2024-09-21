@@ -1,157 +1,156 @@
-<h3>{{'provider.add' | translate}}</h3>
+<h3>{{ 'provider.add' | translate}}</h3>
 <div class="col-lg-12">
-  <form id="form1" #f1="ngForm">
-    <nb-card>
-      <nb-card-header>
-        {{'provider.provider_info' | translate}}
-      </nb-card-header>
-      <nb-card-body>
-        <div class="row">
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label for="name">{{'provider.provider_name' | translate}}:</label>
-              <input [(ngModel)]="provider.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="name" required/>
-            </div>
-          </div>
-          <div class="col-sm-6">
-              <label for="active">{{'provider.active' | translate}}:</label>
-              <br>
-              <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="0"> {{'provider.no' | translate}}<br>
-              <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="1"> {{'provider.yes' | translate}}<br>
-          </div>
-        </div>
-      </nb-card-body>
-    </nb-card>
-
-    <nb-card>
-      <nb-card-header>
-        {{'provider.gateway_type' | translate}}
-      </nb-card-header>
-      <nb-card-body>
+<form id="form1" #f1="ngForm">
+<nb-card>
+    <nb-card-header>
+      {{ 'provider.provider_info' | translate}}
+    </nb-card-header>
+  <nb-card-body>
+      <div class="row">
         <div class="col-sm-6">
           <div class="form-group">
-            <div>  
-              <label for="type">{{'provider.gateway_type' | translate}}:</label>  
-              <select class = "form-control" name = "type" [(ngModel)]= "provider.type" [ngModelOptions]="{standalone: true}" [disabled]="(provider_id>0)">
-                <option value = "">{{'outbound_fax.select' | translate}}</option>  
-                <option value="sip">{{'provider.sip' | translate}}</option>
-                <option value="smpp">{{'provider.smpp' | translate}}</option>
-                <option value="smtp">{{'provider.smtp' | translate}}</option>
-              </select>
-            </div>
+            <label for="name">{{ 'provider.provider_name' | translate}}:</label>
+            <input [(ngModel)]="provider.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth placeholder="{{ 'provider.provider_name' | translate}}" id="name" required/>
+          </div>
+      </div>
+      <div class="col-sm-6">
+          <label for="active">{{ 'provider.active' | translate}}:</label>
+          <br>
+          <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="0"> {{ 'provider.no' | translate}}<br>
+          <input [(ngModel)]="provider.active" [ngModelOptions]="{standalone: true}" type="radio" id="active" name="active" value="1"> {{ 'provider.yes' | translate}}<br>
+      </div>
+      </div>
+  </nb-card-body>
+</nb-card>
+
+<nb-card>
+  <nb-card-header>
+    {{ 'provider.gateway_type' | translate}}
+  </nb-card-header>
+  <nb-card-body>
+      <div class="col-sm-6">
+          <div class="form-group">
+              <div>
+                  <label for="type">{{ 'provider.gateway_type' | translate}}:</label>
+                      <nb-select class = "dddd" name = "type" [(ngModel)]= "provider.type" [ngModelOptions]="{standalone: true}" [disabled]="(provider_id>0)">
+                      <nb-option value = "">Please Select an Option below</nb-option>
+                      <nb-option value="sip">SIP</nb-option>
+                      <nb-option value="smtp">SMTP</nb-option>
+                        </nb-select>
+                  </div>
           </div>
         </div>
       </nb-card-body>
     </nb-card>
 
-    <nb-card>
-      <nb-card-header>
-        {{'provider.access_credentials' | translate}}
-      </nb-card-header>
-      <nb-card-body>
-        <div class="row">
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label for="username">{{'provider.username' | translate}}:</label>
-              <input [(ngModel)]="provider.username" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="username" required/>
-            </div>
+<nb-card>
+    <nb-card-header>
+      {{ 'provider.access_credentials' | translate}}
+    </nb-card-header>
+    <nb-card-body>
+    <div class="row">
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="username">{{ 'provider.username' | translate}}:</label>
+            <input [(ngModel)]="provider.username" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth id="username" required/>
           </div>
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label for="password">{{'provider.password' | translate}}:</label>
-              <input [(ngModel)]="provider.password" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="password" required/>  
-            </div>
+      </div>
+      <div class="col-sm-6">
+          <div class="form-group">
+            <label for="password">{{ 'provider.password' | translate}}:</label>
+            <input [(ngModel)]="provider.password" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth id="password" required/>
+          </div>
+      </div>
+    </div>
+    <div class="row">
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="host">{{ 'provider.host' | translate}}:</label>
+            <input [(ngModel)]="provider.host" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth placeholder="{{ 'provider.host' | translate}}" id="host" required/>
+          </div>
+      </div>
+      <div class="col-sm-6">
+          <div class="form-group">
+            <label for="port">{{ 'provider.port' | translate}}:</label>
+            <input [(ngModel)]="provider.port" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth placeholder="{{ 'provider.port' | translate}}" id="port" required/>
           </div>
         </div>
-        <div class="row">
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label for="host">{{'provider.host' | translate}}:</label>
-              <input [(ngModel)]="provider.host" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="host" required/>
-            </div>
-          </div>
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label for="port">{{'provider.port' | translate}}:</label>
-              <input [(ngModel)]="provider.port" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="port" required/>
-            </div>
-          </div>
-        </div>
+    </div>
       </nb-card-body>
     </nb-card>
 
-    <nb-card>
-      <nb-card-header>
-        {{'provider.prefix_and_weight' | translate}}
-      </nb-card-header>
-      <nb-card-body>
-        <div class="row">
-          <div class="col-sm-6">
-            <div class="form-group">
-              <label for="prefix">{{'provider.prefix' | translate}}:</label>
-              <input [(ngModel)]="provider.prefix" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="prefix" required/>
-            </div>
+<nb-card>
+    <nb-card-header>
+      {{ 'provider.prefix' | translate}}
+    </nb-card-header>
+    <nb-card-body>
+    <div class="row">
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="prefix">{{ 'provider.prefix' | translate}}:</label>
+            <input [(ngModel)]="provider.prefix" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth placeholder="{{ 'provider.prefix' | translate}}" id="prefix" required/>
           </div>
           <div class="col-sm-6">
             <div class="form-group">
-              <div>  
-                <label for="weight">{{'provider.weight' | translate}}:</label>  
-                <select class = "form-control" name = "weight" [(ngModel)]= "provider.weight" [ngModelOptions]="{standalone: true}">
-                  <option value = "">{{'outbound_fax.select' | translate}}</option>  
-                  <option value="-10">-10</option>
-                  <option value="-9">-9</option>
-                  <option value="-8">-8</option>
-                  <option value="-7">-7</option>
-                  <option value="-6">-6</option>
-                  <option value="-5">-5</option>
-                  <option value="-4">-4</option>
-                  <option value="-3">-3</option>
-                  <option value="-2">-2</option>
-                  <option value="-1">-1</option>
-                  <option value="0">0</option>
-                  <option value="1">1</option>
-                  <option value="2">2</option>
-                  <option value="3">3</option>
-                  <option value="4">4</option>
-                  <option value="5">5</option>
-                  <option value="7">7</option>
-                  <option value="8">8</option>
-                  <option value="9">9</option>
-                  <option value="10">10</option>
-                </select>
+              <div>
+                  <label for="weight">{{ 'provider.weight' | translate}}:</label>
+                      <nb-select class = "dddd" name = "weight" [(ngModel)]= "provider.weight" [ngModelOptions]="{standalone: true}">
+                      <nb-option value = "">Please Select an Option below</nb-option>
+                      <nb-option value="-10">-10</nb-option>
+                      <nb-option value="-9">-9</nb-option>
+                      <nb-option value="-8">-8</nb-option>
+                      <nb-option value="-7">-7</nb-option>
+                      <nb-option value="-6">-6</nb-option>
+                      <nb-option value="-5">-5</nb-option>
+                      <nb-option value="-4">-4</nb-option>
+                      <nb-option value="-3">-3</nb-option>
+                      <nb-option value="-2">-2</nb-option>
+                      <nb-option value="-1">-1</nb-option>
+                      <nb-option value="0">0</nb-option>
+                      <nb-option value="1">1</nb-option>
+                      <nb-option value="2">2</nb-option>
+                      <nb-option value="3">3</nb-option>
+                      <nb-option value="4">4</nb-option>
+                      <nb-option value="5">5</nb-option>
+                      <nb-option value="7">7</nb-option>
+                      <nb-option value="8">8</nb-option>
+                      <nb-option value="9">9</nb-option>
+                      <nb-option value="10">10</nb-option>
+                        </nb-select>
+                  </div>
+          </div>
+        </div>
+        </div>
+    </div>
+      </nb-card-body>
+    </nb-card>
+
+<nb-card>
+    <nb-card-header>
+      {{ 'provider.additional_info' | translate}}
+    </nb-card-header>
+    <nb-card-body>
+      <div class="col-sm-6">
+        <div class="form-group">
+          <label for="settings">{{ 'provider.settings' | translate}}:</label>
+          <textarea [(ngModel)]="this.provider.settings" [ngModelOptions]="{standalone: true}" nbInput fullWidth placeholder="{{ 'provider.settings_placeholder' | translate}}" id="settings" rows="10" cols="30" required></textarea>
+        </div>
+      </div>
+          <div class="col-sm-6">
+              <div class="form-group">
+                  <label for="register">{{ 'provider.register' | translate}}:</label>
+                  <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="0"> {{ 'provider.no' | translate}}
+                  <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="1"> {{ 'provider.yes' | translate}}
               </div>
-            </div>
           </div>
-        </div>
       </nb-card-body>
     </nb-card>
 
-    <nb-card>
-      <nb-card-header>
-        {{'provider.additional_info' | translate}}
-      </nb-card-header>
-      <nb-card-body>
-        <div class="col-sm-6">
-          <div class="form-group">
-            <label for="settings">{{'provider.settings' | translate}}:</label>
-            <textarea [(ngModel)]="this.provider.settings" [ngModelOptions]="{standalone: true}" class="form-control" id="settings" rows="10" cols="30" required></textarea>
-          </div>
-        </div>
-        <div class="col-sm-6">
-          <div class="form-group">
-            <label for="register">{{'provider.register' | translate}}:</label>  
-            <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="0"> {{'provider.no' | translate}}
-            <input [(ngModel)]="provider.register" [ngModelOptions]="{standalone: true}" type="radio" id="register" name="register" value="1"> {{'provider.yes' | translate}}
-          </div>
-        </div>
-      </nb-card-body>
-    </nb-card>    
-
-    <div *ngIf="(provider_id>0)">
-      <button type="button" class="btn btn-primary" (click)="updateProvider()">{{'buttons.update' | translate}}</button>
-    </div>
-    <div *ngIf="(!provider_id)">
-      <button type="button" class="btn btn-success" (click)="addProvider()">{{'buttons.submit' | translate}}</button>
-    </div>
-  </form>
+<div *ngIf="(provider_id>0)">
+    <button type="button" class="btn btn-primary" (click)="updateProvider()">{{ 'buttons.update' | translate}}</button>
+</div>
+<div *ngIf="(!provider_id)">
+    <button type="button" class="btn btn-success" (click)="addProvider()">{{ 'buttons.submit' | translate}}</button>
+</div>
+</form>
 </div>

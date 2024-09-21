@@ -12,7 +12,7 @@ import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatIconModule } from '@angular/material/icon';
 import { MatRadioModule } from '@angular/material/radio';
 import { FileUploadModule } from 'ng2-file-upload';
-import { NbCardModule } from '@nebular/theme';
+import { NbButtonModule, NbCardModule, NbInputModule, NbOptionModule, NbSelectModule, NbTreeGridModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -28,10 +28,15 @@ import { TranslateModule } from '@ngx-translate/core';
     MatRadioModule,
     FileUploadModule,
     NbCardModule,
-    MatIconModule, 
+    MatIconModule,
     FormsModule,
     ReactiveFormsModule,
-    TranslateModule
+    TranslateModule,
+    NbButtonModule,
+    NbTreeGridModule,
+    NbInputModule,
+    NbOptionModule,
+    NbSelectModule,
   ],
   declarations: [
     ...routedComponents,

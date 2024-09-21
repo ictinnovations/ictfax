@@ -8,7 +8,7 @@ import { MatSortModule } from '@angular/material/sort';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { NbCardModule, NbIconModule } from '@nebular/theme';
+import { NbButtonModule, NbCardModule, NbIconModule, NbInputModule, NbOptionModule, NbSelectModule, NbTreeGridModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -27,7 +27,12 @@ import { TranslateModule } from '@ngx-translate/core';
     ReactiveFormsModule,
     MatIconModule,
     NbIconModule,
-    TranslateModule
+    TranslateModule,
+    NbButtonModule,
+    NbInputModule,
+    NbTreeGridModule,
+    NbSelectModule,
+    NbOptionModule
   ],
   declarations: [
     ...routedComponents,

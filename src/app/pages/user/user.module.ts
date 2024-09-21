@@ -12,7 +12,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatPaginatorModule } from '@angular/material/paginator';
 import { MatRadioModule } from '@angular/material/radio';
 import { EqualValidator } from './password.match.directive';
-import { NbCardModule, NbIconModule } from '@nebular/theme';
+import { NbButtonModule, NbCardModule, NbIconModule, NbInputModule, NbOptionModule, NbSelectModule, NbTreeGridModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 
@@ -33,7 +33,12 @@ import { TranslateModule } from '@ngx-translate/core';
     MatInputModule,
     MatFormFieldModule,
     NbIconModule,
-    TranslateModule
+    TranslateModule,
+    NbButtonModule,
+    NbInputModule,
+    NbTreeGridModule,
+    NbSelectModule,
+    NbOptionModule
   ],
   declarations: [
     EqualValidator,

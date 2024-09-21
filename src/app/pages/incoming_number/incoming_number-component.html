@@ -5,36 +5,28 @@
 
   <nb-card-body>
     <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aNumbers" matSort>
-        <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'my_dids.did_number' | translate}}:</mat-header-cell>
-          <mat-cell *matCellDef="let in_num" style="text-align:left">
-            {{in_num.phone}}
-          </mat-cell>
+      <table nbTreeGrid [nbTreeGrid]="IncomingNumberDataSource">
+        <ng-container nbTreeGridColumnDef="phone">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'my_dids.did_number' | translate}}:</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row" style="text-align:left">
+            {{row.data.username}}</td>
         </ng-container>
-        <ng-container matColumnDef="first_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'my_dids.title' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let in_num" style="text-align:left">
-            {{in_num.first_name}}
-          </mat-cell>
-        </ng-container>  
-        <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>{{'general.operations' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let in_num">
+        <ng-container nbTreeGridColumnDef="first_name">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'my_dids.title' | translate}}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row" style="text-align:left">
+            {{row.data.first_name}}</td>
+        </ng-container>
+        <ng-container nbTreeGridColumnDef="Operations">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let in_num">
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/incoming_number/incoming_number/{{in_num.account_id}}/forward" title="Forward"><i class="ion-forward"></i></a></mat-icon>
+              <mat-icon><a routerLink="/pages/incoming_number/incoming_number/{{in_num.data.account_id}}/forward" title="Forward"><i class="ion-forward"></i></a></mat-icon>
             </button>
-          </mat-cell>
+          </td>
         </ng-container>
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
+          <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+          <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+       </table>
     </div>
   </nb-card-body>
 </nb-card>

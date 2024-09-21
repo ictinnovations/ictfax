@@ -8,6 +8,9 @@ import { ModalComponent } from '../../modal.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { fromEvent } from 'rxjs';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
+import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+import { User } from './user';
+
 
 @Component({
   selector: 'ngx-user-component',
@@ -18,9 +21,13 @@ import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 
 export class FormsUserComponent implements OnInit {
 
-  constructor(private user_service: AUserService, private modalService: NgbModal) { }
+  constructor(private user_service: AUserService,
+  private dataSourceBuilder: NbTreeGridDataSourceBuilder<User>,
+  private modalService: NgbModal) { }
 
-  aUser: UserDataSource | null;
+  aUser: User[];
+  UserDataSource: NbTreeGridDataSource<User>;
+
   length: number;
   closeResult: any;
 
@@ -38,8 +45,9 @@ export class FormsUserComponent implements OnInit {
 
   getUserlist() {
     this.user_service.get_UserList().then(data => {
+      this.aUser = data as User[];
       this.length = data.length;
-      this.aUser = new  UserDataSource(new UserDatabase( data ), this.sort, this.paginator);
+      this.UserDataSource = this.dataSourceBuilder.create(this.aUser.map(item => ({ data: item })),);
 
       //Sort the data automatically
 
@@ -68,14 +76,14 @@ export class FormsUserComponent implements OnInit {
   }
 
   // Modal related
-  showStaticModal(name, user_id) {
+  showStaticModal(user_id) {
     const activeModal = this.modalService.open(ModalComponent, {
       size: 'sm',
       container: 'nb-layout',
     });
 
     activeModal.componentInstance.modalHeader = 'Alert';
-    activeModal.componentInstance.modalContent = `Are you sure you want to delete ${name}?`;
+    activeModal.componentInstance.modalContent = `Are you sure you want to delete ${user_id}?`;
     activeModal.result.then((result) => {
       this.closeResult = result;
       if (this.closeResult === 'yes_click') {

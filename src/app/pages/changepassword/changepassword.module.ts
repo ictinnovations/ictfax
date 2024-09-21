@@ -5,7 +5,7 @@ import { ThemeModule } from '../../@theme/theme.module';
 import { ChangePasswordComponent } from './changepassword-component';
 import { RouterModule } from '@angular/router';
 import { CheckValidator } from './password.check.directive';
-import { NbButtonModule, NbCardModule } from '@nebular/theme';
+import { NbButtonModule, NbCardModule, NbInputModule, NbTreeGridModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 
 @NgModule({
@@ -16,7 +16,9 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
     NbCardModule,
     FormsModule,
     ReactiveFormsModule,
-    NbButtonModule
+    NbButtonModule,
+    NbInputModule,
+    NbTreeGridModule
   ],
   declarations: [
     CheckValidator,

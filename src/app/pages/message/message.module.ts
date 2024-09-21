@@ -10,7 +10,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { FileUploadModule } from 'ng2-file-upload';
 import { MatButtonModule } from '@angular/material/button';
 import { MatPaginatorModule } from '@angular/material/paginator';
-import { NbCardModule, NbIconModule } from '@nebular/theme';
+import { NbButtonModule, NbCardModule, NbIconModule, NbInputModule, NbOptionModule, NbSelectModule, NbTreeGridModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { Ng2CompleterModule } from "ng2-completer";
@@ -34,7 +34,12 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
       NbIconModule,
       TranslateModule,
       Ng2CompleterModule,
-      PdfViewerModule
+      PdfViewerModule,
+      NbButtonModule,
+      NbInputModule,
+      NbTreeGridModule,
+      NbOptionModule,
+      NbSelectModule,
     ],
     declarations: [
       ...routedComponents,

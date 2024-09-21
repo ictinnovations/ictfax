@@ -22,7 +22,7 @@ import { AUserService } from '../user/user.service';
                        <form id="form" #f1="ngForm">
                        <div class="form-group">
                        <label for="password">Password</label>
-               <input type="password" class="form-control" id="password"
+               <input type="password" class="form-control" nbInput fullWidth id="password"
                required
                [(ngModel)]="user.password" name="password"
                #password="ngModel">
@@ -32,7 +32,7 @@ import { AUserService } from '../user/user.service';
              </div>
              <div class="form-group">
                <label for="name">Confirm Password</label>
-               <input type="password" class="form-control" id="confirmPassword"
+               <input type="password" class="form-control" nbInput fullWidth id="confirmPassword"
                required
                ngx_validateCheck="password"
                [(ngModel)]="user.confirmPassword" name="confirmPassword"
@@ -42,7 +42,7 @@ import { AUserService } from '../user/user.service';
                  Passwords did not match
                </div>
              </div>
-                       </form>  
+                       </form>
                        <button nbButton fullWidth status="success" (click)="goToHome()">Submit</button>
   	                 </div>
   	               </nb-card-body>
@@ -60,7 +60,7 @@ export class ChangePasswordComponent {
         this.auser = token.getPayload();
         this.user.user_id = this.auser.user_id;
       }
-    })   
+    })
   }
 
   user: User = new User;

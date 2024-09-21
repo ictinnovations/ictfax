@@ -3,8 +3,8 @@ import { Router } from '@angular/router';
 import { SendFaxService } from './sendfax.service';
 import { SendFax } from './sendfax';
 import { Response, Http, RequestOptions, Headers } from '@angular/http';
-import { CdkTableModule } from '@angular/cdk/table';
-import { MatTableModule } from '@angular/material/table';
+// import { CdkTableModule } from '@angular/cdk/table';
+// import { MatTableModule } from '@angular/material/table';
 import { DataSource } from '@angular/cdk/collections';
 import {  MatPaginator, } from '@angular/material/paginator';
 import { MatSort,Sort } from '@angular/material/sort';
@@ -12,7 +12,6 @@ import { BehaviorSubject} from 'rxjs/BehaviorSubject';
 import { SendFaxDatabase } from './sendfax-database.component';
 import { SendFaxDataSource } from './sendfax-datasource.component';
 import { ContactService } from '../contact/contact.service';
-
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/observable/merge';
 import 'rxjs/add/operator/toPromise';
@@ -21,6 +20,7 @@ import 'rxjs/add/observable/fromEvent';
 import { AppService } from '../../app.service';
 import { TransmissionService } from '../transmission/transmission.service';
 import { DocumentService } from '../message/document/document.service';
+import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
 
 
 @Component({
@@ -30,15 +30,20 @@ import { DocumentService } from '../message/document/document.service';
 })
 
 export class FormsSendFaxComponent implements OnInit {
-  constructor(private sendfax_service: SendFaxService, private contact_service: ContactService, private http: Http
+  constructor(private sendfax_service: SendFaxService,
+    private dataSourceBuilder: NbTreeGridDataSourceBuilder<SendFax>,
+    private contact_service: ContactService, private http: Http
   ,private app_service: AppService, private documnet_service:DocumentService) { }
 
-  aSendFax: SendFaxDataSource | null;
+  aSendFax: SendFax[];
+  SendFaxDataSource: NbTreeGridDataSource<SendFax>;
+
   public length: number;
 
   private timerSubscription: any;
 
-  displayedColumns= ['ID', 'phone', 'Timestamp', 'username', 'status','operations'];
+  displayedColumns= ['ID', 'phone', 'Timestamp', 'username','status', 'Operations'];
+
 
   @ViewChild(MatSort, {static: false}) sort: MatSort;
 
@@ -49,15 +54,16 @@ export class FormsSendFaxComponent implements OnInit {
 
   ngOnInit() {
     this.getFaxlist();
-    
+
     setTimeout(() => {
       this.refreshData();
     }, 8000);
-    
+
   }
 
   async getFaxlist() {
     this.sendfax_service.get_OutFaxTransmissionList().then(data => {
+      this.aSendFax = data;
       this.length = data.length;
 
       data.forEach(element => {
@@ -65,8 +71,8 @@ export class FormsSendFaxComponent implements OnInit {
           element.contact_phone = 'N/A';
         }
       })
-      
-      this.aSendFax = new SendFaxDataSource(new SendFaxDatabase( data ), this.sort, this.paginator);
+
+      this.SendFaxDataSource = this.dataSourceBuilder.create(this.aSendFax.map(item => ({ data: item })),);
 
       //Sort the data automatically
 
@@ -88,6 +94,7 @@ export class FormsSendFaxComponent implements OnInit {
 
   private refreshData(): void {
     this.sendfax_service.get_OutFaxTransmissionList().then(data => {
+      this.aSendFax = data;
       this.length = data.length;
 
       data.forEach(element => {
@@ -95,8 +102,8 @@ export class FormsSendFaxComponent implements OnInit {
           element.contact_phone = 'N/A';
         }
       })
-      
-      this.aSendFax = new SendFaxDataSource(new SendFaxDatabase( data ), this.sort, this.paginator);
+
+      this.SendFaxDataSource = this.dataSourceBuilder.create(this.aSendFax.map(item => ({ data: item })),);
 
       // Observable for the filter
       Observable.fromEvent(this.filter.nativeElement, 'keyup')

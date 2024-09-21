@@ -9,6 +9,8 @@ import {
   NbSelectModule,
   NbListModule,
   NbIconModule,
+  NbInputModule,
+  NbTreeGridModule,
 } from '@nebular/theme';
 import { NgxEchartsModule } from 'ngx-echarts';
 
@@ -41,7 +43,10 @@ import { TranslateModule } from '@ngx-translate/core';
     MatPaginatorModule,
     MatSortModule,
     CdkTableModule,
-    TranslateModule
+    TranslateModule,
+    NbInputModule,
+    NbTreeGridModule
+
   ],
   declarations: [
     DashboardComponent,

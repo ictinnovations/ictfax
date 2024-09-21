@@ -11,7 +11,7 @@ import { MatButtonModule} from '@angular/material/button';
 import { MatNativeDateModule } from '@angular/material/core';
 import {MatDatepickerModule} from '@angular/material/datepicker'
 import { MatIconModule } from '@angular/material/icon';
-import { NbIconModule, NbCardModule } from '@nebular/theme';
+import { NbIconModule, NbCardModule, NbInputModule, NbTreeGridModule, NbButton, NbButtonModule } from '@nebular/theme';
 import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { PdfViewerModule } from 'ng2-pdf-viewer';
@@ -27,13 +27,16 @@ import { PdfViewerModule } from 'ng2-pdf-viewer';
     MatDatepickerModule,
     MatNativeDateModule,
     NbCardModule,
-    FormsModule, 
+    FormsModule,
     MatIconModule,
     ReactiveFormsModule,
     NbIconModule,
     MatButtonModule,
    TranslateModule,
-   PdfViewerModule
+   PdfViewerModule,
+   NbInputModule,
+   NbTreeGridModule,
+   NbButtonModule,
   ],
   declarations: [
     InFaxComponent,

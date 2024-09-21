@@ -10,13 +10,13 @@
           <div class="col-sm-6">
             <div class="form-group">
               <label for="name">{{'document.document_name' | translate}}:</label>
-              <input [(ngModel)]="document.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="name" required/>
+              <input [(ngModel)]="document.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="name" required/>
             </div>
           </div>
         </div>
       </nb-card-body>
     </nb-card>
-      
+
     <nb-card>
       <nb-card-header>
         {{'document.supported_document' | translate}}
@@ -24,10 +24,10 @@
       <nb-card-body>
         <div class="container">
           <div class="navbar navbar-default">
-          </div>  
-          <div class="row">            
+          </div>
+          <div class="row">
             <div class="col-md-3">
-              <input type="file" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" ng2FileSelect [uploader]="uploader" multiple  /><br/>
+              <input type="file" nbInput fullWidth accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" ng2FileSelect [uploader]="uploader" multiple  /><br/>
             </div>
           </div>
         </div>
@@ -35,7 +35,7 @@
           <br>
           <label style="color:red" text-center>{{'document.unsupported_file' | translate}}</label>
         </div>
-        <div *ngFor="let item of uploader.queue"> 
+        <div *ngFor="let item of uploader.queue">
           <br>
           <label>{{ item?.file?.name }}</label>
           <i class="nb-close smmmm" (click)="item.remove()"></i>
@@ -55,14 +55,14 @@
       <nb-card-body>
         <div class="col-sm-6">
           <div class="form-group">
-            <div>  
-              <label for="type">{{'outbound_fax.quality_type' | translate}}:</label>  
-              <select class = "form-control" name = "quality" [(ngModel)]= "document.quality" [ngModelOptions]="{standalone: true}" [disabled]="(document_id>0)">
-                <option value = "">{{'outbound_fax.choose' | translate}}</option>  
-                <option value="standard">{{'outbound_fax.standard' | translate}}</option>
-                <option value="fine">{{'outbound_fax.fine' | translate}}</option>
-                <option value="super">{{'outbound_fax.super' | translate}}</option>
-              </select>
+            <div>
+              <label for="type">{{'outbound_fax.quality_type' | translate}}:</label>
+              <nb-select class = "dddd" name = "quality" [(ngModel)]= "document.quality" [ngModelOptions]="{standalone: true}" [disabled]="(document_id>0)">
+                <nb-option value = "">{{'outbound_fax.choose' | translate}}</nb-option>
+                <nb-option value="standard">{{'outbound_fax.standard' | translate}}</nb-option>
+                <nb-option value="fine">{{'outbound_fax.fine' | translate}}</nb-option>
+                <nb-option value="super">{{'outbound_fax.super' | translate}}</nb-option>
+              </nb-select>
             </div>
           </div>
         </div>
@@ -77,7 +77,7 @@
         <div class="col-sm-6">
           <div class="form-group">
             <label for="description">{{'document.description' | translate}}:</label>
-            <input [(ngModel)]="document.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="description" required/>  
+            <input [(ngModel)]="document.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="description" required/>
           </div>
         </div>
       </nb-card-body>

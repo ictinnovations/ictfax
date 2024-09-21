@@ -2,7 +2,7 @@
   <nb-card-header>
     {{'dids.list' | translate}}
   </nb-card-header>
-  
+
   <nb-card-body>
     <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/new']"><i class="fa fa-plus"></i>{{'dids.add' | translate}}</button>&nbsp;
     <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/batch']">{{'dids.add_in_batch' | translate}}</button>
@@ -12,42 +12,32 @@
     <br>
     <br>
     <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aDID" matSort>
-        <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header >{{'dids.number' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let did">
-            {{did.phone}}
-          </mat-cell>
+      <table nbTreeGrid [nbTreeGrid]="DIDDataSource">
+        <ng-container nbTreeGridColumnDef="phone">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef >{{ 'dids.number' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row" >{{row.data.phone}}</td>
         </ng-container>
-        <ng-container matColumnDef="first_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'dids.title' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let did" style="text-align:left">
-            {{did.first_name}}
-          </mat-cell>
-        </ng-container>     
-        <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>{{'general.ID' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let did">
+        <ng-container nbTreeGridColumnDef="first_name">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'my_dids.title' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row" >{{row.data.first_name}}</td>
+        </ng-container>
+        <ng-container nbTreeGridColumnDef="Operations">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let did">
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/did/did/{{did.account_id}}" title="Edit"><i class="fa fa-pencil-square-o"></i></a></mat-icon>
+              <mat-icon><a routerLink="/pages/did/did/{{did.data.account_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
             </button>
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/did/did/{{did.account_id}}/assign" title="Assign"><i class="ion-forward"></i></a></mat-icon>
+              <mat-icon><a routerLink="/pages/did/did/{{did.data.account_id}}/assign" title="Assign"><i class="ion-forward"></i></a></mat-icon>
             </button>
-            <button mat-icon-button color="primary" style= "font-size:20px">  
-              <mat-icon style="color: red" (click)="showStaticModal(did.first_name, did.account_id)" ><i class="fa fa-trash" title="Delete"></i></mat-icon>                  
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon style="color:red" (click)="showStaticModal(deleteTemplate, did.data.account_id)" ><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>
             </button>
-          </mat-cell>
+          </td>
         </ng-container>
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
+        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+        <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+      </table>
     </div>
   </nb-card-body>
 </nb-card>

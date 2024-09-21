@@ -3,32 +3,32 @@
   <form id="form" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        {{'dids.dids_info' | translate}} 
+        {{ 'my_dids.did_info' | translate }}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-9">
             <div class="form-group">
-              <label for="range_from">{{'dids.range_from' | translate}}:</label>
-              <input [(ngModel)]="did.range_from" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="range_from" #range_from="ngModel" required/>
+              <label for="range_from">{{ 'dids.range_from' | translate }}:</label>
+              <input [(ngModel)]="did.range_from" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="range_from" #range_from="ngModel" required/>
               <div [hidden]="range_from.valid || range_from.pristine" class="alert alert-danger">
-                <div [hidden]="!range_from.hasError('required')">{{'dids.rang_form_req' | translate}}.</div>
+                <div [hidden]="!range_from.hasError('required')">{{ 'dids.range_from_req' | translate }}</div>
               </div>
             </div>
           </div>
           <div class="col-sm-9">
             <div class="form-group">
-              <label for="did_number">{{'dids.range_to' | translate}}:</label>
-              <input [(ngModel)]="did.range_to" [ngModelOptions]="{standalone: true}" type="text" class="form-control" #range_to="ngModel" id="range_to" required/>
+              <label for="did_number">{{ 'dids.range_to' | translate }}:</label>
+              <input [(ngModel)]="did.range_to" [ngModelOptions]="{standalone: true}" type="text" class="form-control" #range_to="ngModel" nbInput fullWidth id="range_to" required/>
               <div [hidden]="range_to.valid || range_to.pristine" class="alert alert-danger">
-                <div [hidden]="!range_to.hasError('required')">{{'dids.rang_to_req' | translate}}.</div>
+                <div [hidden]="!range_to.hasError('required')">{{ 'dids.range_to_req' | translate }}</div>
               </div>
             </div>
           </div>
           <div class="col-sm-9">
             <div class="form-group">
-              <label for="title">{{'dids.title' | translate}}:</label>
-              <input [(ngModel)]="did.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
+              <label for="title">{{ 'my_dids.title' | translate }}:</label>
+              <input [(ngModel)]="did.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="title" required/>
             </div>
           </div>
         </div>

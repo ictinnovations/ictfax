@@ -6,7 +6,8 @@ import { DIDDatabase } from './did-database.component';
 import { DIDDataSource } from './did-datasource.component';
 import { ModalComponent } from '../../modal.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
-
+import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+import { DID } from './did';
 @Component({
   selector: 'ngx-did-component',
   templateUrl: './did-component.html',
@@ -15,9 +16,13 @@ import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 
 
 export class FormsDIDComponent implements OnInit {
-  constructor(private did_service: DIDService, private modalService: NgbModal) { }
+  constructor(private did_service: DIDService,
+  private dataSourceBuilder: NbTreeGridDataSourceBuilder<DID>,
+  private modalService: NgbModal) { }
 
-  aDID: DIDDataSource | null;
+  aDID: DID[];
+  DIDDataSource: NbTreeGridDataSource<DID>;
+
   length: number;
   closeResult: any;
 
@@ -36,8 +41,11 @@ export class FormsDIDComponent implements OnInit {
 
   getDIDlist() {
     this.did_service.get_DIDList().then(data => {
+      this.aDID = data;
       this.length = data.length;
-      this.aDID = new  DIDDataSource(new DIDDatabase( data ), this.sort, this.paginator);
+
+      this.DIDDataSource = this.dataSourceBuilder.create(this.aDID.map(item => ({ data: item })),);
+
     });
   }
 

@@ -1,78 +1,58 @@
 <nb-card>
   <nb-card-header>
-    {{'contact.list' | translate}}
-    <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'contact.filter' | translate}}">
+    {{ 'contact.list' | translate }}
+    <input nbInput fullWidth placeholder="{{ 'contact.filter' | translate }}" [(ngModel)]="filter" class="form-control cc" style="float:right">
   </nb-card-header>
-  
+
   <nb-card-body>
-    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/contact/contacts/new']"><i class="fa fa-plus"></i> {{'contact.add' | translate}}</button>
-    <br>
-    <br>
-    <div class="example-container mat-elevation-z8">               
-      <mat-table #table [dataSource]="aContact" matSort>
-        <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.ID' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let contact">
-            {{contact.contact_id}}
-          </mat-cell>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px"[routerLink]="['/pages/contact/contacts/new']"><i class="fa fa-plus"></i> {{ 'contact.add' | translate }}</button>
+    <br><br>
+    <div class="example-container mat-elevation-z8">
+      <table nbTreeGrid [nbTreeGrid]="ContactDataSource">
+        <ng-container nbTreeGridColumnDef="ID">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.contact_id }}</td>
         </ng-container>
-        <ng-container matColumnDef="firstName">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'contact.fname' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let contact" style="text-align:left">
-            {{contact.first_name}}
-          </mat-cell>
+
+        <ng-container nbTreeGridColumnDef="firstName">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.fname' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.first_name }}</td>
         </ng-container>
-        <ng-container matColumnDef="lastName">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'contact.lname' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let contact" style="text-align:left">
-            {{contact.last_name}}
-          </mat-cell>
+
+        <ng-container nbTreeGridColumnDef="lastName">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.lname' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.last_name }}</td>
         </ng-container>
-        <ng-container matColumnDef="Phone" style="text-align:left">
-          <mat-header-cell *matHeaderCellDef mat-sort-header style="text-align:left">{{'contact.phone' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let contact" style="text-align:left">
-            {{contact.phone}}
-          </mat-cell>
+
+        <ng-container nbTreeGridColumnDef="Phone">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.phone' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.phone }}</td>
         </ng-container>
-        <ng-container matColumnDef="Email" style="text-align:left">
-          <mat-header-cell *matHeaderCellDef mat-sort-header style="text-align:left">{{'contact.email' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let contact" style="text-align:left">
-            {{contact.email}}
-          </mat-cell>
+
+        <ng-container nbTreeGridColumnDef="Email">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.email' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.email }}</td>
         </ng-container>
-        <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>{{'general.operations' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let contact">
-            <button mat-icon-button color="accent" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/contact/contacts/{{contact.contact_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
-            </button>
-            <!-- <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="showPDF(pdfViewer, document.document_id)" ><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon>                
-            </button> -->
-           
-            <!-- <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="downloadDocument(document.document_id)"><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon>
-            </button> -->
+        <ng-container nbTreeGridColumnDef="Operations">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let contact">
+          <button mat-icon-button color="accent" style= "font-size:20px">
+            <mat-icon><a routerLink="/pages/contact/contacts/{{contact.data.contact_id}}"title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon></button><button mat-icon-button style="font-size:20px"(click)="showStaticModal(contact.data.contact_id, contact.first_name)"><mat-icon style="color:red"><nb-icon icon="trash-2-outline"></nb-icon></mat-icon></button><button mat-icon-button color="primary" style= "font-size:20px"><mat-icon (click)="open(content, contact.contact_id)"><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon></button></td></ng-container>
+
             <button mat-icon-button style="font-size:20px">
-              <mat-icon style="color:red" (click)="showStaticModal(contact.first_name, contact.contact_id)"><nb-icon icon="trash-2-outline"></nb-icon></mat-icon>                
+              <mat-icon style="color:red" (click)="showStaticModal(contact.data.contact_id)">
+                <nb-icon icon="trash-2-outline"></nb-icon></mat-icon>
             </button>
-            <button mat-icon-button color="primary" style= "font-size:20px">  
-              <mat-icon (click)="open(content, contact.contact_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>                
+
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon (click)="open(content, contact.data.contact_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>
             </button>
-          </mat-cell>
-        </ng-container>
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
-    </div>
-  </nb-card-body>
-</nb-card>
+            <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+          <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    </nb-card-body>
+  </nb-card>
 
 <ng-template #content let-modal>
   <div class="modal-header">
@@ -82,46 +62,46 @@
     </button>
   </div>
   <div class="modal-body">
-       
+
     <div class="col-sm-12">
       <div class="form-group">
         <label for="title">{{ 'transmission.title' | translate}}:</label>
         <input  [(ngModel)]="sendfax.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
       </div>
     </div>
-    
+
 
     <div class="col-sm-12">
       <div class="form-group">
         <label for="phone">{{ 'transmission.phone_num_destination_contact' | translate}}:</label>
         <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
       </div>
-    </div> 
+    </div>
 
     <!-- <div class="col-sm-6">
       <div class="form-group">
-          
-          <label for="retry">{{ 'transmission.retry' | translate}}:</label>  
+
+          <label for="retry">{{ 'transmission.retry' | translate}}:</label>
           <select class = "form-control" [(ngModel)]= "sendfax.try_allowed" [ngModelOptions]="{standalone: true}" name = "try_allowed" >
-            <option value = "">Please Select an Option below</option>  
+            <option value = "">Please Select an Option below</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
           </select>
-        
+
       </div>
     </div> -->
-              
-    
+
+
     <div class="col-sm-12">
       <div class="form-group">
-        <label for="document">{{'transmission.fax.choose_document' | translate }}:</label>  
-        <select class = "form-control" name = "document" (change)="onSelect($event.target.value)">  
-          <option *ngFor="let document of documentArray; let i = index"   
-            [value] = "document.document_id" [selected]="i===documentArray.length-1">  
-            {{document.name}}  
-          </option>  
-        </select>  
+        <label for="document">{{'transmission.fax.choose_document' | translate }}:</label>
+        <select class = "form-control" name = "document" (change)="onSelect($event.target.value)">
+          <option *ngFor="let document of documentArray; let i = index"
+            [value] = "document.document_id" [selected]="i===documentArray.length-1">
+            {{document.name}}
+          </option>
+        </select>
       </div>
       </div>
 
@@ -133,8 +113,8 @@
       </select>
         </div>
       </div>
-    
-    
+
+
     <br>
     <div class="col-sm-6">
       <button type="button" class="btn btn-success" (click)="addSendDocument()" [disabled] = "(this.sendfax.phone === undefined || this.sendfax.phone === '')">{{ 'transmission.fax.title' | translate}}!</button>

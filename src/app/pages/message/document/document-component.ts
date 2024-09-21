@@ -16,6 +16,9 @@ import { SendFax } from '../../sendfax/sendfax';
 import { SendFaxService } from '../../sendfax/sendfax.service';
 import { DocumentProgram } from '../../campaigns/campaign';
 import { DID } from '../../did/did';
+import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+import { Document } from './document';
+
 
 @Component({
   selector: 'ngx-document-component',
@@ -26,12 +29,14 @@ import { DID } from '../../did/did';
 export class FormsDocumentComponent implements OnInit {
   constructor(
     private document_service: DocumentService,
+    private dataSourceBuilder: NbTreeGridDataSourceBuilder<Document>,
     private modalService: NgbModal,
     private contact_service: ContactService,
     private completerService: CompleterService,
     private sendfax_service: SendFaxService) { }
 
-  aDocument: DocumentDataSource | null;
+  aDocument: Document[];
+  DocumentDataSource: NbTreeGridDataSource<Document>;
   length: number;
   closeResult: any;
 
@@ -55,7 +60,8 @@ export class FormsDocumentComponent implements OnInit {
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
-  sendfax: SendFax = new SendFax;  
+
+  sendfax: SendFax = new SendFax;
 
   ngOnInit() {
     this.getDocumentlist();
@@ -66,7 +72,9 @@ export class FormsDocumentComponent implements OnInit {
   getDocumentlist() {
     this.document_service.get_DocumentList().then(data => {
       this.length = data.length;
-      this.aDocument = new DocumentDataSource(new DocumentDatabase( data ), this.sort, this.paginator);
+      this.aDocument = data as Document[];
+
+      this.DocumentDataSource = this.dataSourceBuilder.create(this.aDocument.map(item => ({data:item})),);
 
       //Sort the data automatically
 
@@ -136,7 +144,7 @@ export class FormsDocumentComponent implements OnInit {
 
   // Show Fax PDF
   showPDF(content, document_id) {
-    this.modalRef = this.modalService.open(content,  { size: 'md' });    
+    this.modalRef = this.modalService.open(content,  { size: 'md' });
     this.viewFaxDocument(document_id);
   }
   // Load PDF document

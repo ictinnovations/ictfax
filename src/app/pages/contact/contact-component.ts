@@ -14,7 +14,7 @@ import { DocumentService } from '../message/document/document.service';
 import { Document } from '../message/document/document';
 import { Contact } from './contact';
 import { DID } from '../did/did';
-
+import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
 
 
 @Component({
@@ -26,6 +26,7 @@ import { DID } from '../did/did';
 
 export class FormsContactComponent implements OnInit {
   constructor(private contact_service: ContactService,
+    private dataSourceBuilder: NbTreeGridDataSourceBuilder<Contact>,
      private modalService: NgbModal,
      private sendfax_service :SendFaxService,
      private document_service :DocumentService,
@@ -33,7 +34,9 @@ export class FormsContactComponent implements OnInit {
 
      ) { }
 
-  aContact: ContactDataSource | null;
+  aContact: Contact[];
+  ContactDataSource: NbTreeGridDataSource<Contact>;
+  contact: any;
   length: number;
   closeResult: any;
   contactArray: Contact[] =[]
@@ -55,7 +58,7 @@ export class FormsContactComponent implements OnInit {
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
 
-  sendfax: SendFax = new SendFax;  
+  sendfax: SendFax = new SendFax;
 
 
   ngOnInit() {
@@ -67,8 +70,10 @@ export class FormsContactComponent implements OnInit {
 
   getContactlist() {
     this.contact_service.get_ContactList().then(data => {
+      this.aContact = data;
       this.length = data.length;
-      this.aContact = new ContactDataSource(new ContactDatabase( data ), this.sort, this.paginator);
+
+      this.ContactDataSource = this.dataSourceBuilder.create(this.aContact.map(item => ({ data: item })),);
 
       // Observable for the filter
       Observable.fromEvent(this.filter.nativeElement, 'keyup')
@@ -99,14 +104,14 @@ export class FormsContactComponent implements OnInit {
   }
 
   // Modal related
-  showStaticModal(name, contact_id) {
+  showStaticModal(contact_id) {
     const activeModal = this.modalService.open(ModalComponent, {
       size: 'sm',
       container: 'nb-layout',
     });
 
     activeModal.componentInstance.modalHeader = 'Alert';
-    activeModal.componentInstance.modalContent = `Are you sure you want to delete ${name}?`;
+    activeModal.componentInstance.modalContent = `Are you sure you want to delete ${contact_id}?`;
     activeModal.result.then((result) => {
       this.closeResult = result;
       if (this.closeResult === 'yes_click') {
@@ -122,7 +127,7 @@ export class FormsContactComponent implements OnInit {
       this.documentProgram.document_id = contact_id;
       this.sendfax.phone=contact.phone
       this.modalRef = this.modalService.open(content, { size: 'md' });
-  
+
       this.modalRef.result.then((result) => {
         // Handle modal close result
       }, (reason) => {
@@ -191,7 +196,7 @@ export class FormsContactComponent implements OnInit {
     }
     console.log(this.documentProgram.document_id);
   }
-  
+
   getAccountList(){
     this.sendfax_service.get_AccountList().then(data => {
       this.accountArray =data;

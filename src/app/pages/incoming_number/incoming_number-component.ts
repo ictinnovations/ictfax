@@ -11,6 +11,8 @@ import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ModalComponent } from '../../modal.component';
 import { NbAuthService, NbAuthJWTToken } from '@nebular/auth';
 import { DIDService } from '../did/did.service';
+import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+import { User } from '../user/user';
 
 @Component({
   selector: 'ngx-incomingnumber-component',
@@ -23,7 +25,9 @@ export class FormsIncomingNumberComponent implements OnInit {
 
   auser: any;
 
-  constructor(private in_number_service: IncomingNumberService, private authService: NbAuthService
+  constructor(private in_number_service: IncomingNumberService,
+    private IncomingNumberdataSourceBuilder: NbTreeGridDataSourceBuilder<Number>,
+    private authService: NbAuthService
   , private did_service: DIDService) {
     this.authService.onTokenChange()
     .subscribe((token: NbAuthJWTToken,
@@ -34,7 +38,9 @@ export class FormsIncomingNumberComponent implements OnInit {
     });
   }
 
-  aNumbers: IncomingNumberDataSource | null;
+  aNumbers: Number[];
+  IncomingNumberDataSource: NbTreeGridDataSource<Number>;
+
   length: number;
   closeResult: any;
 
@@ -54,8 +60,10 @@ export class FormsIncomingNumberComponent implements OnInit {
 
   getIncomingNumberlist() {
     this.in_number_service.get_List(this.auser.user_id).then(data => {
+      this.aNumbers = data;
       this.length = data.length;
-      this.aNumbers = new IncomingNumberDataSource(new IncomingNumberDatabase( data ), this.sort, this.paginator);
+      this.IncomingNumberDataSource = this.IncomingNumberdataSourceBuilder.create(data.map(item => ({ data: item})));
+
     })
     .catch(this.handleError);
   }
@@ -63,7 +71,9 @@ export class FormsIncomingNumberComponent implements OnInit {
   getAllList() {
     this.did_service.get_DIDList().then(response => {
       this.length = response.length;
-      this.aNumbers = new IncomingNumberDataSource(new IncomingNumberDatabase( response ), this.sort, this.paginator);
+      // this.data = response;
+
+      this.IncomingNumberDataSource = this.IncomingNumberdataSourceBuilder.create(response.map(item => ({ data: item})));
     });
   }
 

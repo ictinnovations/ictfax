@@ -1,56 +1,42 @@
 <nb-card>
-    <nb-card-header>
-      {{'extension.list' | translate}}
-      <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'extension.filter' | translate}}">
-    </nb-card-header>
-  
-    <nb-card-body>
-        <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/extension/extension/new']"><i class="fa fa-plus"></i>{{'extension.add' | translate}}</button>
-        <br>
-        <br>
+  <nb-card-header>
+    {{ 'extension.list' | translate}}
+    <input style="float:right" class="form-control cc" nbInput fullWidth type="text" #filter placeholder="{{ 'extension.filter' | translate}}">
+  </nb-card-header>
+
+  <nb-card-body>
+      <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/extension/extension/new']"><i class="fa fa-plus"></i>{{ 'extension.add' | translate}}</button>
+      <br><br>
       <div class="example-container mat-elevation-z8">
-        <mat-table #table [dataSource]="aExtension" matSort>
-          <ng-container matColumnDef="ID">
-            <mat-header-cell *matHeaderCellDef mat-sort-header >{{'general.ID' | translate}}</mat-header-cell>
-            <mat-cell *matCellDef="let extension">
-              {{extension.account_id}}</mat-cell>
+        <table nbTreeGrid [nbTreeGrid]="ExtensionDataSource">
+          <ng-container nbTreeGridColumnDef="ID">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.account_id}}</td>
           </ng-container>
-          <ng-container matColumnDef="username">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>{{'extension.username' | translate}}</mat-header-cell>
-            <mat-cell *matCellDef="let extension" style="text-align:left">
-              {{extension.username}}</mat-cell>
+          <ng-container nbTreeGridColumnDef="username">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'extension.username' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.username}}</td>
+         </ng-container>
+         <ng-container nbTreeGridColumnDef="phone">
+           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'extension.phone' | translate}}</th>
+           <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.phone}}</td>
+         </ng-container>
+         <ng-container nbTreeGridColumnDef="email">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'extension.email' | translate}}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.email}}</td>
+        </ng-container>
+         <ng-container nbTreeGridColumnDef="Operations">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let extension">
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/extension/extension/{{extension.data.account_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon></button>
+            <button mat-icon-button style="font-size:20px"(click)="showStaticModal(extension.data.account_id, extension.first_name)">
+              <mat-icon style="color:red"><nb-icon icon="trash-2-outline"></nb-icon></mat-icon></button>
+            </td>
           </ng-container>
-          <ng-container matColumnDef="phone">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>{{'extension.phone' | translate}}</mat-header-cell>
-            <mat-cell *matCellDef="let extension" style="text-align:left">
-              {{extension.phone}}</mat-cell>
-          </ng-container>
-          <ng-container matColumnDef="email">
-            <mat-header-cell *matHeaderCellDef mat-sort-header>{{'extension.email' | translate}}</mat-header-cell>
-            <mat-cell *matCellDef="let extension" style="text-align:left">
-              {{extension.email}}</mat-cell>
-            </ng-container>                    
-            <ng-container cdkColumnDef="Operations">
-                <mat-header-cell *matHeaderCellDef>{{'general.operations' | translate}}</mat-header-cell>
-                <mat-cell *matCellDef="let extension">
-                <button mat-icon-button color="primary" style= "font-size:20px">
-                  <mat-icon><a routerLink="/pages/extension/extension/{{extension.account_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
-                </button>
-                <button mat-icon-button color="primary" style= "font-size:20px">  
-                  <mat-icon style="color: red" (click)="showStaticModal(extension.username, extension.account_id)" ><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>                  
-                </button>
-                </mat-cell>
-                </ng-container>
-        <mat-header-row
-          *matHeaderRowDef="displayedColumns"></mat-header-row>
-          <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-    </mat-table>
-    <mat-paginator #paginator
-    [length] = "length"
-    [pageIndex]="0"
-    [pageSize]="10"
-    [pageSizeOptions]="[5, 10, 25, 100]">
-  </mat-paginator>
-  </div>
-</nb-card-body>
-</nb-card>
+          <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+          <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+        </table>
+      </div>
+    </nb-card-body>
+  </nb-card>

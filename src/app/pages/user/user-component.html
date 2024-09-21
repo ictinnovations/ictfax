@@ -1,65 +1,50 @@
 <nb-card>
   <nb-card-header>
-    {{'user.list' | translate}}
-    <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'user.filter' | translate}}">
+    {{ 'User.list' | translate}}
+    <input style="float:right" class="form-control cc" nbInput fullWidth type="text" #filter placeholder="{{ 'User.filter' | translate}}">
   </nb-card-header>
 
   <nb-card-body>
-    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/user/user/new']"><i class="fa fa-plus"></i> {{'user.add' | translate}}</button>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/user/user/new']"><i class="fa fa-plus"></i> {{ 'User.add' | translate}}</button>
     <br>
     <br>
     <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aUser" matSort>
-        <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header >{{'general.ID' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user">
-            {{user.user_id}}
-          </mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="username">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.Username' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user" style="text-align:left">
-            {{user.username}}
-          </mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="first_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.fname' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user" style="text-align:left">
-            {{user.first_name}}
-          </mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="last_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.lname' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user" style="text-align:left">
-            {{user.last_name}}
-          </mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="email">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.Email' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user" style="text-align:left">
-            {{user.email}}
-          </mat-cell>
-        </ng-container>                    
-        <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>{{'general.operations' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user">
+      <table nbTreeGrid [nbTreeGrid]="UserDataSource">
+        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+        <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+          <ng-container nbTreeGridColumnDef="ID">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.user_id}}</td>
+          </ng-container>
+          <ng-container nbTreeGridColumnDef="username">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'user.Username' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.username}}</td>
+          </ng-container>
+          <ng-container nbTreeGridColumnDef="first_name">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'User.fname' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.first_name}}  {{row.data.last_name}}</td>
+          </ng-container>
+          <ng-container nbTreeGridColumnDef="last_name" >
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'user.lname'| translate}}</th>
+              <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.last_name}}
+            </td>
+          </ng-container>
+          <ng-container nbTreeGridColumnDef="email">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'User.email' | translate}}</th>
+              <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.email}}</td>
+          </ng-container>
+          <ng-container nbTreeGridColumnDef="Operations">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let user">
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/user/user/{{user.user_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
+              <mat-icon><a routerLink="/pages/user/user/{{user.data.user_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
             </button>
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon style="color: red" (click)="showStaticModal(user.first_name, user.user_id)" ><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>                  
+              <mat-icon style="color: red" (click)="showStaticModal(user.data.user_id)" ><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>
             </button>
-          </mat-cell>
+          </td>
         </ng-container>
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
+      </table>
     </div>
   </nb-card-body>
 </nb-card>

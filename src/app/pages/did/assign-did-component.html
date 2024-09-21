@@ -8,7 +8,7 @@
     <nb-card-body>
       <label for="phone">DID Number</label>
       <br>
-      <input [(ngModel)]="did.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" placeholder="DID Number" disabled id="phone" required/>
+      <input [(ngModel)]="did.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth  placeholder="DID Number" disabled id="phone" required/>
     </nb-card-body>
   </nb-card>
   <nb-card>
@@ -17,12 +17,12 @@
     </nb-card-header>
     <nb-card-body>
       <label>Assign to User</label><br>
-      <select class = "form-control" name = "user" [(ngModel)]= "selectedUsr">  
-        <option *ngFor="let user of user"  
-          [ngValue] = "user" >  
-          {{user.username}}  
-        </option>  
-      </select><br>
+      <nb-select class = "dddd" name = "user" [(ngModel)]= "selectedUsr">
+        <nb-option *ngFor="let user of user"
+          [ngValue] = "user" >
+          {{user.username}}
+        </nb-option>
+      </nb-select><br>
     </nb-card-body>
   </nb-card>
   <button type="button" class="btn btn-primary" (click)="forwardDID()">Submit</button>

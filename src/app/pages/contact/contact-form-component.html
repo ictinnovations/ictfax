@@ -10,13 +10,13 @@
           <div class="col-sm-6">
             <div class="form-group">
               <label for="first_name">{{'contact.fname' | translate}}:</label>
-              <input [(ngModel)]="contact.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
+              <input [(ngModel)]="contact.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="first_name" required/>
             </div>
           </div>
           <div class="col-sm-6">
               <div class="form-group">
                 <label for="last_name">{{'contact.lname' | translate}}:</label>
-                <input [(ngModel)]="contact.last_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="last_name" required/>  
+                <input [(ngModel)]="contact.last_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="last_name" required/>
               </div>
           </div>
         </div>
@@ -31,7 +31,7 @@
         <div class="col-sm-9">
           <div class="form-group">
             <label for="phone">{{'contact.phone' | translate}}:</label>
-            <input [(ngModel)]="contact.phone" [ngModelOptions]="{standalone: true}" type="phone" id="phone" class="form-control" pattern="[0-9]*" minlength="11" maxlength="16" #phone="ngModel" required/>
+            <input [(ngModel)]="contact.phone" [ngModelOptions]="{standalone: true}" type="phone" id="phone" class="form-control" nbInput fullWidth pattern="[0-9]*" minlength="11" maxlength="16" #phone="ngModel" required/>
             <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger">
               <div [hidden]="!phone.hasError('required')">{{'contact.required_error' | translate}}</div>
               <div [hidden]="!phone.hasError('pattern')">{{'contact.pattern_error' | translate}}</div>
@@ -41,7 +41,7 @@
         <div class="col-sm-9">
           <div class="form-group">
             <label for="email">{{'contact.email' | translate}}:</label>
-            <input [(ngModel)]="contact.email" [ngModelOptions]="{standalone: true}" type="email" id="email" class="form-control" #email="ngModel" email pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required/>
+            <input [(ngModel)]="contact.email" [ngModelOptions]="{standalone: true}" type="email" id="email" class="form-control" nbInput fullWidth #email="ngModel" email pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required/>
             <div class="md-errors-spacer" [hidden]="email.valid || email.untouched" class="alert alert-danger">
               <div  *ngIf="email.errors && email.errors.pattern">
                 {{'contact.invalid_email' | translate}}
@@ -52,7 +52,7 @@
         <div class="col-sm-12">
           <div class="form-group">
             <label for="address">{{'contact.address' | translate}}:</label>
-            <textarea [(ngModel)]="contact.address" [ngModelOptions]="{standalone: true}" type="text" id="address" class="form-control" required></textarea>
+            <textarea [(ngModel)]="contact.address" [ngModelOptions]="{standalone: true}" type="text" id="address" class="form-control" nbInput fullWidth required></textarea>
           </div>
         </div>
       </nb-card-body>
@@ -66,7 +66,7 @@
         <div class="col-sm-6">
           <div class="form-group">
             <label for="description">{{'contact.description' | translate}}:</label>
-            <input [(ngModel)]="this.contact.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="description" required/>
+            <input [(ngModel)]="this.contact.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="description" required/>
           </div>
         </div>
       </nb-card-body>

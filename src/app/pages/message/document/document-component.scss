@@ -3,7 +3,7 @@
   flex-direction: column;
   min-width: 300px;
 }
-  
+
 .example-header {
   min-height: 64px;
   display: flex;
@@ -11,7 +11,11 @@
   padding-left: 24px;
   font-size: 20px;
 }
-  
+
+.dddd{
+  width: 270px;
+}
+
 .mat-table {
   overflow: auto;
   max-height: 500px;

@@ -1,6 +1,6 @@
 <h3 style="text-align:center">{{'Dashboard.MainHeading' | translate}}</h3><br>
 <div class="row">
-  
+
   <div class="col-xxxl-6 col-md-6" (click)="cardClick('outfax')">
     <ngx-status-card title="{{'Dashboard.outbound_fax' | translate}}" type="primary">
       <span style="font-size:30px">{{outfax_total}}</span>
@@ -12,7 +12,7 @@
       <span style="font-size:30px">{{infax_total}}</span>
     </ngx-status-card>
   </div>
-  
+
 
   <div class="col-xxxl-6 col-md-6" (click)="cardClick('dids')">
     <ngx-status-card title="{{'Dashboard.dids' | translate}}" type="info">
@@ -103,73 +103,55 @@
   <nb-card-body>
     <br>
     <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aUser" matSort>
-        <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header >{{'general.ID' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user">
-            {{user.user_id}}</mat-cell>
+      <table nbTreeGrid [nbTreeGrid]="UserDataSource">
+          <ng-container nbTreeGridColumnDef="ID">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.user_id}}</td>
+          </ng-container>
+          <ng-container nbTreeGridColumnDef="username">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'user.Username' | translate }}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.username}}</td>
+          </ng-container>
+          <ng-container nbTreeGridColumnDef="first_name">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'user.fname' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.first_name}}</td>
+          </ng-container>
+          <ng-container nbTreeGridColumnDef="last_name">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'user.lname' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.last_name}}</td>
+          </ng-container>
+        <ng-container nbTreeGridColumnDef="email">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'User.email' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.email}}</td>
         </ng-container>
-        <ng-container matColumnDef="username">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.Username' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user" style="text-align:left">
-            {{user.username}}</mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="first_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.fname' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user" style="text-align:left">
-            {{user.first_name}}</mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="last_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.lname' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user" style="text-align:left">
-            {{user.last_name}}</mat-cell>
-        </ng-container>
-        <ng-container matColumnDef="email">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'user.Email' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let user" style="text-align:left">
-            {{user.email}}</mat-cell>
-        </ng-container>                    
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "user_length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
+        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+        <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+      </table>
+
     </div>
   </nb-card-body>
 </nb-card>
 
 <nb-card *ngIf="dids">
   <nb-card-header>
-    {{'dids.list' | translate}} 
+    {{'dids.list' | translate}}
   </nb-card-header>
-  
+
   <nb-card-body>
     <br>
     <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aDID" matSort>
-        <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header >{{'dids.number' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let did">
-            {{did.phone}}</mat-cell>
+      <table nbTreeGrid [nbTreeGrid]="DIDDataSource">
+        <ng-container nbTreeGridColumnDef="phone">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'dids.number' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data?.phone}}</td>
         </ng-container>
-        <ng-container matColumnDef="first_name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'dids.title' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let did" style="text-align:left">
-            {{did.first_name}}</mat-cell>
-        </ng-container>     
-        <mat-header-row *matHeaderRowDef="did_displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:did_displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "did_length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
+        <ng-container nbTreeGridColumnDef="first_name">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'my_dids.title' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.first_name}}</td>
+        </ng-container>
+        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="did_displayedColumns"></tr>
+        <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: did_displayedColumns"></tr>
+      </table>
     </div>
   </nb-card-body>
 </nb-card>
@@ -180,49 +162,43 @@
   </nb-card-header>
 
   <nb-card-body>
-    
+
     <br>
     <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aSendFax" matSort>
-        <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.ID' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax">
-            {{sendfax.transmission_id}}
-          </mat-cell>
+      <table nbTreeGrid [nbTreeGrid]="SendFaxDatabaSource">
+        <ng-container nbTreeGridColumnDef="ID">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'general.ID' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">
+            {{row.data.transmission_id}}
+          </td>
         </ng-container>
-        <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.phone_num' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax">
-            {{sendfax.contact_phone}}
-          </mat-cell>
+        <ng-container nbTreeGridColumnDef="phone">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.phone_num' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">
+            {{row.data.contact_phone}}
+          </td>
         </ng-container>
-        <ng-container matColumnDef="Timestamp">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.date_time' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax">
-            {{sendfax.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
-          </mat-cell>
+        <ng-container nbTreeGridColumnDef="Timestamp">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.date_time' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">
+            {{row.data.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
+          </td>
         </ng-container>
-        <ng-container matColumnDef="username">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.username' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax" style="text-align:left">
-            {{sendfax.username}}
-          </mat-cell>
+        <ng-container nbTreeGridColumnDef="username">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.username' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">
+            {{row.data.username}}
+          </td>
         </ng-container>
-        <ng-container matColumnDef="status">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.status' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax" style="text-align:left">
-            {{sendfax.status}}
-          </mat-cell>
+        <ng-container nbTreeGridColumnDef="status">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'transmission.status' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row" class="{{row.data.status}}">
+            {{row.data.status}}
+          </td>
         </ng-container>
-        <mat-header-row *matHeaderRowDef="senfax_displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:senfax_displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "sendfax_length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
+        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="senfax_displayedColumns"></tr>
+        <tr nbTreeGridRow *nbTreeGridRowDef="let row; Columns: senfax_displayedColumns"></tr>
+      </table>
     </div>
   </nb-card-body>
 </nb-card>
@@ -234,40 +210,37 @@
 
   <nb-card-body>
     <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aInFax" matSort>
-        <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.ID' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let infax">
-            {{infax.transmission_id}}
-          </mat-cell>
+      <table nbTreeGrid [nbTreeGrid]="InFaxDataSource">
+        <ng-container nbTreeGridColumnDef="ID">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'general.ID' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">
+            {{row.data.transmission_id}}
+          </td>
         </ng-container>
-        <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.phone_num' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let infax" style="text-align:left">
-            {{infax.contact_phone}}
-          </mat-cell>
+
+        <ng-container nbTreeGridColumnDef="phone">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.phone_num' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">
+            {{row.data.contact_phone}}
+          </td>
         </ng-container>
-        <ng-container matColumnDef="status">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.status' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let infax" style="text-align:left">
-            {{infax.status}}
-          </mat-cell>
+
+       <ng-container nbTreeGridColumnDef="status">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'transmission.status' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">
+            {{row.data.status}}
+          </td>
         </ng-container>
-        <ng-container matColumnDef="Timestamp">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.date_time' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let infax">
-            {{infax.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
-          </mat-cell>
+
+        <ng-container nbTreeGridColumnDef="Timestamp">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.date_time' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">
+            {{row.data.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
+          </td>
         </ng-container>
-        <mat-header-row *matHeaderRowDef="infax_displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:infax_displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "infax_length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
+        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="infax_displayedColumns"></tr>
+        <tr nbTreeGridRow *nbTreeGridRowDef="let row; Columns: infax_displayedColumns"></tr>
+      </table>
     </div>
   </nb-card-body>
 </nb-card>

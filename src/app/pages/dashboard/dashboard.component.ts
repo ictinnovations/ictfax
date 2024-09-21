@@ -17,6 +17,12 @@ import { InFaxDatabase } from '../infax/infax-database.component';
 import { InFaxService } from '../infax/infax.service';
 import { NbThemeService } from '@nebular/theme';
 import { takeWhile } from 'rxjs/operators' ;
+import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+import { SendFax } from '../sendfax/sendfax';
+import { DID } from '../did/did';
+import { User } from '../user/user';
+import { Transmission } from '../transmission/transmission';
+
 
 interface CardSettings {
   title: string;
@@ -39,28 +45,29 @@ export class DashboardComponent implements OnInit {
   did_total:any;
 
 
-  user_length:any;
-  aUser: UserDataSource | null;
-
   @ViewChild(MatSort, {static: false}) sort: MatSort;
 
   @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
+  aUser: User[];
+  UserDataSource: NbTreeGridDataSource<User>;
+  user_length:any;
   displayedColumns= ['ID', 'username', 'first_name', 'last_name', 'email'];
 
+
+  aDID: DID[];
+  DIDDataSource: NbTreeGridDataSource<DID>
+  did_length: any;
   did_displayedColumns= ['phone', 'first_name'];
 
-  aDID: DIDDataSource | null;
-  did_length: any;
-
-  aSendFax: SendFaxDataSource | null;
+  aSendFax: SendFax[];
+  SendFaxDatabaSource: NbTreeGridDataSource<SendFax>
   sendfax_length: any;
-
   senfax_displayedColumns= ['ID', 'phone', 'Timestamp', 'username', 'status'];
 
-  aInFax: InFaxDataSource | null;
+  aInFax: Transmission[];
+  InFaxDataSource: NbTreeGridDataSource<Transmission>;
   infax_length: any;
-
   infax_displayedColumns= ['ID', 'phone', 'status', 'Timestamp'];
 
   public outfax: any = true;
@@ -131,6 +138,10 @@ export class DashboardComponent implements OnInit {
   };
 
   constructor(private themeService: NbThemeService, private dashboard_service: DashboardService,
+  private dataSourceBuilderUser: NbTreeGridDataSourceBuilder<User>,
+  private dataSourceBuilderDid: NbTreeGridDataSourceBuilder<DID>,
+  private dataSourceBuilderSendFax: NbTreeGridDataSourceBuilder<SendFax>,
+  private InFaxDataSourceBuilder: NbTreeGridDataSourceBuilder<Transmission>,
   public router: Router, private user_service: AUserService, private did_service: DIDService, private sendfax_service: SendFaxService
   ,private infax_service: InFaxService) {
 
@@ -159,7 +170,7 @@ export class DashboardComponent implements OnInit {
   getStat(): void {
     this.dashboard_service.get_Statistics().then(response => {
     this.stat = response;
-   
+
     const infax_tot = this.abbreviateNumber(this.stat.transmission_inbound);
     const users_total = this.abbreviateNumber(this.stat.user_total);
     this.infax_total = infax_tot;
@@ -190,7 +201,10 @@ export class DashboardComponent implements OnInit {
   getUserlist() {
     this.user_service.get_UserList().then(data => {
       this.user_length = data.length;
-      this.aUser = new  UserDataSource(new UserDatabase( data ), this.sort, this.paginator);
+      this.aUser = data;
+
+      this.UserDataSource = this.dataSourceBuilderUser.create(this.aUser.map(item => ({ data: item })),);
+
 
       //Sort the data automatically
 
@@ -200,27 +214,33 @@ export class DashboardComponent implements OnInit {
       this.sort.sortChange.emit(sortState);
     })
   }
-  
+
   getDIDlist() {
     this.did_service.get_DIDList().then(data => {
       this.did_length = data.length;
-      this.aDID = new  DIDDataSource(new DIDDatabase( data ), this.sort, this.paginator);
+      this. aDID = data;
+
+      this.DIDDataSource = this.dataSourceBuilderDid.create(this.aDID.map(Item => ({ data: Item})),);
+
     });
   }
 
   getFaxlist() {
     this.sendfax_service.get_OutFaxTransmissionList().then(data => {
       this.sendfax_length = data.length;
+      this.aSendFax = data;
+
 
       data.forEach(element => {
         if (element.contact_phone == null) {
           element.contact_phone = 'N/A';
         }
-      })   
-      this.aSendFax = new SendFaxDataSource(new SendFaxDatabase( data ), this.sort, this.paginator);
+      })
+      this.SendFaxDatabaSource = this.dataSourceBuilderSendFax.create(this.aSendFax.map(Item => ({ data: Item })),);
+
     })
   }
-  
+
   getInFaxList() {
     this.infax_service.get_InFaxTransmissionList().then(data => {
       this.infax_length = data.length;
@@ -231,7 +251,8 @@ export class DashboardComponent implements OnInit {
         }
       })
 
-      this.aInFax = new InFaxDataSource(new InFaxDatabase( data ), this.sort, this.paginator);
+      this.InFaxDataSource = this.InFaxDataSourceBuilder.create(this.aInFax.map(Item => ({ data: Item })),);
+
     });
   }
 
@@ -248,7 +269,7 @@ export class DashboardComponent implements OnInit {
       this.outfax_total = tr_out;
     })
   }
-  
+
   cardClick(a) {
     if (a == 'infax') {
       this.infax = true;

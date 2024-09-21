@@ -3,14 +3,14 @@
   <form id="form" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        {{'extension.extension_info' | translate}} 
+        {{'extension.extension_info' | translate}}
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-6">
             <div class="form-group">
               <label for="username">{{'extension.username' | translate}}:</label>
-              <input [(ngModel)]="extension.username" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="username" required/>
+              <input [(ngModel)]="extension.username" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="username" required/>
             </div>
           </div>
         </div>
@@ -25,13 +25,13 @@
         <div class="col-sm-6">
           <div class="form-group">
             <label for="passwd">{{'extension.password' | translate}}</label>
-            <input type="password" class="form-control" id="passwd"
+            <input type="password" class="form-control" nbInput fullWidth id="passwd"
             required
             [(ngModel)]="extension.passwd" name="passwd">
           </div>
           <div class="form-group">
             <label for="passwd_pin">{{'extension.password_pin' | translate}}</label>
-            <input type="password" class="form-control" id="passwd_pin"
+            <input type="password" class="form-control" nbInput fullWidth id="passwd_pin"
             [(ngModel)]="extension.passwd_pin"
             required
             name="passwd_pin">
@@ -49,13 +49,13 @@
           <div class="col-sm-6">
             <div class="form-group">
               <label for="first_name">{{'extension.fname' | translate}}:</label>
-              <input [(ngModel)]="extension.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
+              <input [(ngModel)]="extension.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="first_name" required/>
             </div>
           </div>
           <div class="col-sm-6">
             <div class="form-group">
               <label for="last_name">{{'extension.lname' | translate}}:</label>
-              <input [(ngModel)]="extension.last_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="last_name" required/>  
+              <input [(ngModel)]="extension.last_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="last_name" required/>
             </div>
           </div>
         </div>
@@ -70,8 +70,8 @@
         <div class="col-sm-6">
           <div class="form-group">
             <label for="phone">{{'extension.phone' | translate}}:</label>
-            <input [(ngModel)]="extension.phone" [ngModelOptions]="{standalone: true}" type="phone" id="phone" class="form-control" pattern="[0-9]*" minlength="11" maxlength="16" #phone="ngModel" required/>
-            <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger"> 
+            <input [(ngModel)]="extension.phone" [ngModelOptions]="{standalone: true}" type="phone" id="phone" class="form-control" nbInput fullWidth pattern="[0-9]*" minlength="11" maxlength="16" #phone="ngModel" required/>
+            <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger">
               <div [hidden]="!phone.hasError('required')">{{'extension.required_error' | translate}}</div>
               <div [hidden]="!phone.hasError('pattern')">{{'extension.pattern_error' | translate}}</div>
             </div>
@@ -80,14 +80,14 @@
         <div class="col-sm-6">
           <div class="form-group">
             <label for="email">{{'extension.email' | translate}}:</label>
-            <input [(ngModel)]="extension.email" [ngModelOptions]="{standalone: true}" type="email" id="email" class="form-control" #email="ngModel" email pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required/>
+            <input [(ngModel)]="extension.email" [ngModelOptions]="{standalone: true}" type="email" id="email" class="form-control" nbInput fullWidth #email="ngModel" email pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required/>
             <div class="md-errors-spacer" [hidden]="email.valid || email.untouched" class="alert alert-danger">
               <div  *ngIf="email.errors && email.errors.pattern">
                 {{'extension.invalid_email' | translate}}
               </div>
               </div>
-            </div>     
-        </div> 
+            </div>
+        </div>
   </nb-card-body>
 </nb-card>
     <nb-card>
@@ -106,7 +106,7 @@
         </div>
       </nb-card-body>
     </nb-card>
-    
+
     <nb-card>
       <nb-card-header>
         {{'extension.settings' | translate}}

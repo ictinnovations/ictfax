@@ -1,58 +1,51 @@
 <nb-card>
   <nb-card-header>
-    {{'document.list' | translate}}
-    <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'document.filter' | translate}}">
+    {{ 'document.list' | translate}}
+    <input style="float:right" class="form-control cc" nbInput fullWidth type="text" #filter placeholder="{{ 'document.filter' | translate}}">
   </nb-card-header>
 
   <nb-card-body>
-    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/message/document/new']"><i class="fa fa-plus"></i>{{'document.add' | translate}}</button>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/message/document/new']"><i class="fa fa-plus"></i> {{ 'document.add' | translate}}</button>
     <br>
     <br>
     <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aDocument" matSort>
-        <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.ID' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let document">
-            {{document.document_id}}</mat-cell>
+      <table nbTreeGrid [nbTreeGrid]="DocumentDataSource">
+        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+        <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+        <ng-container nbTreeGridColumnDef="ID">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate }}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.document_id }}</td>
         </ng-container>
-        <ng-container matColumnDef="name">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'document.document_name' | translate}}:</mat-header-cell>
-          <mat-cell *matCellDef="let document" style="text-align:left">
-            {{document.name}}</mat-cell>
+        <ng-container nbTreeGridColumnDef="name">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'document.document_name' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.name }}</td>
         </ng-container>
-        <ng-container cdkColumnDef="Operations">
-          <mat-header-cell *matHeaderCellDef>{{'general.operations' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let document">
+        <ng-container nbTreeGridColumnDef="Operations">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let document">
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/message/document/{{document.document_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
+              <mat-icon><a routerLink="/pages/message/document/{{document.data.document_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
             </button>
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="showPDF(pdfViewer, document.document_id)" ><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon>                
+              <mat-icon (click)="showPDF(pdfViewerTemplate, document.data.document_id)" ><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon>
             </button>
-           
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="downloadDocument(document.document_id)"><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon>
+              <mat-icon (click)="downloadDocument(document.data.document_id)"><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon>
             </button>
-            <button mat-icon-button color="primary" style= "font-size:20px">  
-              <mat-icon style="color:red" (click)="showStaticModal(document.name, document.document_id)" ><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>                
+            <button mat-icon-button color="primary" style="font-size:20px">
+              <mat-icon style="color:red" (click)="showStaticModal(document.data.name, document.data.document_id)"><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>
             </button>
-            <button mat-icon-button color="primary" style= "font-size:20px">  
-              <mat-icon (click)="open(content, document.document_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>                
+
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon (click)="open(content, document.data.document_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>
             </button>
-          </mat-cell>
+          </td>
         </ng-container>
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
+      </table>
     </div>
   </nb-card-body>
 </nb-card>
+
 <ng-template #content let-modal>
   <div class="modal-header">
     <h4 class="modal-title" id="modal-basic-title">{{ 'transmission.fax.title' | translate}}</h4>
@@ -61,7 +54,7 @@
     </button>
   </div>
   <div class="modal-body">
-       
+
     <div class="col-sm-12">
       <div class="form-group">
         <label for="title">{{ 'transmission.title' | translate}}:</label>
@@ -74,12 +67,12 @@
         <label for="phone">{{ 'transmission.phone_num_destination_contact' | translate}}:</label>
         <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
       </div>
-    </div> 
+    </div>
 
     <div class="col-sm-12">
       <div class="form-grpup">
         <label for="account">{{'account.choose_caller_id' | translate}}:</label>
-        <select class="form-control" name="account" (change)="onSelectedAccount($event.target.value)">
+        <select class="form-control"  name="account" (change)="onSelectedAccount($event.target.value)">
        <option *ngFor="let acc of accountArray; let i = index" [value]=" acc.account_id" [selected]="i === accountArray.length-1">{{acc.phone}}</option>
         </select>
       </div>
@@ -87,18 +80,18 @@
 
     <!-- <div class="col-sm-6">
       <div class="form-group">
-          
-          <label for="retry">{{ 'transmission.retry' | translate}}:</label>  
+
+          <label for="retry">{{ 'transmission.retry' | translate}}:</label>
           <select class = "form-control" [(ngModel)]= "sendfax.try_allowed" [ngModelOptions]="{standalone: true}" name = "try_allowed" >
-            <option value = "">Please Select an Option below</option>  
+            <option value = "">Please Select an Option below</option>
             <option value="1">1</option>
             <option value="2">2</option>
             <option value="3">3</option>
           </select>
-        
+
       </div>
     </div> -->
-    
+
     <br>
     <div class="col-sm-6">
       <button type="button" class="btn btn-success" (click)="addSendDocument()" [disabled] = "(this.sendfax.phone === undefined || this.sendfax.phone === '')">{{ 'transmission.fax.title' | translate}}!</button>

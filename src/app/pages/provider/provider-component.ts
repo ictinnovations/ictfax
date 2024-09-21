@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef, Provider } from '@angular/core';
 import { ProviderService } from './provider.service';
 import { MatPaginator } from '@angular/material/paginator';
 import { MatSort } from '@angular/material/sort';
@@ -8,6 +8,8 @@ import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ModalComponent } from '../../modal.component';
 import { Observable } from 'rxjs/Rx';
 
+import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
+
 @Component({
   selector: 'ngx-provider-component',
   templateUrl: './provider-component.html',
@@ -16,9 +18,13 @@ import { Observable } from 'rxjs/Rx';
 
 
 export class FormsProviderComponent implements OnInit {
-  constructor(private provider_service: ProviderService, private modalService: NgbModal) { }
+  constructor(private provider_service: ProviderService,
+    private dataSourceBulider:  NbTreeGridDataSourceBuilder<Provider>,
+    private modalService: NgbModal) { }
 
-  aProvider: ProviderDataSource | null;
+  aProvider: Provider[];
+  ProviderDataSource: NbTreeGridDataSource<Provider>;
+
   length: number;
   closeResult: any;
 
@@ -36,8 +42,10 @@ export class FormsProviderComponent implements OnInit {
 
   getProviderlist() {
     this.provider_service.get_ProviderList().then(data => {
+      // this.aProvider = data;
       this.length = data.length;
-      this.aProvider = new ProviderDataSource(new ProviderDatabase( data ), this.sort, this.paginator);
+
+      this.ProviderDataSource = this.dataSourceBulider.create(this.aProvider.map(item => ({ data: item })));
 
       // Observable for the filter
       Observable.fromEvent(this.filter.nativeElement, 'keyup')

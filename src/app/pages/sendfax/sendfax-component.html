@@ -1,65 +1,45 @@
 <nb-card>
   <nb-card-header>
     {{'outbound_fax.title' | translate}}
-    <input style="float:right" class="form-control cc" type="text" #filter placeholder="{{'outbound_fax.filter' | translate}}">
+    <input style="float:right" class="form-control cc" nbInput fullWidth type="text" #filter placeholder="{{'outbound_fax.filter' | translate }}">
   </nb-card-header>
 
   <nb-card-body>
-    
+
     <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/sendfax/sendfax/new']"><i class="fa fa-plus"></i> {{'outbound_fax.new' | translate}}</button>
     <br><br>
     <div class="example-container mat-elevation-z8">
-      <mat-table #table [dataSource]="aSendFax" matSort>
-        <ng-container matColumnDef="ID">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.ID' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax">
-            {{sendfax.transmission_id}}
-          </mat-cell>
+      <table nbTreeGrid [nbTreeGrid]="SendFaxDataSource">
+        <ng-container nbTreeGridColumnDef="ID">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.transmission_id }}</td>
         </ng-container>
-        <ng-container matColumnDef="phone">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.phone_num' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax">
-            {{sendfax.contact_phone}}
-          </mat-cell>
+        <ng-container nbTreeGridColumnDef="phone">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.phone_num' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.contact_phone}}</td>
         </ng-container>
-        <ng-container matColumnDef="Timestamp">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.date_time' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax">
-            {{sendfax.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
-          </mat-cell>
+        <ng-container nbTreeGridColumnDef="Timestamp">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.date_time' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}</td>
         </ng-container>
-        <ng-container matColumnDef="username">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.username' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax" style="text-align:left">
-            {{sendfax.username}}
-          </mat-cell>
+        <ng-container nbTreeGridColumnDef="username">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.username' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.username}}</td>
         </ng-container>
-        <ng-container matColumnDef="status">
-          <mat-header-cell *matHeaderCellDef mat-sort-header>{{'outbound_fax.status' | translate}}</mat-header-cell>
-          <mat-cell *matCellDef="let sendfax" style="text-align:left">
-            {{sendfax.status}}
-          </mat-cell>
+        <ng-container nbTreeGridColumnDef="status">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'transmission.status' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.status}}</td>
         </ng-container>
-        <ng-container matColumnDef="operations">
-        <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.operations' | translate}}</mat-header-cell>
-        <mat-cell *matCellDef="let sendfax">
-        <!-- <button mat-icon-button color="primary" style="font-size:20px">
-        <mat-icon (click)="downloadDocument(sendfax.doument_id)"> <nb-icon icon="download-outline" title="download"></nb-icon></mat-icon>
-        </button> -->
-       <button mat-icon-button color="warn" style="font-size:20px">
-        <mat-icon (click)="deleteDocument(sendfax.transmission_id)"> <nb-icon icon="trash-2-outline" title="delete"></nb-icon></mat-icon>     
-        </button>  
-      </mat-cell>
-        </ng-container>
-        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
-        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
-      </mat-table>
-      <mat-paginator #paginator
-        [length] = "length"
-        [pageIndex]="0"
-        [pageSize]="10"
-        [pageSizeOptions]="[5, 10, 25, 100]">
-      </mat-paginator>
-    </div>
-  </nb-card-body>
+        <ng-container nbTreeGridColumnDef="Operations">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let sendfax">
+         <button mat-icon-button color="warn" style="font-size:20px">
+        <mat-icon (click)="deleteDocument(sendfax.data.transmission_id)"> <nb-icon icon="trash-2-outline" title="delete"></nb-icon></mat-icon>
+        </button></td>
+    </ng-container>
+    <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+    <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+  </table>
+</div>
+</nb-card-body>
 </nb-card>
