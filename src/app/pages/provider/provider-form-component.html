@@ -29,20 +29,19 @@
   </nb-card-header>
   <nb-card-body>
       <div class="col-sm-6">
-          <div class="form-group">
-              <div>
-                  <label for="type">{{ 'provider.gateway_type' | translate}}:</label>
-                      <nb-select class = "dddd" name = "type" [(ngModel)]= "provider.type" [ngModelOptions]="{standalone: true}" [disabled]="(provider_id>0)">
-                      <nb-option value = "">Please Select an Option below</nb-option>
-                      <nb-option value="sip">SIP</nb-option>
-                      <nb-option value="smtp">SMTP</nb-option>
-                        </nb-select>
-                  </div>
+        <div class="form-group">
+          <div>
+            <label for="type">{{ 'provider.gateway_type' | translate}}:</label>
+            <nb-select class = "dddd" name = "type" [(ngModel)]= "provider.type" [ngModelOptions]="{standalone: true}" [disabled]="(provider_id>0)">
+              <nb-option value = "">Please Select an Option below</nb-option>
+              <nb-option value="sip">SIP</nb-option>
+              <nb-option value="smtp">SMTP</nb-option>
+            </nb-select>
           </div>
         </div>
-      </nb-card-body>
-    </nb-card>
-
+     </div>
+  </nb-card-body>
+</nb-card>
 <nb-card>
     <nb-card-header>
       {{ 'provider.access_credentials' | translate}}

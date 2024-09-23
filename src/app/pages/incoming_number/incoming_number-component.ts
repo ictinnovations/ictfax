@@ -71,8 +71,6 @@ export class FormsIncomingNumberComponent implements OnInit {
   getAllList() {
     this.did_service.get_DIDList().then(response => {
       this.length = response.length;
-      // this.data = response;
-
       this.IncomingNumberDataSource = this.IncomingNumberdataSourceBuilder.create(response.map(item => ({ data: item})));
     });
   }

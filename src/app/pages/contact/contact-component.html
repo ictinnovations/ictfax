@@ -13,22 +13,18 @@
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.contact_id }}</td>
         </ng-container>
-
         <ng-container nbTreeGridColumnDef="firstName">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.fname' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.first_name }}</td>
         </ng-container>
-
         <ng-container nbTreeGridColumnDef="lastName">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.lname' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.last_name }}</td>
         </ng-container>
-
         <ng-container nbTreeGridColumnDef="Phone">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.phone' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.phone }}</td>
         </ng-container>
-
         <ng-container nbTreeGridColumnDef="Email">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.email' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.email }}</td>
@@ -38,86 +34,71 @@
           <td nbTreeGridCell *nbTreeGridCellDef="let contact">
           <button mat-icon-button color="accent" style= "font-size:20px">
             <mat-icon><a routerLink="/pages/contact/contacts/{{contact.data.contact_id}}"title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon></button><button mat-icon-button style="font-size:20px"(click)="showStaticModal(contact.data.contact_id, contact.first_name)"><mat-icon style="color:red"><nb-icon icon="trash-2-outline"></nb-icon></mat-icon></button><button mat-icon-button color="primary" style= "font-size:20px"><mat-icon (click)="open(content, contact.contact_id)"><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon></button></td></ng-container>
-
             <button mat-icon-button style="font-size:20px">
               <mat-icon style="color:red" (click)="showStaticModal(contact.data.contact_id)">
                 <nb-icon icon="trash-2-outline"></nb-icon></mat-icon>
-            </button>
-
-            <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="open(content, contact.data.contact_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>
-            </button>
-            <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
-          <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
-        </table>
-      </div>
-    </nb-card-body>
-  </nb-card>
-
-<ng-template #content let-modal>
-  <div class="modal-header">
-    <h4 class="modal-title" id="modal-basic-title">{{ 'transmission.fax.title' | translate}}</h4>
-    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
-      <span aria-hidden="true">&times;</span>
-    </button>
-  </div>
-  <div class="modal-body">
-
-    <div class="col-sm-12">
-      <div class="form-group">
-        <label for="title">{{ 'transmission.title' | translate}}:</label>
-        <input  [(ngModel)]="sendfax.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
-      </div>
-    </div>
-
-
-    <div class="col-sm-12">
-      <div class="form-group">
-        <label for="phone">{{ 'transmission.phone_num_destination_contact' | translate}}:</label>
-        <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
-      </div>
-    </div>
-
-    <!-- <div class="col-sm-6">
-      <div class="form-group">
-
-          <label for="retry">{{ 'transmission.retry' | translate}}:</label>
-          <select class = "form-control" [(ngModel)]= "sendfax.try_allowed" [ngModelOptions]="{standalone: true}" name = "try_allowed" >
-            <option value = "">Please Select an Option below</option>
-            <option value="1">1</option>
-            <option value="2">2</option>
-            <option value="3">3</option>
-          </select>
-
-      </div>
-    </div> -->
-
-
-    <div class="col-sm-12">
-      <div class="form-group">
-        <label for="document">{{'transmission.fax.choose_document' | translate }}:</label>
-        <select class = "form-control" name = "document" (change)="onSelect($event.target.value)">
-          <option *ngFor="let document of documentArray; let i = index"
-            [value] = "document.document_id" [selected]="i===documentArray.length-1">
-            {{document.name}}
-          </option>
-        </select>
-      </div>
-      </div>
-
-      <div class="col-sm-12">
-        <div class="form-group">
-      <label for="account">{{'account.choose_caller_id' | translate}}:</label>
-      <select class="form-control" name="account" (change)="onSelectedAccount($event.target.value)">
-        <option *ngFor="let acc of accountArray; let i = index" [value]="acc.account_id" [selected]="i === accountArray.length-1">{{acc.phone}}</option>
-      </select>
+              </button>
+              <button mat-icon-button color="primary" style= "font-size:20px">
+                <mat-icon (click)="open(content, contact.data.contact_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>
+              </button>
+              <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+              <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+            </table>
+          </div>
+        </nb-card-body>
+      </nb-card>
+      <ng-template #content let-modal>
+        <div class="modal-header">
+          <h4 class="modal-title" id="modal-basic-title">{{ 'transmission.fax.title' | translate}}</h4>
+          <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+            <span aria-hidden="true">&times;</span></button>
+          </div>
+          <div class="modal-body">
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="title">{{ 'transmission.title' | translate}}:</label>
+                <input  [(ngModel)]="sendfax.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
+              </div>
+            </div>
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="phone">{{ 'transmission.phone_num_destination_contact' | translate}}:</label>
+                <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
+              </div>
+            </div>
+            <!-- <div class="col-sm-6">
+              <div class="form-group">
+                <label for="retry">{{ 'transmission.retry' | translate}}:</label>
+                <select class = "form-control" [(ngModel)]= "sendfax.try_allowed" [ngModelOptions]="{standalone: true}" name = "try_allowed" >
+                  <option value = "">Please Select an Option below</option>
+                  <option value="1">1</option>
+                  <option value="2">2</option>
+                  <option value="3">3</option>
+                </select>
+              </div>
+            </div> -->
+            <div class="col-sm-12">
+              <div class="form-group">
+                <label for="document">{{'transmission.fax.choose_document' | translate }}:</label>
+                <select class = "form-control" name = "document" (change)="onSelect($event.target.value)">
+                  <option *ngFor="let document of documentArray; let i = index"
+                  [value] = "document.document_id" [selected]="i===documentArray.length-1">
+                  {{document.name}}
+                </option>
+              </select>
+            </div>
+          </div>
+          <div class="col-sm-12">
+            <div class="form-group">
+              <label for="account">{{'account.choose_caller_id' | translate}}:</label>
+              <select class="form-control" name="account" (change)="onSelectedAccount($event.target.value)">
+                <option *ngFor="let acc of accountArray; let i = index" [value]="acc.account_id" [selected]="i === accountArray.length-1">{{acc.phone}}</option>
+              </select>
+            </div>
+          </div>
+          <br>
+          <div class="col-sm-6">
+            <button type="button" class="btn btn-success" (click)="addSendDocument()" [disabled] = "(this.sendfax.phone === undefined || this.sendfax.phone === '')">{{ 'transmission.fax.title' | translate}}!</button>
+          </div>
         </div>
-      </div>
-
-
-    <br>
-    <div class="col-sm-6">
-      <button type="button" class="btn btn-success" (click)="addSendDocument()" [disabled] = "(this.sendfax.phone === undefined || this.sendfax.phone === '')">{{ 'transmission.fax.title' | translate}}!</button>
-    </div>
-  </div>
-</ng-template>
+      </ng-template>

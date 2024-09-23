@@ -73,7 +73,6 @@ export class FormsDocumentComponent implements OnInit {
     this.document_service.get_DocumentList().then(data => {
       this.length = data.length;
       this.aDocument = data as Document[];
-
       this.DocumentDataSource = this.dataSourceBuilder.create(this.aDocument.map(item => ({data:item})),);
 
       //Sort the data automatically

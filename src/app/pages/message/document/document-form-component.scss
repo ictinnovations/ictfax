@@ -1,13 +1,26 @@
-.my-drop-zone { border: dotted 3px lightgray; }
+.my-drop-zone {
+  border: dotted 3px lightgray;
+}
 
-.nv-file-over { border: dotted 3px red; } /* Default class applied to drop zones on over */
+.nv-file-over {
+  border: dotted 3px red;
+}
 
-.another-file-over-class { border: dotted 3px green; }
+/* Default class applied to drop zones on over */
 
-html, body { height: 100%; }
-.dddd{
+.another-file-over-class {
+  border: dotted 3px green;
+}
+
+html,
+body {
+  height: 100%;
+}
+
+.dddd {
   width: 300px;
 }
+
 .smmmm {
   font-size: 25px;
   display: inline;

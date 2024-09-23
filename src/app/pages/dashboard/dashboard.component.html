@@ -131,12 +131,9 @@
     </div>
   </nb-card-body>
 </nb-card>
-
 <nb-card *ngIf="dids">
-  <nb-card-header>
-    {{'dids.list' | translate}}
+  <nb-card-header>{{'dids.list' | translate}}
   </nb-card-header>
-
   <nb-card-body>
     <br>
     <div class="example-container mat-elevation-z8">
@@ -155,46 +152,32 @@
     </div>
   </nb-card-body>
 </nb-card>
-
 <nb-card *ngIf="outfax">
-  <nb-card-header>
-    {{'Dashboard.outbound_fax' | translate}}
+  <nb-card-header>{{'Dashboard.outbound_fax' | translate}}
   </nb-card-header>
-
   <nb-card-body>
-
     <br>
     <div class="example-container mat-elevation-z8">
       <table nbTreeGrid [nbTreeGrid]="SendFaxDatabaSource">
         <ng-container nbTreeGridColumnDef="ID">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'general.ID' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.transmission_id}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.transmission_id}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="phone">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.phone_num' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.contact_phone}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.contact_phone}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="Timestamp">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.date_time' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="username">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.username' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.username}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.username}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="status">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'transmission.status' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row" class="{{row.data.status}}">
-            {{row.data.status}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row" class="{{row.data.status}}"> {{row.data.status}} </td>
         </ng-container>
         <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="senfax_displayedColumns"></tr>
         <tr nbTreeGridRow *nbTreeGridRowDef="let row; Columns: senfax_displayedColumns"></tr>
@@ -202,10 +185,8 @@
     </div>
   </nb-card-body>
 </nb-card>
-
 <nb-card *ngIf="infax">
-  <nb-card-header>
-    {{'general.inbound_fax' | translate}}
+  <nb-card-header>{{'general.inbound_fax' | translate}}
   </nb-card-header>
 
   <nb-card-body>
@@ -213,30 +194,19 @@
       <table nbTreeGrid [nbTreeGrid]="InFaxDataSource">
         <ng-container nbTreeGridColumnDef="ID">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'general.ID' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.transmission_id}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.transmission_id}}</td>
         </ng-container>
-
         <ng-container nbTreeGridColumnDef="phone">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.phone_num' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.contact_phone}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.contact_phone}} </td>
         </ng-container>
-
        <ng-container nbTreeGridColumnDef="status">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'transmission.status' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.status}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.status}}</td>
         </ng-container>
-
         <ng-container nbTreeGridColumnDef="Timestamp">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.date_time' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}</td>
         </ng-container>
         <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="infax_displayedColumns"></tr>
         <tr nbTreeGridRow *nbTreeGridRowDef="let row; Columns: infax_displayedColumns"></tr>

@@ -3,7 +3,7 @@
   flex-direction: column;
   min-width: 300px;
 }
-  
+
 .example-header {
   min-height: 64px;
   display: flex;
@@ -30,8 +30,8 @@
   padding: 0;
   position: absolute;
   width: 1px;
-  }
-  
+}
+
 .example-button-row {
   display: flex;
   align-items: center;
@@ -43,6 +43,7 @@
   flex-grow: 1;
   margin-left: 32px;
 }
+
 a:hover {
   color: rgb(10, 238, 10);
   // color: darkblue;

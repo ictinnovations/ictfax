@@ -12,8 +12,8 @@
   font-size: 20px;
 }
 
-.dddd{
-  width: 270px;
+.dddd {
+  width: 300px;
 }
 
 .mat-table {
@@ -68,35 +68,39 @@ a:hover {
 .pagination {
   display: block;
 }
-.pagination .prv-page{
+
+.pagination .prv-page {
   position: relative;
   padding: 0;
   margin: 0;
   line-height: 15px;
-  border: 0px;
+  border: 0;
   background: none;
   height: 20px;
   font-size: 11px;
   font-weight: 600;
   float: left;
 }
-.pagination .nxt-page{
+
+.pagination .nxt-page {
   position: relative;
   padding: 0;
   margin: 0;
   line-height: 15px;
-  border: 0px;
+  border: 0;
   background: none;
   height: 20px;
   font-size: 11px;
   font-weight: 600;
   float: right;
 }
+
 .pagination .all-pages {
   text-align: center;
   font-size: 11px;
   font-weight: 600;
 }
+
 .pdf-loading {
   position: absolute;
   top: 0;
@@ -106,6 +110,7 @@ a:hover {
   text-align: center;
   font-size: 16px;
 }
-.ng2-pdf-viewer-container[_ngcontent-yff-c423]{
+
+.ng2-pdf-viewer-container[_ngcontent-yff-c423] {
   overflow-x: hi;
 }

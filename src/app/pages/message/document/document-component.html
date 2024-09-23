@@ -24,18 +24,13 @@
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let document">
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon><a routerLink="/pages/message/document/{{document.data.document_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
-            </button>
+              <mat-icon><a routerLink="/pages/message/document/{{document.data.document_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon></button>
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="showPDF(pdfViewerTemplate, document.data.document_id)" ><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon>
-            </button>
+              <mat-icon (click)="showPDF(pdfViewerTemplate, document.data.document_id)" ><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon></button>
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="downloadDocument(document.data.document_id)"><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon>
-            </button>
+              <mat-icon (click)="downloadDocument(document.data.document_id)"><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon></button>
             <button mat-icon-button color="primary" style="font-size:20px">
-              <mat-icon style="color:red" (click)="showStaticModal(document.data.name, document.data.document_id)"><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon>
-            </button>
-
+              <mat-icon style="color:red" (click)="showStaticModal(document.data.name, document.data.document_id)"><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon></button>
             <button mat-icon-button color="primary" style= "font-size:20px">
               <mat-icon (click)="open(content, document.data.document_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>
             </button>
@@ -45,7 +40,6 @@
     </div>
   </nb-card-body>
 </nb-card>
-
 <ng-template #content let-modal>
   <div class="modal-header">
     <h4 class="modal-title" id="modal-basic-title">{{ 'transmission.fax.title' | translate}}</h4>
@@ -54,21 +48,18 @@
     </button>
   </div>
   <div class="modal-body">
-
     <div class="col-sm-12">
       <div class="form-group">
         <label for="title">{{ 'transmission.title' | translate}}:</label>
         <input  [(ngModel)]="sendfax.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
       </div>
     </div>
-
     <div class="col-sm-12">
       <div class="form-group">
         <label for="phone">{{ 'transmission.phone_num_destination_contact' | translate}}:</label>
         <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
       </div>
     </div>
-
     <div class="col-sm-12">
       <div class="form-grpup">
         <label for="account">{{'account.choose_caller_id' | translate}}:</label>
@@ -77,7 +68,6 @@
         </select>
       </div>
     </div>
-
     <!-- <div class="col-sm-6">
       <div class="form-group">
 
@@ -91,14 +81,12 @@
 
       </div>
     </div> -->
-
     <br>
     <div class="col-sm-6">
       <button type="button" class="btn btn-success" (click)="addSendDocument()" [disabled] = "(this.sendfax.phone === undefined || this.sendfax.phone === '')">{{ 'transmission.fax.title' | translate}}!</button>
     </div>
   </div>
 </ng-template>
-
 <ng-template #pdfViewer let-modal>
   <div class="modal-header">
     <h4 class="modal-title" id="modal-basic-title">{{ 'fax_viewer.title' | translate}}</h4>

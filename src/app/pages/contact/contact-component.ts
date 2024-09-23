@@ -26,13 +26,12 @@ import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/them
 
 export class FormsContactComponent implements OnInit {
   constructor(private contact_service: ContactService,
-    private dataSourceBuilder: NbTreeGridDataSourceBuilder<Contact>,
+     private dataSourceBuilder: NbTreeGridDataSourceBuilder<Contact>,
      private modalService: NgbModal,
      private sendfax_service :SendFaxService,
      private document_service :DocumentService,
      private completerService : CompleterService,
-
-     ) { }
+    ) { }
 
   aContact: Contact[];
   ContactDataSource: NbTreeGridDataSource<Contact>;

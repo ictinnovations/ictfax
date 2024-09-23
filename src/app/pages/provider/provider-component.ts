@@ -7,7 +7,6 @@ import { ProviderDataSource } from './provider-datasource.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
 import { ModalComponent } from '../../modal.component';
 import { Observable } from 'rxjs/Rx';
-
 import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/theme';
 
 @Component({
@@ -44,7 +43,6 @@ export class FormsProviderComponent implements OnInit {
     this.provider_service.get_ProviderList().then(data => {
       // this.aProvider = data;
       this.length = data.length;
-
       this.ProviderDataSource = this.dataSourceBulider.create(this.aProvider.map(item => ({ data: item })));
 
       // Observable for the filter

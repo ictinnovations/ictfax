@@ -9,44 +9,32 @@
       <table nbTreeGrid [nbTreeGrid]="InFaxDataSource">
         <ng-container nbTreeGridColumnDef="ID">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'general.ID' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.transmission_id}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.transmission_id}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="username">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.username' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.username}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.username}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="phone">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.phone_num' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.contact_phone}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.contact_phone}} </td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="status">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'transmission.status' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.status}}
-          </td>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.status}} </td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="Timestamp">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'outbound_fax.date_time' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row">
-            {{row.data.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}
-          </td>
+            {{row.data.last_run * 1000 | date:'yyyy-MM-dd HH:mm:ss a'}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="Operations">
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let infax">
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="showPDF(pdfViewer, row.data.transmission_id)"><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon>
-            </button>
+              <mat-icon (click)="showPDF(pdfViewer, row.data.transmission_id)"><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon></button>
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="downloadDocument(row.data.transmission_id)"><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon>
-            </button>
-
+              <mat-icon (click)="downloadDocument(row.data.transmission_id)"><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon></button>
           </td>
         </ng-container>
         <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>

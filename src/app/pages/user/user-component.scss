@@ -4,7 +4,7 @@
   min-width: 300px;
   max-height: 500px;
 }
-  
+
 .example-header {
   min-height: 64px;
   display: flex;
@@ -12,7 +12,7 @@
   padding-left: 24px;
   font-size: 20px;
 }
-  
+
 .mat-table {
   overflow: auto;
   max-height: 500px;
@@ -45,7 +45,8 @@
   margin-left: 32px;
 }
 
-.mat-cell, .mat-header-cell {
+.mat-cell,
+.mat-header-cell {
   overflow: hidden;
   word-wrap: break-word;
 }
