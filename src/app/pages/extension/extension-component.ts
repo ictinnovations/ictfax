@@ -28,11 +28,16 @@ export class FormsExtensionComponent implements OnInit {
   length: number;
   closeResult: any;
 
-  displayedColumns= ['ID', 'username', 'phone', 'email', 'Operations'];
+  items_page = [5, 10, 25, 100];
+  pageSize = 10;
+  startIndex: number = 0;
+  currentPage: number;
+  total_pages: number;
+  minimumItems: number;
+  current_items: any[] = [];
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
+  displayedColumns= ['account_id', 'username', 'phone', 'email', 'Operations'];
 
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
 
@@ -42,18 +47,37 @@ export class FormsExtensionComponent implements OnInit {
 
   getExtensionlist() {
     this.extension_service.get_ExtensionList().then(data => {
+      this.aExtension = data.sort((a,b) => b.account_id - a.account_id);
       this.length = data.length;
-      this.ExtensionDataSource = this. dataSourceBuilder.create( this. aExtension.map(item => ({ data: item})),);
+      
+      this.paginate(this.pageSize);
+      this.ExtensionDataSource = this. dataSourceBuilder.create( this.current_items.map(item => ({ data: item})),);
 
-      // Observable for the filter
-      Observable.fromEvent(this.filter.nativeElement, 'keyup')
-     .debounceTime(150)
-     .distinctUntilChanged()
-     .subscribe(() => {
-       if (!this.aExtension) { return; }
-       this.aExtension.filter = this.filter.nativeElement.value;
-      });
     });
+  }
+
+  paginate(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.startIndex + this.pageSize < this.length) {
+          this.startIndex += this.pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.startIndex > 0) {
+          this.startIndex -= this.pageSize;
+        }
+      }
+    } else {
+      this.pageSize = page_Items;
+      this.startIndex = 0; 
+    }
+    this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
+    this.total_pages = Math.ceil(this.length / this.pageSize);
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
+    
+    const end = Math.min(this.startIndex + this.pageSize, this.length);
+    this.current_items = this.aExtension.slice(this.startIndex, end); 
+    this.ExtensionDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
   }
 
 

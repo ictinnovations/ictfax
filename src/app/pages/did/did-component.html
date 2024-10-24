@@ -6,19 +6,17 @@
   <nb-card-body>
     <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/new']"><i class="fa fa-plus"></i>{{'dids.add' | translate}}</button>&nbsp;
     <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/batch']">{{'dids.add_in_batch' | translate}}</button>
-    <!--
-    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/did/did/import']">Import DID List</button>
-    !-->
     <br>
     <br>
-    <div class="example-container mat-elevation-z8">
-      <table nbTreeGrid [nbTreeGrid]="DIDDataSource">
+      <table nbTreeGrid [nbTreeGrid]="DIDDataSource" [nbSort]="DIDDataSource">
+        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+        <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
         <ng-container nbTreeGridColumnDef="phone">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef >{{ 'dids.number' | translate }}</th>
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'dids.number' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row" >{{row.data.phone}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="first_name">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'my_dids.title' | translate }}</th>
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'my_dids.title' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row" >{{row.data.first_name}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="Operations">
@@ -35,9 +33,20 @@
             </button>
           </td>
         </ng-container>
-        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
-        <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
       </table>
-    </div>
+      <div style="padding: 30px; display: flex; justify-content: flex-end;">
+        <span style="text-align: center; padding-top: 10px;">Items per page: &nbsp;&nbsp;</span>
+        <nb-select [(ngModel)]="pageSize" (ngModelChange)="paginate($event)">
+          <nb-option *ngFor="let option of items_page" [value]="option">{{ option }}</nb-option>
+        </nb-select>
+        <div style="padding-top: 10px;">
+          <nb-icon   style="margin: 0 25px;"   icon="arrowhead-left-outline"   (click)="startIndex > 0 ? paginate('previous') : null"   [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>  
+          <span>Page {{ currentPage }} of {{ total_pages }}</span>
+          <nb-icon  style="margin: 0 25px;"  icon="arrowhead-right-outline"  (click)="startIndex + pageSize < aDID?.length ? paginate('next') : null"  [ngClass]="{'disabled-icon': startIndex + pageSize >= aDID?.length}"> </nb-icon>
+          <span *ngIf="aDID?.length > 0"> 
+            | Showing {{ startIndex }} - {{ minimumItems }} of {{ length }} items
+          </span>
+        </div>
+      </div> 
   </nb-card-body>
 </nb-card>

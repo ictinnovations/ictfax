@@ -1,19 +1,18 @@
 <nb-card>
   <nb-card-header>
     {{ 'document.list' | translate}}
-    <input style="float:right" class="form-control cc" nbInput fullWidth type="text" #filter placeholder="{{ 'document.filter' | translate}}">
+    <input nbInput fullWidth placeholder="{{ 'document.filter' | translate }}" [nbFilterInput]="DocumentDataSource" id="search" class="form-control cc" style="float:right"/>
   </nb-card-header>
 
   <nb-card-body>
     <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/message/document/new']"><i class="fa fa-plus"></i> {{ 'document.add' | translate}}</button>
     <br>
     <br>
-    <div class="example-container mat-elevation-z8">
-      <table nbTreeGrid [nbTreeGrid]="DocumentDataSource">
+      <table [nbTreeGrid]="DocumentDataSource" [nbSort]="DocumentDataSource">
         <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
         <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
-        <ng-container nbTreeGridColumnDef="ID">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate }}</th>
+        <ng-container nbTreeGridColumnDef="document_id">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'general.ID' | translate }}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.document_id }}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="name">
@@ -34,10 +33,25 @@
             <button mat-icon-button color="primary" style= "font-size:20px">
               <mat-icon (click)="open(content, document.data.document_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>
             </button>
-          </td>
-        </ng-container>
+          </td></ng-container>
       </table>
-    </div>
+      <div style="padding: 30px; display: flex; justify-content: flex-end;">
+        <span style="text-align: center; padding-top: 10px;">Items per page: &nbsp;&nbsp;</span>
+        <nb-select [(ngModel)]="pageSize" (ngModelChange)="paginate($event)">
+          <nb-option *ngFor="let option of items_page" [value]="option">{{ option }}</nb-option>
+        </nb-select>
+        <div style="padding-top: 10px;">
+          <nb-icon   style="margin: 0 25px;"   icon="arrowhead-left-outline" 
+            (click)="startIndex > 0 ? paginate('previous') : null"   [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>  
+          <span>Page {{ currentPage }} of {{ total_pages }}</span>
+          <nb-icon  style="margin: 0 25px;"  icon="arrowhead-right-outline" (click)="startIndex + pageSize < aDocument?.length ? paginate('next') : null" [ngClass]="{'disabled-icon': startIndex + pageSize >= aDocument?.length}"> </nb-icon>
+          <span *ngIf="aDocument?.length > 0"> 
+            | Showing {{ startIndex }} - {{ minimumItems }} of {{ length }} items
+          </span>
+        </div>
+      </div> 
+      
+      
   </nb-card-body>
 </nb-card>
 <ng-template #content let-modal>

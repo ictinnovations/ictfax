@@ -1,7 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { DIDService } from './did.service';
-import {MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { DIDDatabase } from './did-database.component';
 import { DIDDataSource } from './did-datasource.component';
 import { ModalComponent } from '../../modal.component';
@@ -26,11 +24,16 @@ export class FormsDIDComponent implements OnInit {
   length: number;
   closeResult: any;
 
+  items_page = [5, 10, 25, 100];
+  pageSize = 10;
+  startIndex: number = 0;
+  currentPage: number;
+  total_pages: number;
+  minimumItems: number;
+  current_items: any[] = [];
+
   displayedColumns= ['phone', 'first_name', 'Operations'];
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
-
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
 
@@ -41,14 +44,39 @@ export class FormsDIDComponent implements OnInit {
 
   getDIDlist() {
     this.did_service.get_DIDList().then(data => {
-      this.aDID = data;
+      this.aDID = data.sort((a,b) => b.account_id - a.account_id);
       this.length = data.length;
 
-      this.DIDDataSource = this.dataSourceBuilder.create(this.aDID.map(item => ({ data: item })),);
+      this.paginate(this.pageSize);
+      this.DIDDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })),);
 
     });
   }
 
+
+  paginate(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.startIndex + this.pageSize < this.length) {
+          this.startIndex += this.pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.startIndex > 0) {
+          this.startIndex -= this.pageSize;
+        }
+      }
+    } else {
+      this.pageSize = page_Items;
+      this.startIndex = 0; 
+    }
+    this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
+    this.total_pages = Math.ceil(this.length / this.pageSize);
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
+    
+    const end = Math.min(this.startIndex + this.pageSize, this.length);
+    this.current_items = this.aDID.slice(this.startIndex, end); 
+    this.DIDDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
+  }
 
   deleteDID(account_id): void {
     this.did_service.delete_DID(account_id)

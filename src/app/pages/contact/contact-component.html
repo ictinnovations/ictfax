@@ -1,52 +1,66 @@
 <nb-card>
   <nb-card-header>
     {{ 'contact.list' | translate }}
-    <input nbInput fullWidth placeholder="{{ 'contact.filter' | translate }}" [(ngModel)]="filter" class="form-control cc" style="float:right">
+    <input nbInput fullWidth placeholder="{{ 'contact.filter' | translate }}" [nbFilterInput]="dataSource" id="search" class="form-control cc" style="float:right"> 
   </nb-card-header>
-
+  
   <nb-card-body>
     <button type="button" mat-raised-button color="primary" style="font-size:15px"[routerLink]="['/pages/contact/contacts/new']"><i class="fa fa-plus"></i> {{ 'contact.add' | translate }}</button>
     <br><br>
-    <div class="example-container mat-elevation-z8">
-      <table nbTreeGrid [nbTreeGrid]="ContactDataSource">
-        <ng-container nbTreeGridColumnDef="ID">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.contact_id }}</td>
-        </ng-container>
-        <ng-container nbTreeGridColumnDef="firstName">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.fname' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.first_name }}</td>
-        </ng-container>
-        <ng-container nbTreeGridColumnDef="lastName">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.lname' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.last_name }}</td>
-        </ng-container>
-        <ng-container nbTreeGridColumnDef="Phone">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.phone' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.phone }}</td>
-        </ng-container>
-        <ng-container nbTreeGridColumnDef="Email">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'contact.email' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.email }}</td>
-        </ng-container>
-        <ng-container nbTreeGridColumnDef="Operations">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let contact">
+    <table [nbTreeGrid]="dataSource" [nbSort]="dataSource">
+      <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+      <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+      <ng-container nbTreeGridColumnDef="contact_id">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'general.ID' | translate }} </th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.contact_id }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="first_name">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'contact.fname' | translate }}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.first_name }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="last_name">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'contact.lname' | translate }}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.last_name }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="phone">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'contact.phone' | translate }}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.phone }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="email">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader] style="width: 300px;" >{{ 'contact.email' | translate }}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.email }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="operations">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let contact">
           <button mat-icon-button color="accent" style= "font-size:20px">
-            <mat-icon><a routerLink="/pages/contact/contacts/{{contact.data.contact_id}}"title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon></button><button mat-icon-button style="font-size:20px"(click)="showStaticModal(contact.data.contact_id, contact.first_name)"><mat-icon style="color:red"><nb-icon icon="trash-2-outline"></nb-icon></mat-icon></button><button mat-icon-button color="primary" style= "font-size:20px"><mat-icon (click)="open(content, contact.contact_id)"><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon></button></td></ng-container>
-            <button mat-icon-button style="font-size:20px">
-              <mat-icon style="color:red" (click)="showStaticModal(contact.data.contact_id)">
-                <nb-icon icon="trash-2-outline"></nb-icon></mat-icon>
-              </button>
-              <button mat-icon-button color="primary" style= "font-size:20px">
-                <mat-icon (click)="open(content, contact.data.contact_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>
-              </button>
-              <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
-              <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
-            </table>
-          </div>
-        </nb-card-body>
-      </nb-card>
+            <mat-icon><a routerLink="/pages/contact/contacts/{{contact.data.contact_id}}"title="Edit">
+              <nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon></button>
+          <button mat-icon-button style="font-size:20px">
+            <mat-icon style="color:red" (click)="showStaticModal(contact.data.contact_id)"><nb-icon icon="trash-2-outline">
+            </nb-icon></mat-icon></button>
+          <button mat-icon-button color="primary" style= "font-size:20px">
+            <mat-icon (click)="open(content, contact.data.contact_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax">
+            </nb-icon></mat-icon></button>
+          </td>
+        </ng-container>
+    </table>
+    <div style="padding: 30px; display: flex; justify-content: flex-end;">
+      <span style="text-align: center; padding-top: 10px;">Items per page: &nbsp;&nbsp;</span>
+      <nb-select [(ngModel)]="pageSize" (ngModelChange)="paginate($event)">
+        <nb-option *ngFor="let option of items_page" [value]="option">{{ option }}</nb-option>
+      </nb-select>
+      <div style="padding-top: 10px;">
+        <nb-icon   style="margin: 0 25px;"   icon="arrowhead-left-outline"   (click)="startIndex > 0 ? paginate('previous') : null"   [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>  
+        <span>Page {{ currentPage }} of {{ total_pages }}</span>
+        <nb-icon  style="margin: 0 25px;"  icon="arrowhead-right-outline" (click)="startIndex + pageSize < contactArray?.length ? paginate('next') : null" [ngClass]="{'disabled-icon': startIndex + pageSize >= contactArray?.length}"> </nb-icon>
+        <span *ngIf="contactArray?.length > 0"> 
+          | Showing {{ startIndex }} - {{ minimumItems }} of {{ length }} items
+        </span>
+      </div>
+    </div> 
+  </nb-card-body>
+</nb-card>
       <ng-template #content let-modal>
         <div class="modal-header">
           <h4 class="modal-title" id="modal-basic-title">{{ 'transmission.fax.title' | translate}}</h4>

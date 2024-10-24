@@ -3,14 +3,6 @@ import { Router } from '@angular/router';
 import { SendFaxService } from './sendfax.service';
 import { SendFax } from './sendfax';
 import { Response, Http, RequestOptions, Headers } from '@angular/http';
-// import { CdkTableModule } from '@angular/cdk/table';
-// import { MatTableModule } from '@angular/material/table';
-import { DataSource } from '@angular/cdk/collections';
-import {  MatPaginator, } from '@angular/material/paginator';
-import { MatSort,Sort } from '@angular/material/sort';
-import { BehaviorSubject} from 'rxjs/BehaviorSubject';
-import { SendFaxDatabase } from './sendfax-database.component';
-import { SendFaxDataSource } from './sendfax-datasource.component';
 import { ContactService } from '../contact/contact.service';
 import 'rxjs/add/operator/startWith';
 import 'rxjs/add/observable/merge';
@@ -32,8 +24,9 @@ import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/them
 export class FormsSendFaxComponent implements OnInit {
   constructor(private sendfax_service: SendFaxService,
     private dataSourceBuilder: NbTreeGridDataSourceBuilder<SendFax>,
-    private contact_service: ContactService, private http: Http
-  ,private app_service: AppService, private documnet_service:DocumentService) { }
+    private contact_service: ContactService, private http: Http,
+    private app_service: AppService, private documnet_service:DocumentService) { }
+  
 
   aSendFax: SendFax[];
   SendFaxDataSource: NbTreeGridDataSource<SendFax>;
@@ -42,12 +35,18 @@ export class FormsSendFaxComponent implements OnInit {
 
   private timerSubscription: any;
 
-  displayedColumns= ['ID', 'phone', 'Timestamp', 'username','status', 'Operations'];
+  items_page = [5, 10, 25, 100];
+  pageSize = 10;
+  startIndex: number = 0;
+  currentPage: number;
+  total_pages: number;
+  minimumItems: number;
+  current_items: any[] = [];
+
+  displayedColumns= ['transmission_id', 'phone', 'Timestamp', 'username','status', 'Operations'];
 
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
 
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
 
@@ -63,7 +62,7 @@ export class FormsSendFaxComponent implements OnInit {
 
   async getFaxlist() {
     this.sendfax_service.get_OutFaxTransmissionList().then(data => {
-      this.aSendFax = data;
+      this.aSendFax = data.sort((a, b) => b.transmission_id - a.transmission_id);
       this.length = data.length;
 
       data.forEach(element => {
@@ -71,30 +70,13 @@ export class FormsSendFaxComponent implements OnInit {
           element.contact_phone = 'N/A';
         }
       })
-
-      this.SendFaxDataSource = this.dataSourceBuilder.create(this.aSendFax.map(item => ({ data: item })),);
-
-      //Sort the data automatically
-
-      const sortState: Sort = {active: 'ID', direction: 'desc'};
-      this.sort.active = sortState.active;
-      this.sort.direction = sortState.direction;
-      this.sort.sortChange.emit(sortState);
-
-      // Observable for the filter
-      Observable.fromEvent(this.filter.nativeElement, 'keyup')
-     .debounceTime(150)
-     .distinctUntilChanged()
-     .subscribe(() => {
-       if (!this.aSendFax) { return; }
-       this.aSendFax.filter = this.filter.nativeElement.value;
-      });
+      this.SendFaxDataSource = this.dataSourceBuilder.create(data.map(item => ({ data: item })),);
     });
   }
 
   private refreshData(): void {
     this.sendfax_service.get_OutFaxTransmissionList().then(data => {
-      this.aSendFax = data;
+      this.aSendFax = data.sort((a, b) => b.transmission_id - a.transmission_id);
       this.length = data.length;
 
       data.forEach(element => {
@@ -102,20 +84,36 @@ export class FormsSendFaxComponent implements OnInit {
           element.contact_phone = 'N/A';
         }
       })
-
-      this.SendFaxDataSource = this.dataSourceBuilder.create(this.aSendFax.map(item => ({ data: item })),);
-
-      // Observable for the filter
-      Observable.fromEvent(this.filter.nativeElement, 'keyup')
-     .debounceTime(150)
-     .distinctUntilChanged()
-     .subscribe(() => {
-       if (!this.aSendFax) { return; }
-       this.aSendFax.filter = this.filter.nativeElement.value;
-      });
+      this.paginate(this.pageSize);
+      this.SendFaxDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
     });
     this.subscribeToData();
   }
+
+  paginate(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.startIndex + this.pageSize < this.length) {
+          this.startIndex += this.pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.startIndex > 0) {
+          this.startIndex -= this.pageSize;
+        }
+      }
+    } else {
+      this.pageSize = page_Items;
+      this.startIndex = 0; 
+    }
+    this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
+    this.total_pages = Math.ceil(this.length / this.pageSize);
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
+    
+    const end = Math.min(this.startIndex + this.pageSize, this.length);
+    this.current_items = this.aSendFax.slice(this.startIndex, end); 
+    this.SendFaxDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
+  }
+  
   downloadDocument(document_id){
     this.documnet_service.get_Documentdownload(document_id);
   }

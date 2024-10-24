@@ -10,4 +10,7 @@ export class ContactDatabase {
     const contactData = aContact.slice();
     this.dataChange.next(contactData);
   }
+
+
+
 }

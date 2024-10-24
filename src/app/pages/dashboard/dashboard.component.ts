@@ -4,8 +4,6 @@ import { DashboardService } from './dashboard.service';
 import { AUserService } from '../user/user.service';
 import { UserDataSource } from '../user/user-datasource.component';
 import { UserDatabase } from '../user/user-database.component';
-import { MatSort, Sort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
 import { DIDService } from '../did/did.service';
 import { DIDDataSource } from '../did/did-datasource.component';
 import { DIDDatabase } from '../did/did-database.component';
@@ -45,30 +43,55 @@ export class DashboardComponent implements OnInit {
   did_total:any;
 
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
-
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   aUser: User[];
   UserDataSource: NbTreeGridDataSource<User>;
+  aUser_page = [5, 10, 25, 100];
+  aUser_pageSize = 10;
+  aUser_startIndex: number = 0;
+  aUser_currentPage: number;
+  aUser_total_pages: number;
+  aUser_minimumItems: number;
+  aUser_items: any[] = [];
   user_length:any;
-  displayedColumns= ['ID', 'username', 'first_name', 'last_name', 'email'];
-
-
+  displayedColumns= ['user_id', 'username', 'first_name', 'last_name', 'email'];
+  
+  
   aDID: DID[];
   DIDDataSource: NbTreeGridDataSource<DID>
+  aDID_page = [5, 10, 25, 100];
+  aDID_pageSize = 10;
+  aDID_startIndex: number = 0;
+  aDID_currentPage: number;
+  aDID_total_pages: number;
+  aDID_minimumItems: number;
+  aDID_items: any[] = [];
   did_length: any;
   did_displayedColumns= ['phone', 'first_name'];
-
+  
   aSendFax: SendFax[];
   SendFaxDatabaSource: NbTreeGridDataSource<SendFax>
+  aSendFax_page = [5, 10, 25, 100];
+  aSendFax_pageSize = 10;
+  aSendFax_startIndex: number = 0;
+  aSendFax_currentPage: number;
+  aSendFax_total_pages: number;
+  aSendFax_minimumItems: number;
+  aSendFax_items: any[] = [];
   sendfax_length: any;
-  senfax_displayedColumns= ['ID', 'phone', 'Timestamp', 'username', 'status'];
-
+  senfax_displayedColumns= ['transmission_id', 'phone', 'Timestamp', 'username', 'status'];
+  
   aInFax: Transmission[];
   InFaxDataSource: NbTreeGridDataSource<Transmission>;
+  aInFax_page = [5, 10, 25, 100];
+  aInFax_pageSize = 10;
+  aInFax_startIndex: number = 0;
+  aInFax_currentPage: number;
+  aInFax_total_pages: number;
+  aInFax_minimumItems: number;
+  aInFax_items: any[] = [];
   infax_length: any;
-  infax_displayedColumns= ['ID', 'phone', 'status', 'Timestamp'];
+  infax_displayedColumns= ['transmission_id', 'phone', 'status', 'Timestamp'];
 
   public outfax: any = true;
   public infax: any = false;
@@ -200,35 +223,79 @@ export class DashboardComponent implements OnInit {
 
   getUserlist() {
     this.user_service.get_UserList().then(data => {
+      this.aUser = data.sort((a, b) => b.user_id - a.user_id);
       this.user_length = data.length;
-      this.aUser = data;
 
-      this.UserDataSource = this.dataSourceBuilderUser.create(this.aUser.map(item => ({ data: item })),);
-
-
-      //Sort the data automatically
-
-      const sortState: Sort = {active: 'ID', direction: 'desc'};
-      this.sort.active = sortState.active;
-      this.sort.direction = sortState.direction;
-      this.sort.sortChange.emit(sortState);
+      this.getpaginateUser(this.aUser_pageSize);
+      this.UserDataSource = this.dataSourceBuilderUser.create(this.aUser_items.map(item => ({ data: item })),);
+      
     })
   }
-
+  getpaginateUser(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.aUser_startIndex + this.aUser_pageSize < this.user_length) {
+          this.aUser_startIndex += this.aUser_pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.aUser_startIndex > 0) {
+          this.aUser_startIndex -= this.aUser_pageSize;
+        }
+      }
+    } else {
+      this.aUser_pageSize = page_Items;
+      this.aUser_startIndex = 0; 
+    }
+    this.aUser_currentPage = Math.floor(this.aUser_startIndex / this.aUser_pageSize) + 1;
+    this.aUser_total_pages = Math.ceil(this.user_length / this.aUser_pageSize);
+    this.aUser_minimumItems = Math.min(this.aUser_startIndex + this.aUser_pageSize, this.user_length);    
+    
+    const end = Math.min(this.aUser_startIndex + this.aUser_pageSize, this.user_length);
+    this.aUser_items = this.aUser.slice(this.aUser_startIndex, end); 
+    this.UserDataSource = this.dataSourceBuilderUser.create(this.aUser_items.map(item => ({ data: item })));
+  }
+  
   getDIDlist() {
     this.did_service.get_DIDList().then(data => {
+      this. aDID = data.sort((a, b) => b.phone - a.phone);
       this.did_length = data.length;
-      this. aDID = data;
 
-      this.DIDDataSource = this.dataSourceBuilderDid.create(this.aDID.map(Item => ({ data: Item})),);
+      this.getpaginateDID(this.aDID_pageSize);
+      this.DIDDataSource = this.dataSourceBuilderDid.create(this.aDID_items.map(Item => ({ data: Item})),);
 
     });
   }
 
+  getpaginateDID(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.aDID_startIndex + this.aDID_pageSize < this.did_length) {
+          this.aDID_startIndex += this.aDID_pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.aDID_startIndex > 0) {
+          this.aDID_startIndex -= this.aDID_pageSize;
+        }
+      }
+    } else {
+      this.aDID_pageSize = page_Items;
+      this.aDID_startIndex = 0; 
+    }
+    this.aDID_currentPage = Math.floor(this.aDID_startIndex / this.aDID_pageSize) + 1;
+    this.aDID_total_pages = Math.ceil(this.did_length / this.aDID_pageSize);
+    this.aDID_minimumItems = Math.min(this.aDID_startIndex + this.aDID_pageSize, this.did_length);    
+    
+    const end = Math.min(this.aDID_startIndex + this.aDID_pageSize, this.did_length);
+    this.aDID_items = this.aDID.slice(this.aDID_startIndex, end); 
+    this.DIDDataSource = this.dataSourceBuilderDid.create(this.aDID_items.map(item => ({ data: item })));
+  }
+
   getFaxlist() {
     this.sendfax_service.get_OutFaxTransmissionList().then(data => {
+      
+      this.aSendFax = data.sort((a, b) => b.transmission_id - a.transmission_id);
       this.sendfax_length = data.length;
-      this.aSendFax = data;
+      // this.sendfax_length = data?.length;
 
 
       data.forEach(element => {
@@ -236,13 +303,44 @@ export class DashboardComponent implements OnInit {
           element.contact_phone = 'N/A';
         }
       })
-      this.SendFaxDatabaSource = this.dataSourceBuilderSendFax.create(this.aSendFax.map(Item => ({ data: Item })),);
+      this.getpaginateSendFax(this.aSendFax_pageSize);
+      this.SendFaxDatabaSource = this.dataSourceBuilderSendFax.create(this.aSendFax_items.map(Item => ({ data: Item })));
+
 
     })
   }
 
+  getpaginateSendFax(page_Items: string | number) {
+  //   if (!Array.isArray(this.aSendFax)) {
+  //     console.error("aSendFax is not an array or is undefined.");
+  //     return;
+  // }
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.aSendFax_startIndex + this.aSendFax_pageSize < this.sendfax_length) {
+          this.aSendFax_startIndex += this.aSendFax_pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.aSendFax_startIndex > 0) {
+          this.aSendFax_startIndex -= this.aSendFax_pageSize;
+        }
+      }
+    } else {
+      this.aSendFax_pageSize = page_Items;
+      this.aSendFax_startIndex = 0; 
+    }
+    this.aSendFax_currentPage = Math.floor(this.aSendFax_startIndex / this.aSendFax_pageSize) + 1;
+    this.aSendFax_total_pages = Math.ceil(this.sendfax_length / this.aSendFax_pageSize);
+    this.aSendFax_minimumItems = Math.min(this.aSendFax_startIndex + this.aSendFax_pageSize, this.sendfax_length);    
+    
+    const end = Math.min(this.aSendFax_startIndex + this.aSendFax_pageSize, this.sendfax_length);
+    this.aSendFax_items = this.aSendFax.slice(this.aSendFax_startIndex, end); 
+    this.SendFaxDatabaSource = this.dataSourceBuilderSendFax.create(this.aSendFax_items.map(item => ({ data: item })));
+  }
+
   getInFaxList() {
     this.infax_service.get_InFaxTransmissionList().then(data => {
+      this.aInFax = data.sort((a, b) => b.transmission_id - a.transmission_id);
       this.infax_length = data.length;
 
       data.forEach(element => {
@@ -250,10 +348,39 @@ export class DashboardComponent implements OnInit {
           element.contact_phone = 'N/A';
         }
       })
-
-      this.InFaxDataSource = this.InFaxDataSourceBuilder.create(this.aInFax.map(Item => ({ data: Item })),);
+      this.getpaginateInFax(this.aInFax_pageSize)
+      this.InFaxDataSource = this.InFaxDataSourceBuilder.create(this.aInFax_items.map(Item => ({ data: Item })),);
 
     });
+  }
+
+  
+  getpaginateInFax(page_Items: string | number) {
+  //   if (!Array.isArray(this.aInFax)) {
+  //     console.error("aInFax is not an array or is undefined.");
+  //     return;
+  // }
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.aInFax_startIndex + this.aInFax_pageSize < this.infax_length) {
+          this.aInFax_startIndex += this.aInFax_pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.aInFax_startIndex > 0) {
+          this.aInFax_startIndex -= this.aInFax_pageSize;
+        }
+      }
+    } else {
+      this.aInFax_pageSize = page_Items;
+      this.aInFax_startIndex = 0; 
+    }
+    this.aInFax_currentPage = Math.floor(this.aInFax_startIndex / this.aInFax_pageSize) + 1;
+    this.aInFax_total_pages = Math.ceil(this.infax_length / this.aInFax_pageSize);
+    this.aInFax_minimumItems = Math.min(this.aInFax_startIndex + this.aInFax_pageSize, this.infax_length);    
+    
+    const end = Math.min(this.aInFax_startIndex + this.aInFax_pageSize, this.infax_length);
+    this.aInFax_items = this.aInFax.slice(this.aInFax_startIndex, end); 
+    this.InFaxDataSource = this.InFaxDataSourceBuilder.create(this.aInFax_items.map(item => ({ data: item })));
   }
 
   get_didStat() {

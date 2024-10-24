@@ -4,8 +4,6 @@ import { Router } from '@angular/router';
 import { Headers, RequestOptions, Http } from '@angular/http';
 import { Transmission } from '../transmission/transmission';
 import { InFaxService } from './infax.service';
-import { MatSort,  Sort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
 import { InFaxDataSource } from './infax-datasource.component';
 import { InFaxDatabase } from './infax-database.component';
 import { DocumentService } from '../message/document/document.service';
@@ -24,7 +22,7 @@ import { NbTreeGridDataSource, NbTreeGridDataSourceBuilder } from '@nebular/them
 export class InFaxComponent implements OnInit {
 
   constructor(private router: Router, private infax_service: InFaxService,
-    private InFaxDataSourceBuilder: NbTreeGridDataSourceBuilder<Transmission>,
+    private dataSourceBuilder: NbTreeGridDataSourceBuilder<Transmission>,
     private modalService: NgbModal,    private document_service: DocumentService
   ,private app_service: AppService, private http: Http) { }
 
@@ -39,11 +37,18 @@ export class InFaxComponent implements OnInit {
   page: number = 1;
   isLoaded: boolean = false;
 
-  displayedColumns= ['ID','username', 'phone', 'status', 'Timestamp', 'Operations'];
+  items_page = [5, 10, 25, 100];
+  pageSize = 10;
+  startIndex: number = 0;
+  currentPage: number;
+  total_pages: number;
+  minimumItems: number;
+  current_items: any[] = [];
 
-  @ViewChild(MatSort) sort: MatSort;
 
-  @ViewChild(MatPaginator) paginator: MatPaginator;
+  displayedColumns= ['transmission_id','username', 'phone', 'status', 'Timestamp', 'Operations'];
+
+
 
   @ViewChild('filter') filter: ElementRef;
 
@@ -54,32 +59,40 @@ export class InFaxComponent implements OnInit {
 
   getInFaxList() {
     this.infax_service.get_InFaxTransmissionList().then(data => {
+      this.aInFax = data.sort((a, b) => b.transmission_id - a.transmission_id);
       this.length = data.length;
-      this.aInFax = data;
-
       data.forEach(element => {
         if (element.contact_phone == null) {
           element.contact_phone = 'N/A';
         }
       })
-
-      this.InFaxDataSource = this.InFaxDataSourceBuilder.create(data.map(item => ({ data: item })));
-
-      //Sort the data automatically
-      const sortState: Sort = {active: 'ID', direction: 'desc'};
-      this.sort.active = sortState.active;
-      this.sort.direction = sortState.direction;
-      this.sort.sortChange.emit(sortState);
-
-      // Observable for the filter
-      Observable.fromEvent(this.filter.nativeElement, 'keyup')
-     .debounceTime(150)
-     .distinctUntilChanged()
-     .subscribe(() => {
-       if (!this.aInFax) { return; }
-       this.aInFax.filter = this.filter.nativeElement.value;
-      });
+      this.paginate(this.pageSize);
+      this.InFaxDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
     });
+  }
+
+  paginate(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.startIndex + this.pageSize < this.length) {
+          this.startIndex += this.pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.startIndex > 0) {
+          this.startIndex -= this.pageSize;
+        }
+      }
+    } else {
+      this.pageSize = page_Items;
+      this.startIndex = 0; 
+    }
+    this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
+    this.total_pages = Math.ceil(this.length / this.pageSize);
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
+    
+    const end = Math.min(this.startIndex + this.pageSize, this.length);
+    this.current_items = this.aInFax.slice(this.startIndex, end); 
+    this.InFaxDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
   }
 
   downloadDocument(document_id) {

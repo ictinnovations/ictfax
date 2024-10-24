@@ -1,36 +1,34 @@
 <nb-card>
   <nb-card-header>
     {{ 'User.list' | translate}}
-    <input style="float:right" class="form-control cc" nbInput fullWidth type="text" #filter placeholder="{{ 'User.filter' | translate}}">
+    <input nbInput fullWidth placeholder="{{ 'User.filter' | translate }}" [nbFilterInput]="UserDataSource" id="search" class="form-control cc" style="float:right"> 
   </nb-card-header>
 
   <nb-card-body>
     <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/user/user/new']"><i class="fa fa-plus"></i> {{ 'User.add' | translate}}</button>
-    <br>
-    <br>
-    <div class="example-container mat-elevation-z8">
-      <table nbTreeGrid [nbTreeGrid]="UserDataSource">
+    <br><br>
+      <table [nbTreeGrid]="UserDataSource" [nbSort]="UserDataSource">
         <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
         <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
-          <ng-container nbTreeGridColumnDef="ID">
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate}}</th>
+          <ng-container nbTreeGridColumnDef="user_id">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'general.ID' | translate}}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.user_id}}</td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="username">
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'user.Username' | translate}}</th>
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'user.Username' | translate}}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.username}}</td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="first_name">
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'User.fname' | translate}}</th>
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'User.fname' | translate}}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.first_name}}  {{row.data.last_name}}</td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="last_name" >
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{'user.lname'| translate}}</th>
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{'user.lname'| translate}}</th>
               <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.last_name}}
             </td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="email">
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'User.email' | translate}}</th>
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'User.email' | translate}}</th>
               <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.email}}</td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="Operations">
@@ -45,6 +43,19 @@
           </td>
         </ng-container>
       </table>
-    </div>
+      <div style="padding: 30px; display: flex; justify-content: flex-end;">
+        <span style="text-align: center; padding-top: 10px;">Items per page: &nbsp;&nbsp;</span>
+        <nb-select [(ngModel)]="pageSize" (ngModelChange)="paginate($event)">
+          <nb-option *ngFor="let option of items_page" [value]="option">{{ option }}</nb-option>
+        </nb-select>
+        <div style="padding-top: 10px;">
+          <nb-icon   style="margin: 0 25px;"   icon="arrowhead-left-outline"   (click)="startIndex > 0 ? paginate('previous') : null"   [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>  
+          <span>Page {{ currentPage }} of {{ total_pages }}</span>
+          <nb-icon  style="margin: 0 25px;"  icon="arrowhead-right-outline"  (click)="startIndex + pageSize < aUser?.length ? paginate('next') : null"  [ngClass]="{'disabled-icon': startIndex + pageSize >= aUser?.length}"> </nb-icon>
+          <span *ngIf="aUser?.length > 0"> 
+            | Showing {{ startIndex }} - {{ minimumItems }} of {{ length }} items
+          </span>
+        </div>
+      </div> 
   </nb-card-body>
 </nb-card>

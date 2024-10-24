@@ -114,3 +114,8 @@ a:hover {
 .ng2-pdf-viewer-container[_ngcontent-yff-c423] {
   overflow-x: hi;
 }
+.disabled-icon {
+  opacity: 0.5;
+  pointer-events: none;
+  cursor: not-allowed;
+}

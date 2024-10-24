@@ -1,7 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { AUserService } from './user.service';
-import { MatSort, Sort } from '@angular/material/sort';
-import { MatPaginator } from '@angular/material/paginator';
 import { UserDatabase } from './user-database.component';
 import { UserDataSource } from './user-datasource.component';
 import { ModalComponent } from '../../modal.component';
@@ -30,12 +28,17 @@ export class FormsUserComponent implements OnInit {
 
   length: number;
   closeResult: any;
+  
+  items_page = [5, 10, 25, 100];
+  pageSize = 10;
+  startIndex: number = 0;
+  currentPage: number;
+  total_pages: number;
+  minimumItems: number;
+  current_items: any[] = [];
 
-  displayedColumns= ['ID', 'username', 'first_name', 'last_name', 'email', 'Operations'];
+  displayedColumns= ['user_id', 'username', 'first_name', 'last_name', 'email', 'Operations'];
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
-
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
 
@@ -45,28 +48,38 @@ export class FormsUserComponent implements OnInit {
 
   getUserlist() {
     this.user_service.get_UserList().then(data => {
-      this.aUser = data as User[];
+      this.aUser = data.sort((a, b) => b.user_id - a.user_id);
       this.length = data.length;
-      this.UserDataSource = this.dataSourceBuilder.create(this.aUser.map(item => ({ data: item })),);
 
-      //Sort the data automatically
+      this.paginate(this.pageSize);
+      this.UserDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })),);
 
-      const sortState: Sort = {active: 'ID', direction: 'desc'};
-      this.sort.active = sortState.active;
-      this.sort.direction = sortState.direction;
-      this.sort.sortChange.emit(sortState);
-
-      // Observable for the filter
-      fromEvent(this.filter.nativeElement, 'keyup')
-      .pipe(debounceTime(150),
-      distinctUntilChanged())
-     .subscribe(() => {
-       if (!this.aUser) { return; }
-       this.aUser.filter = this.filter.nativeElement.value;
-      });
     });
   }
-
+  paginate(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.startIndex + this.pageSize < this.length) {
+          this.startIndex += this.pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.startIndex > 0) {
+          this.startIndex -= this.pageSize;
+        }
+      }
+    } else {
+      this.pageSize = page_Items;
+      this.startIndex = 0; 
+    }
+    this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
+    this.total_pages = Math.ceil(this.length / this.pageSize);
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
+    
+    const end = Math.min(this.startIndex + this.pageSize, this.length);
+    this.current_items = this.aUser.slice(this.startIndex, end); 
+    this.UserDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
+  }
+  
   deleteUser(user_id): void {
     this.user_service.delete_User(user_id)
     .then(response => {

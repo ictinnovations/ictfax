@@ -60,11 +60,11 @@ export class ContactDataSource extends DataSource<Contact> {
       let propertyB: number|string = '';
 
       switch (this._sort.active) {
-        case 'ID': [propertyA, propertyB] = [a.contact_id, b.contact_id]; break;
+        case 'contact_id': [propertyA, propertyB] = [a.contact_id, b.contact_id]; break;
         case 'firstName': [propertyA, propertyB] = [a.first_name, b.first_name]; break;
         case 'lastName': [propertyA, propertyB] = [a.last_name, b.last_name]; break;
-        case 'Phone': [propertyA, propertyB] = [a.phone, b.phone]; break;
-        case 'Email': [propertyA, propertyB] = [a.email, b.email]; break;
+        case 'phone': [propertyA, propertyB] = [a.phone, b.phone]; break;
+        case 'email': [propertyA, propertyB] = [a.email, b.email]; break;
       }
 
       const valueA = isNaN(+propertyA) ? propertyA : +propertyA;

@@ -46,7 +46,7 @@ export class FormsDocumentComponent implements OnInit {
   accountArray : DID[]=[]
   documentProgram: DocumentProgram = new DocumentProgram;
   private modalRef: NgbModalRef;
-  displayedColumns= ['ID', 'name', 'Operations'];
+  displayedColumns= ['document_id', 'name', 'Operations'];
   documentURL: string;
   // documentURL: string = "http://demo.ictfax.com/data/document/document_0_74.tif.pdf";
   // faxDocumentURL: string = "https://vadimdez.github.io/ng2-pdf-viewer/assets/pdf-test.pdf";
@@ -55,9 +55,13 @@ export class FormsDocumentComponent implements OnInit {
   page: number = 1;
   isLoaded: boolean = false;
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
-
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
+  items_page = [5, 10, 25, 100];
+  pageSize = 10;
+  startIndex: number = 0;
+  currentPage: number;
+  total_pages: number;
+  minimumItems: number;
+  current_items: any[] = [];
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
 
@@ -71,26 +75,38 @@ export class FormsDocumentComponent implements OnInit {
 
   getDocumentlist() {
     this.document_service.get_DocumentList().then(data => {
-      this.length = data.length;
-      this.aDocument = data as Document[];
-      this.DocumentDataSource = this.dataSourceBuilder.create(this.aDocument.map(item => ({data:item})),);
+      this.aDocument = data.sort((a, b) => b.document_id - a.document_id);
+      this.length = data.length;   
 
-      //Sort the data automatically
+      this.paginate(this.pageSize);
+      this.DocumentDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
 
-      const sortState: Sort = {active: 'ID', direction: 'desc'};
-      this.sort.active = sortState.active;
-      this.sort.direction = sortState.direction;
-      this.sort.sortChange.emit(sortState);
 
-      // Observable for the filter
-      fromEvent(this.filter.nativeElement, 'keyup')
-      .pipe(debounceTime(150),
-      distinctUntilChanged())
-      .subscribe(() => {
-       if (!this.aDocument) { return; }
-       this.aDocument.filter = this.filter.nativeElement.value;
-      });
+
     });
+  }
+  paginate(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.startIndex + this.pageSize < this.length) {
+          this.startIndex += this.pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.startIndex > 0) {
+          this.startIndex -= this.pageSize;
+        }
+      }
+    } else {
+      this.pageSize = page_Items;
+      this.startIndex = 0; 
+    }
+    this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
+    this.total_pages = Math.ceil(this.length / this.pageSize);
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
+    
+    const end = Math.min(this.startIndex + this.pageSize, this.length);
+    this.current_items = this.aDocument.slice(this.startIndex, end); 
+    this.DocumentDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
   }
 
   deleteDocument(document_id): void {

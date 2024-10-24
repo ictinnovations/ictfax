@@ -1,28 +1,29 @@
 <nb-card>
   <nb-card-header>
     {{ 'extension.list' | translate}}
-    <input style="float:right" class="form-control cc" nbInput fullWidth type="text" #filter placeholder="{{ 'extension.filter' | translate}}">
+    <input nbInput fullWidth placeholder="{{ 'extension.filter' | translate }}" [nbFilterInput]="ExtensionDataSource" id="search" class="form-control cc" style="float:right"> 
   </nb-card-header>
 
   <nb-card-body>
       <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/extension/extension/new']"><i class="fa fa-plus"></i>{{ 'extension.add' | translate}}</button>
       <br><br>
-      <div class="example-container mat-elevation-z8">
-        <table nbTreeGrid [nbTreeGrid]="ExtensionDataSource">
-          <ng-container nbTreeGridColumnDef="ID">
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.ID' | translate}}</th>
+        <table [nbTreeGrid]="ExtensionDataSource" [nbSort]="ExtensionDataSource">
+          <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+          <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+          <ng-container nbTreeGridColumnDef="account_id">
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'general.ID' | translate}}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.account_id}}</td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="username">
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'extension.username' | translate}}</th>
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'extension.username' | translate}}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.username}}</td>
          </ng-container>
          <ng-container nbTreeGridColumnDef="phone">
-           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'extension.phone' | translate}}</th>
+           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'extension.phone' | translate}}</th>
            <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.phone}}</td>
          </ng-container>
          <ng-container nbTreeGridColumnDef="email">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'extension.email' | translate}}</th>
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'extension.email' | translate}}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.email}}</td>
         </ng-container>
          <ng-container nbTreeGridColumnDef="Operations">
@@ -34,9 +35,20 @@
               <mat-icon style="color:red"><nb-icon icon="trash-2-outline"></nb-icon></mat-icon></button>
             </td>
           </ng-container>
-          <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
-          <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
         </table>
-      </div>
+        <div style="padding: 30px; display: flex; justify-content: flex-end;">
+          <span style="text-align: center; padding-top: 10px;">Items per page: &nbsp;&nbsp;</span>
+          <nb-select [(ngModel)]="pageSize" (ngModelChange)="paginate($event)">
+            <nb-option *ngFor="let option of items_page" [value]="option">{{ option }}</nb-option>
+          </nb-select>
+          <div style="padding-top: 10px;">
+            <nb-icon   style="margin: 0 25px;"   icon="arrowhead-left-outline"   (click)="startIndex > 0 ? paginate('previous') : null"   [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>  
+            <span>Page {{ currentPage }} of {{ total_pages }}</span>
+            <nb-icon  style="margin: 0 25px;"  icon="arrowhead-right-outline"  (click)="startIndex + pageSize < aExtension?.length ? paginate('next') : null"  [ngClass]="{'disabled-icon': startIndex + pageSize >= aExtension?.length}"> </nb-icon>
+            <span *ngIf="aExtension?.length > 0"> 
+              | Showing {{ startIndex }} - {{ minimumItems }} of {{ length }} items
+            </span>
+          </div>
+        </div>
     </nb-card-body>
   </nb-card>

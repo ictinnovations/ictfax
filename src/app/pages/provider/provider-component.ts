@@ -1,7 +1,5 @@
 import { Component, OnInit, ViewChild, ElementRef, Provider } from '@angular/core';
 import { ProviderService } from './provider.service';
-import { MatPaginator } from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
 import { ProviderDatabase } from './provider-database.component';
 import { ProviderDataSource } from './provider-datasource.component';
 import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
@@ -21,17 +19,22 @@ export class FormsProviderComponent implements OnInit {
     private dataSourceBulider:  NbTreeGridDataSourceBuilder<Provider>,
     private modalService: NgbModal) { }
 
-  aProvider: Provider[];
+  aProvider: any[] = [];
   ProviderDataSource: NbTreeGridDataSource<Provider>;
 
   length: number;
   closeResult: any;
 
-  displayedColumns= ['ID', 'Name', 'host', 'type', 'Operations'];
+  items_page = [5, 10, 25, 100];
+  pageSize = 10;
+  startIndex: number = 0;
+  currentPage: number;
+  total_pages: number;
+  minimumItems: number;
+  current_items: any[] = [];
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
+  displayedColumns= ['provider_id', 'name', 'host', 'type', 'Operations'];
 
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
 
@@ -41,21 +44,41 @@ export class FormsProviderComponent implements OnInit {
 
   getProviderlist() {
     this.provider_service.get_ProviderList().then(data => {
-      // this.aProvider = data;
+      this.aProvider = data.sort((a, b) => b.provider_id - a.provider_id);
       this.length = data.length;
-      this.ProviderDataSource = this.dataSourceBulider.create(this.aProvider.map(item => ({ data: item })));
+      this.paginate(this.pageSize);
+      this.ProviderDataSource = this.dataSourceBulider.create(this.current_items.map(item => ({ data: item })));
 
-      // Observable for the filter
-      Observable.fromEvent(this.filter.nativeElement, 'keyup')
-     .debounceTime(150)
-     .distinctUntilChanged()
-     .subscribe(() => {
-       if (!this.aProvider) { return; }
-       this.aProvider.filter = this.filter.nativeElement.value;
-      });
     })
-    .catch(this.handleError);
   }
+
+  paginate(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.startIndex + this.pageSize < this.length) {
+          this.startIndex += this.pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.startIndex > 0) {
+          this.startIndex -= this.pageSize;
+        }
+      }
+    } else {
+      this.pageSize = page_Items;
+      this.startIndex = 0; 
+    }
+    this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
+    this.total_pages = Math.ceil(this.length / this.pageSize);
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);
+        
+    const end = Math.min(this.startIndex + this.pageSize, this.length);
+    this.current_items = this.aProvider.slice(this.startIndex, end);
+    this.ProviderDataSource = this.dataSourceBulider.create(this.current_items.map(item => ({ data: item })));
+  }
+
+
+
+
 
 
   deleteProvider(provider_id): void {

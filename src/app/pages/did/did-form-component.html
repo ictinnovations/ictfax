@@ -10,7 +10,7 @@
           <div class="col-sm-9">
             <div class="form-group">
               <label for="phone">{{'dids.dids_number' | translate}}:</label>
-              <input [(ngModel)]="did.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="phone" #phone="ngModel" required/>
+              <input [(ngModel)]="did.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="phone" #phone="ngModel" required/>
               <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger">
                 <div [hidden]="!phone.hasError('required')">{{'dids.did_req' | translate}}.</div>
               </div>
@@ -19,7 +19,7 @@
           <div class="col-sm-9">
             <div class="form-group">
               <label for="first_name">{{'dids.title' | translate}}:</label>
-              <input [(ngModel)]="did.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
+              <input [(ngModel)]="did.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="first_name" required/>
             </div>
           </div>
         </div>

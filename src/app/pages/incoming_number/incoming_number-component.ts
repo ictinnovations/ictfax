@@ -44,6 +44,15 @@ export class FormsIncomingNumberComponent implements OnInit {
   length: number;
   closeResult: any;
 
+  items_page = [5, 10, 25, 100];
+  pageSize = 10;
+  startIndex: number = 0;
+  currentPage: number;
+  total_pages: number;
+  minimumItems: number;
+  current_items: any[] = [];
+
+
   displayedColumns= ['phone', 'first_name', 'Operations'];
 
   @ViewChild(MatSort, { static: false}) sort: MatSort;
@@ -68,11 +77,44 @@ export class FormsIncomingNumberComponent implements OnInit {
     .catch(this.handleError);
   }
 
+
+
   getAllList() {
     this.did_service.get_DIDList().then(response => {
+      this.aNumbers = response;
       this.length = response.length;
-      this.IncomingNumberDataSource = this.IncomingNumberdataSourceBuilder.create(response.map(item => ({ data: item})));
+      this.paginate(this.pageSize);
+      this.IncomingNumberDataSource = this.IncomingNumberdataSourceBuilder.create(response.map(item => ({ data: item })));
+    }).catch(error => {
+      console.error('Error fetching DID List:', error);
     });
+  }
+
+  paginate(page_Items: string | number) {
+    if (!this.aNumbers || this.aNumbers.length === 0) {
+      return; 
+    }
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.startIndex + this.pageSize < this.length) {
+          this.startIndex += this.pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.startIndex > 0) {
+          this.startIndex -= this.pageSize;
+        }
+      }
+    } else {
+      this.pageSize = page_Items;
+      this.startIndex = 0; 
+    }
+    this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
+    this.total_pages = Math.ceil(this.length / this.pageSize);
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
+    
+    const end = Math.min(this.startIndex + this.pageSize, this.length);
+    this.current_items = this.aNumbers.slice(this.startIndex, end); 
+    this.IncomingNumberDataSource = this.IncomingNumberdataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
   }
 
   private handleError(error: any): Promise<any> {

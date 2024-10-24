@@ -1,12 +1,7 @@
 import { Component, OnInit, ElementRef, ViewChild } from '@angular/core';
 import { ContactService } from './contact.service';
-import { MatPaginator,} from '@angular/material/paginator';
-import { MatSort } from '@angular/material/sort';
-import { ContactDatabase } from './contact-database.component';
-import { ContactDataSource } from './contact-datasource.component';
 import { ModalComponent } from '../../modal.component';
 import { NgbModal, ModalDismissReasons, NgbModalRef } from '@ng-bootstrap/ng-bootstrap';
-import { Observable } from 'rxjs/Rx';
 import { SendFax,DocumentProgram } from '../sendfax/sendfax';
 import { CompleterData, CompleterItem, CompleterService } from 'ng2-completer';
 import { SendFaxService } from '../sendfax/sendfax.service';
@@ -33,12 +28,11 @@ export class FormsContactComponent implements OnInit {
      private completerService : CompleterService,
     ) { }
 
-  aContact: Contact[];
-  ContactDataSource: NbTreeGridDataSource<Contact>;
-  contact: any;
+
   length: number;
   closeResult: any;
   contactArray: Contact[] =[]
+  dataSource: NbTreeGridDataSource<Contact>;
   accountArray :DID[]=[]
   trans_id:any;
   documentProgram: DocumentProgram = new DocumentProgram;
@@ -48,12 +42,17 @@ export class FormsContactComponent implements OnInit {
   dataService: CompleterData;
   phone: number;
 
+  items_page = [5, 10, 25, 100];
+  pageSize = 10;
+  startIndex: number = 0;
+  currentPage: number;
+  total_pages: number;
+  minimumItems: number;
+  current_items: any[] = [];
 
-  displayedColumns= ['ID', 'firstName', 'lastName', 'Phone', 'Email', 'Operations'];
 
-  @ViewChild(MatSort, {static: false}) sort: MatSort;
+  displayedColumns= ['contact_id','first_name', 'last_name','email','phone','operations'];
 
-  @ViewChild(MatPaginator, {static: false}) paginator: MatPaginator;
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
 
@@ -67,22 +66,40 @@ export class FormsContactComponent implements OnInit {
     this.getAccountList()
   }
 
+
+
+ 
   getContactlist() {
     this.contact_service.get_ContactList().then(data => {
-      this.aContact = data;
+      this.contactArray = data.sort((a, b) => b.contact_id - a.contact_id);
       this.length = data.length;
-
-      this.ContactDataSource = this.dataSourceBuilder.create(this.aContact.map(item => ({ data: item })),);
-
-      // Observable for the filter
-      Observable.fromEvent(this.filter.nativeElement, 'keyup')
-     .debounceTime(150)
-     .distinctUntilChanged()
-     .subscribe(() => {
-       if (!this.aContact) { return; }
-       this.aContact.filter = this.filter.nativeElement.value;
-      });
+      this.paginate(this.pageSize);
+      this.dataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
     });
+  }
+
+  paginate(page_Items: string | number) {
+    if (typeof page_Items === 'string') {
+      if (page_Items === 'next') {
+        if (this.startIndex + this.pageSize < this.length) {
+          this.startIndex += this.pageSize; 
+        }
+      } else if (page_Items === 'previous') {
+        if (this.startIndex > 0) {
+          this.startIndex -= this.pageSize;
+        }
+      }
+    } else {
+      this.pageSize = page_Items;
+      this.startIndex = 0; 
+    }
+    this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
+    this.total_pages = Math.ceil(this.length / this.pageSize);
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
+    
+    const end = Math.min(this.startIndex + this.pageSize, this.length);
+    this.current_items = this.contactArray.slice(this.startIndex, end); 
+    this.dataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
   }
 
   onSelectContact(value) {
