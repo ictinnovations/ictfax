@@ -10,6 +10,9 @@ import {
 import { LoginComponent } from './auth/login/login.component';
 import { LogoutComponent } from './auth/logout/logout.component';
 import { AuthGuard } from './auth-guard.service';
+import { SigninComponent } from './auth/signin/signin.component';
+import { RequestPasswordComponent } from './auth/request-password/request-password.component';
+import { ResetPasswordComponent } from './auth/reset-password/reset-password.component';
 
 const routes: Routes = [
   {
@@ -40,11 +43,11 @@ const routes: Routes = [
       },
       {
         path: 'request-password',
-        component: NbRequestPasswordComponent,
+        component: RequestPasswordComponent,
       },
       {
         path: 'reset-password',
-        component: NbResetPasswordComponent,
+        component: ResetPasswordComponent,
       },
     ],
   },

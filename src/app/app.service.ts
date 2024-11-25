@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Http, Headers } from '@angular/http';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { Location } from '@angular/common';
 import { environment } from '../environments/environment';
 
@@ -8,8 +8,14 @@ import { environment } from '../environments/environment';
 
 export class AppService {
 
-  constructor(private http: Http, private router: Router, private _location: Location) {
-    this.upload_Header.push({name: 'Authorization', value: 'Bearer ' + JSON.parse(localStorage.getItem('auth_app_token')).value});
+  constructor(private http: Http, private router: Router, private _location: Location,  private activatedRoute: ActivatedRoute) {
+    if (localStorage.getItem('copy_token')) {
+      this.upload_Header.push({name: 'Authorization', value: 'Bearer ' + localStorage.getItem('copy_token')});
+    }
+    else if (localStorage.getItem('auth_app_token')) {
+      let token:any = localStorage.getItem('auth_app_token');
+      this.upload_Header.push({name: 'Authorization', value: 'Bearer ' + JSON.parse(token).value});
+    }
   }
   // headers for uploading the file
   upload_Header: Array<{
@@ -42,6 +48,10 @@ export class AppService {
   apiUrlCampaigns = `${this.apiUrl}/campaigns`;
   apiUrlDashboard = `${this.apiUrl}/statistics`;
   apiUrlAccounts = `${this.apiUrl}/accounts`;
+  apiUrlForgotPassword = `${this.apiUrl}/forgot_password`;
+  apiUrlUpdatePassword = `${this.apiUrl}/update_password`;
+  apiUrlTokenPayload = `${this.apiUrl}/token_payload`;
+  apiUrlSSO = `${this.apiUrl}/authenticate`;
   apiUrlDid = `${this.apiUrl}/dids`;
   apiUrlCid = `${this.apiUrl}/cids`;
   apiUrlRoles = `${this.apiUrl}/roles`;
@@ -51,6 +61,21 @@ export class AppService {
     headers.append('Authorization', ' Bearer ' + JSON.parse(token).value);
     headers.append('Content-Type', 'application/json');
     headers.append('Accept', 'application/json');
+  }
+
+  ForgotAuthorizationHeader(headers:Headers) {
+    headers.append('Content-Type', 'application/json');
+    headers.append('Accept', 'application/json');
+  }
+  ResetAuthorizationHeader(headers:Headers) {
+    headers.append('Content-Type', 'application/json');
+    headers.append('Accept', 'application/json');
+  }
+
+  loginAuthorizationHeader(headers:Headers) {
+    headers.append('Content-Type', 'application/json');
+    headers.append('Accept', 'application/json');
+    headers.append('Accept', 'X-Auth-Token');
   }
 
   public handleError(error: any): Promise<any> {

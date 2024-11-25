@@ -1,0 +1,22 @@
+<nb-alert *ngIf="isLogin" _ngcontent-lri-c268="" outline="success" role="alert" _nghost-lri-c160="" ng-reflect-outline="success" class="status-basic outline-success ng-star-inserted">
+    <p _ngcontent-lri-c268="" class="alert-title"><b _ngcontent-lri-c268="">Hooray!</b></p>
+    <ul _ngcontent-lri-c268="" class="alert-message-list">
+        <li _ngcontent-lri-c268="" class="alert-message ng-star-inserted">You have been successfully logged in.</li>
+  </ul>
+</nb-alert>
+<nb-alert *ngIf="isError" _ngcontent-lri-c268="" outline="danger" role="alert" _nghost-lri-c160="" ng-reflect-outline="danger" class="status-basic outline-danger ng-star-inserted">
+    <p _ngcontent-lri-c268="" class="alert-title"><b _ngcontent-lri-c268="">Opss!</b></p>
+    <ul _ngcontent-lri-c268="" class="alert-message-list">
+        <li _ngcontent-lri-c268="" class="alert-message ng-star-inserted">Login failed.</li>
+  </ul>
+</nb-alert>
+
+<button nbButton fullWidth status="success" [routerLink]="['/auth/login']" routerLinkActive="router-link-active"  ><nb-icon icon="email-outline"></nb-icon>Continue with E-mail</button>
+<h6 class="heading-2" style="text-align: center; margin: 30px 0;">OR</h6>
+<button nbButton fullWidth status="info" (click)="login()"><nb-icon icon="recording"></nb-icon>Signin with Azure</button>
+
+<!-- WARNING: Before uncommenting these buttons, you need to uncomment its code from app.modules.ts, signin.components.ts -->
+<!-- <h6 class="heading-2" style="text-align: center; margin: 30px 0;">OR</h6>
+<button nbButton fullWidth outline status="danger" (click)="signInWithGoogle()"><nb-icon icon="google"></nb-icon>Sign in with Google</button>
+<br><br>
+<button nbButton fullWidth outline status="info" (click)="signInWithFB()"><nb-icon icon="facebook"></nb-icon>Sign in with Facebook</button> -->
