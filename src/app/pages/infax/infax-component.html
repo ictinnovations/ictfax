@@ -87,3 +87,122 @@
     </pdf-viewer>
   </div>
 </ng-template>
+
+<ng-template #contentt let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Fax Logs</h4>
+ <button type="button" class="close" aria-label="Close" (click)="onSave()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <li *ngFor="let faxlogs of faxlogarray;let i = index" class="ml-4" style="list-style: none;">
+      <h6 class="text-uppercase text-primary">{{faxlogs.origin}}</h6>
+      
+      <hr>
+      <h6> User information </h6>
+     <ul style="list-style:none">
+      <li>
+        <table>
+          <tr>
+              <td>ID:</td>
+              <td>{{faxlogs.sourceid}}</td>
+          </tr>
+          <tr>
+              <td>Name:</td>
+              <td>{{faxlogs.sourcename}}</td>
+          </tr>
+          <tr>
+              <td>Phone:</td>
+              <td>{{faxlogs.sourcephone}}</td>
+          </tr>
+          <!-- <tr>
+              <td>Tenant</td>
+              <td>{{faxlogs.tenant}}</td>
+          </tr> -->
+      
+  </table>
+      </li>
+     </ul>
+      
+      
+        <h6>Fax information</h6>
+        <ul style="list-style:none">
+        <li>
+        <table class="faxinfo">
+            <tr>
+                <td>Fax Created:</td>
+                <td>{{faxlogs.pending}}</td>
+            </tr>
+            <tr>
+                <td>Fax Processing:</td>
+                <td>{{faxlogs.processing}}</td>
+            </tr>
+            <tr>
+                <td>Fax Complete:</td>
+                <td>{{faxlogs.result}}</td>
+            </tr>
+            <tr>
+                <td>Source Caller ID:</td>
+                <td>{{faxlogs.callerid}}</td>
+            </tr>
+            <tr>
+                <td>Destination Name:</td>
+                <td>{{faxlogs.destinationname}}</td>
+            </tr>
+            <tr>
+                <td>Destination Phone:</td>
+                <td>{{faxlogs.destination}}</td>
+            </tr>
+            <tr>
+                <td>Coverpage:</td>
+                <td>{{faxlogs.coverpage}}</td>
+            </tr>
+            <tr>
+              <td>Pages:</td>
+              <td>{{faxlogs.pages}}</td>
+          </tr>
+        </table>
+      </li>
+      </ul>
+    <div class="containger">
+      <h6>Final Status</h6>
+      <ul style="list-style:none;">
+        <li>
+          <table>
+            <tr>
+              <td *ngIf="faxlogs.faxstatus === 'completed'">
+                <b style="color:green;">Completed</b>
+              </td>
+              <td *ngIf="faxlogs.faxstatus === 'failed'">
+                <b style="color:red;">Failed</b>
+                <p style="color:red;">{{faxlogs.response}}</p>
+              </td>
+            </tr>
+          </table>
+        </li>
+      </ul>
+      </div>
+    </li>
+    
+    <li class="ml-4" style="list-style:none">
+    <h6>Activity</h6>
+    <ul>
+      <li *ngFor="let faxact of faxactivityarray;let f = index" style="list-style: none;">
+        <table>
+          <tr>
+            <td>
+              {{faxact.faxactivity}}
+            </td>
+            <td>
+              {{faxact.date}}
+            </td>
+          </tr>
+        </table>
+      </li>
+    </ul>
+   
+  </li>
+  
+  </div>
+</ng-template>

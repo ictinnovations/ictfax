@@ -55,12 +55,15 @@ export class DocumentService {
     // });
   }
 
-  get_Documentdownload(document_id): any {
+  get_Documentdownload(document_id, transmission_id = null): any {
     const headers = new Headers();
     this.app_service.createAuthorizationHeader(headers);
     const options = new RequestOptions({ headers: headers});
     options.responseType = ResponseContentType.Blob;
     const url = `${this.app_service.apiUrlDocument}/${document_id}/media`;
+    if(transmission_id){
+      const url_doc = `${this.app_service.apiUrlDocument}/${document_id}/media/${transmission_id}`;
+      }
     this.http.get(url, options).subscribe(res => {
       const fileName = getFileNameFromResponseContentDisposition(res);
       saveFile(res.blob(), fileName);

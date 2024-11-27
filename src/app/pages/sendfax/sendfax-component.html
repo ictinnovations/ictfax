@@ -31,13 +31,67 @@
           <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{'transmission.status' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.status}}</td>
         </ng-container>
-        <ng-container nbTreeGridColumnDef="Operations">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
-          <td nbTreeGridCell *nbTreeGridCellDef="let sendfax">
-         <button mat-icon-button color="warn" style="font-size:20px">
-        <mat-icon (click)="deleteDocument(sendfax.data.transmission_id)"> <nb-icon icon="trash-2-outline" title="delete"></nb-icon></mat-icon>
-        </button></td>
-    </ng-container>
+        <ng-container matColumnDef="operations">
+        <mat-header-cell *matHeaderCellDef mat-sort-header>{{'general.operations' | translate}}</mat-header-cell>
+        <mat-cell *matCellDef="let sendfax">
+        <!-- <button mat-icon-button color="primary" style="font-size:20px">
+        <mat-icon (click)="downloadDocument(sendfax.doument_id)"> <nb-icon icon="download-outline" title="download"></nb-icon></mat-icon>
+        </button> -->
+       <button mat-icon-button color="warn" style="font-size:20px">
+        <mat-icon (click)="deleteDocument(sendfax.transmission_id)"> <nb-icon icon="trash-2-outline" title="delete"></nb-icon></mat-icon>     
+        </button> 
+        <button mat-icon-button color="primary" style= "font-size:20px" >
+          <mat-icon style="color:green" (click)="open(content,sendfax.transmission_id)"  ><nb-icon icon="file-text-outline" title="Download"></nb-icon></mat-icon>
+        </button> 
+      </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>
+
+
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">Fax Logs</h4>
+ <button type="button" class="close" aria-label="Close" (click)="onSave()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <li *ngFor="let faxlogs of faxlogarray;let i = index" class="ml-4" style="list-style: none;">
+      <h6 class="text-uppercase text-primary">{{faxlogs.origin}}</h6>
+      
+      <hr>
+      <h6> User information </h6>
+     <ul style="list-style:none">
+      <li>
+        <table>
+          <tr>
+              <td>ID:</td>
+              <td>{{faxlogs.sourceid}}</td>
+          </tr>
+          <tr>
+              <td>Name:</td>
+              <td>{{faxlogs.sourcename}}</td>
+          </tr>
+          <tr>
+              <td>Phone:</td>
+              <td>{{faxlogs.sourcephone}}</td>
+          </tr>
+          <!-- <tr>
+              <td>Tenant</td>
+              <td>{{faxlogs.tenant}}</td>
+          </tr> -->
+      
   </table>
   <div style="padding: 30px; display: flex; justify-content: flex-end;">
     <span style="text-align: center; padding-top: 10px;">Items per page: &nbsp;&nbsp;</span>

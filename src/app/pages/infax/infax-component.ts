@@ -68,8 +68,16 @@ export class InFaxComponent implements OnInit {
           element.contact_phone = 'N/A';
         }
       });
-      this.paginate(this.pageSize);
+     this.paginate(this.pageSize);
       this.InFaxDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
+  });    
+  }
+
+
+  downloadDocument(transmission_id) {
+    this.infax_service.getTransmissionResult(transmission_id).then(response =>  {
+      this.document_id = response[0].data;
+      this.document_service.get_Documentdownload(this.document_id, null);
     });
   }
 
@@ -97,9 +105,9 @@ export class InFaxComponent implements OnInit {
     this.InFaxDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
   }
 
-  downloadDocument(document_id) {
-    this.document_service.get_Documentdownload(document_id);
-  }
+  // downloadDocument(document_id) {
+  //   this.document_service.get_Documentdownload(document_id);
+  // }
 
 
 
