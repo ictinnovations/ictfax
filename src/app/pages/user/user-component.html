@@ -19,7 +19,7 @@
             <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.username}}</td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="first_name">
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'User.fname' | translate}}</th>
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'user.fname' | translate}}</th>
             <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.first_name}}  {{row.data.last_name}}</td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="last_name" >
@@ -28,7 +28,7 @@
             </td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="email">
-            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'User.email' | translate}}</th>
+            <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'user.email' | translate}}</th>
               <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.email}}</td>
           </ng-container>
           <ng-container nbTreeGridColumnDef="Operations">
