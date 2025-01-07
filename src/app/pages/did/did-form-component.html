@@ -3,13 +3,13 @@
   <form id="form" #f1="ngForm">
     <nb-card>
       <nb-card-header>
-        {{'dids.dids_info' | translate}}  
+        {{'dids.did_info' | translate}}  
       </nb-card-header>
       <nb-card-body>
         <div class="row">
           <div class="col-sm-9">
             <div class="form-group">
-              <label for="phone">{{'dids.dids_number' | translate}}:</label>
+              <label for="phone">{{'dids.did_number' | translate}}:</label>
               <input [(ngModel)]="did.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="phone" #phone="ngModel" required/>
               <div [hidden]="phone.valid || phone.pristine" class="alert alert-danger">
                 <div [hidden]="!phone.hasError('required')">{{'dids.did_req' | translate}}.</div>
@@ -28,10 +28,10 @@
 
 
     <div *ngIf="(account_id>0)">
-      <button type="button" class="btn btn-primary" (click)="updateDID()">{{'button.update' | translate}}</button>
+      <button type="button" class="btn btn-primary" (click)="updateDID()">{{'buttons.update' | translate}}</button>
     </div>
     <div *ngIf="(!account_id)">
-      <button type="button" class="btn btn-success" (click)="addDID()">{{'button.submit' | translate}}</button>
+      <button type="button" class="btn btn-success" (click)="addDID()">{{'buttons.submit' | translate}}</button>
     </div>
   </form>
 </div>

@@ -248,7 +248,7 @@
     "phone_num_destination_contact": "目的地の連絡先の電話番号",
     "contact_id": "Contact ID",
     "program_name": "Program name",
-    "status": "Status",
+    "status": "状態",
     "choose_contact": "Choose Contact",
     "enter_manually": "Enter Manually"
   },
@@ -302,7 +302,8 @@
     "list": "DIDリスト",
     "add": "DIDを追加",
     "add_in_batch": "DIDをバッチで作成する",
-    "number": "数",
+    "did_number": "DID番号",
+    "did_info": "DID情報",
     "title":"タイトル",
     "assign_did": "DIDを割り当てる",
     "assigned_to": "に割り当てられた",
