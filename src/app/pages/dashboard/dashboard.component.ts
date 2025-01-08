@@ -340,14 +340,15 @@ export class DashboardComponent implements OnInit {
 
   getInFaxList() {
     this.infax_service.get_InFaxTransmissionList().then(data => {
-      this.aInFax = data.sort((a, b) => b.transmission_id - a.transmission_id);
-      this.infax_length = data.length;
-
-      data.forEach(element => {
+      this.aInFax = data
+        .filter(fax => fax.direction === 'inbound') 
+        .sort((a, b) => b.transmission_id - a.transmission_id);
+      this.infax_length = this.aInFax.length;
+      this.aInFax.forEach(element => {
         if (element.contact_phone == null) {
           element.contact_phone = 'N/A';
         }
-      })
+      });
       this.getpaginateInFax(this.aInFax_pageSize)
       this.InFaxDataSource = this.InFaxDataSourceBuilder.create(this.aInFax_items.map(Item => ({ data: Item })),);
 
