@@ -151,7 +151,7 @@
         <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="did_displayedColumns"></tr>
         <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: did_displayedColumns"></tr>
         <ng-container nbTreeGridColumnDef="phone">
-          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'dids.number' | translate }}</th>
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'dids.did_number' | translate }}</th>
           <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data?.phone}}</td>
         </ng-container>
         <ng-container nbTreeGridColumnDef="first_name">
