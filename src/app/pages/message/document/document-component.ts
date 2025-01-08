@@ -161,6 +161,7 @@ export class FormsDocumentComponent implements OnInit {
   showPDF(content, document_id) {
     this.modalRef = this.modalService.open(content,  { size: 'md' });
     this.viewFaxDocument(document_id);
+    // console.log('check docuemnt data', this.viewFaxDocument(document_id));
   }
   // Load PDF document
   viewFaxDocument(document_id) {
@@ -168,6 +169,7 @@ export class FormsDocumentComponent implements OnInit {
     this.isLoaded = false;
     const url = this.document_service.get_ViewFaxDocument(document_id);
     this.faxDocumentURL = url;
+    // console.log("check data faxDocumentURL", this.faxDocumentURL);
   }
   nextPage() {
     this.page += 1;

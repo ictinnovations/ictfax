@@ -25,7 +25,7 @@
             <button mat-icon-button color="primary" style= "font-size:20px">
               <mat-icon><a routerLink="/pages/message/document/{{document.data.document_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon></button>
             <button mat-icon-button color="primary" style= "font-size:20px">
-              <mat-icon (click)="showPDF(pdfViewerTemplate, document.data.document_id)" ><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon></button>
+              <mat-icon (click)="showPDF(pdfViewer, document.data.document_id)" ><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon></button>
             <button mat-icon-button color="primary" style= "font-size:20px">
               <mat-icon (click)="downloadDocument(document.data.document_id)"><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon></button>
             <button mat-icon-button color="primary" style="font-size:20px">
