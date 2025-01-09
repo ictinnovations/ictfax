@@ -107,6 +107,31 @@ export class AUserService {
     return this.http.put(updateUrl, body, options).toPromise().then(response => response.json())
     .catch(response => this.app_service.handleError(response));
   }
+  get_UserAccounts(id): any {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({ headers: headers});
+    const url = `${this.app_service.apiUrlAccounts}?linkdid_id=${id}`;
+    return this.http.get(url, options).toPromise()
+    .then(response => response.json() as User).catch(response => this.app_service.handleError(response));
+  }
+  get_DeleteAccount(account_id): any {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({ headers: headers});
+    const url = `${this.app_service.apiUrlAccounts}/${account_id}`;
+    return this.http.delete(url, options).toPromise()
+    .then(response => response.json() as User).catch(response => this.app_service.handleError(response));
+  }
+  add_Account(account): any {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({headers: headers});
+    const body = JSON.stringify(account);
+    const addUrl = `${this.app_service.apiUrlAccounts}`;
+    return this.http.post(addUrl, body, options).toPromise().then(response => response.json())
+    .catch(response => this.app_service.handleError(response));
+  }
 
   private handleError(error: any): Promise<any> {
     console.error('An error occurred', error); // for demo purposes only

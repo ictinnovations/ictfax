@@ -19,8 +19,7 @@ export class HeaderComponent implements OnInit, OnDestroy {
   userPictureOnly: boolean = false;
   user: any;
 
-  auser = {};
-
+  auser : any;
 
   themes = [
     {
@@ -59,6 +58,9 @@ export class HeaderComponent implements OnInit, OnDestroy {
 
         if (token.isValid()) {
           this.auser = token.getPayload(); // here we receive a payload from the token and assigns it to our `user` variable
+          localStorage.setItem('username', this.auser.username);
+          localStorage.setItem('is_admin', this.auser.is_admin);
+          localStorage.setItem('aid', this.auser.user_id);
         }
 
       });

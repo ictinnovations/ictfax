@@ -8,27 +8,37 @@
     <nb-card-body>
       <label for="phone">{{'my_dids.did_number' | translate}}</label>
       <br>
-      <input [(ngModel)]="incomingNumber.phone" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth id="phone" disabled required/>
+      <input [(ngModel)]="incomingNumber.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="phone" disabled required/>
     </nb-card-body>
   </nb-card>
   <nb-card>
     <nb-card-header>
-      {{'my_dids.user_info' | translate}}
+      {{'user.user_info' | translate}}
     </nb-card-header>
     <nb-card-body>
       <label>Select Service</label><br>
-      <nb-select class="dddd" [(ngModel)]= "incomingNumber.service_name" [ngModelOptions]="{standalone: true}">
-        <nb-option value="" selected>- Select -</nb-option>
-        <nb-option value="no_service" selected>No service</nb-option>
-        <nb-option value="faxtoemail">Fax to Email</nb-option>
-        <nb-option value="forwardtoext">Forward to Extension</nb-option>
-      </nb-select>
+      <select class="form-control" [(ngModel)]= "incomingNumber.service_name" [ngModelOptions]="{standalone: true}">
+        <option value="" selected>- Select -</option>
+        <option value="no_service" selected>No service</option>
+        <option value="faxtoemail">Fax to Email</option>
+        <option value="forwardtoext">Forward to Extension</option>
+      </select>
       <div *ngIf="(incomingNumber.service_name == '')"><br>
         <span style="color:red">Please Select Service</span>
       </div>
       <div *ngIf="(incomingNumber.service_name == 'faxtoemail')"><br>
         <label>Email:</label>
         <input [(ngModel)]="incomingNumber.email" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="email" required/>
+        <nb-card-body>
+          <div class="row">
+            <div class="col-md-6">
+              <div class="form-group">
+                <textarea [(ngModel)]="accounts" [ngModelOptions]="{standalone: true}" class="form-control" id="accounts" rows="7" required>
+                </textarea>
+              </div>
+            </div>
+          </div>
+        </nb-card-body>
       </div>
     </nb-card-body>
   </nb-card>
@@ -39,12 +49,12 @@
       </nb-card-header>
       <nb-card-body>
         <label>Select Extesnion</label><br>
-        <nb-select class = "form-control" name = "user" [(ngModel)]= "incomingNumber.extension_id">
-          <nb-option *ngFor="let ext of exts"
-            [ngValue] = "ext.account_id" >
+        <select class = "form-control" name = "user" [(ngModel)]= "incomingNumber.extension_id">  
+          <option *ngFor="let ext of exts"  
+            [ngValue] = "ext.account_id" >  
             {{ext.username}}  ({{ext.phone}})
-          </nb-option>
-        </nb-select><br>
+          </option>  
+        </select><br>
         <div *ngIf="(incomingNumber.service_name == 'forwardtoext') && (incomingNumber.extension_id == undefined)"><br>
           <span style="color:red">Please Select Extension</span>
         </div>
