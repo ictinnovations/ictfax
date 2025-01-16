@@ -21,10 +21,9 @@
         <nb-card-body>
           <div>
             <label for="document">{{'outbound_fax.document' | translate}}:</label>
-            <nb-select class = "dddd" name = "document" (change)="onSelect($event.target.value)">
-              <nb-option *ngFor="let document of documentArray; let i = index"
-                [value] = "document.document_id" [selected]="i==documentArray.length-1">
-                {{document.name}}
+            <nb-select class="dddd" name="document" [(ngModel)]="documentProgram.document_id" (change)="onSelect($event.target.value)">
+              <nb-option *ngFor="let document of documentArray; let i = index" [value]="document.document_id">
+                {{ document.name }}
               </nb-option>
             </nb-select>
           </div>
@@ -141,8 +140,8 @@
       <nb-card-body>
         <div>
           <label for="account">{{'account.choose_caller_id' | translate}}:</label>
-          <nb-select class = "dddd" name = "account" (change)="onSelectAccount($event.target.value)">
-            <nb-option *ngFor="let acc of accountArray; let i = index" [value] = "acc.account_id" [selected]="i===accountArray.length-1">{{acc.phone}} </nb-option>
+          <nb-select class="dddd" name="account" [(ngModel)]="sendfax.account_id" (change)="onSelectAccount($event.target.value)">
+            <nb-option *ngFor="let acc of accountArray; let i = index" [value]="acc.account_id">{{ acc.phone }}</nb-option>
           </nb-select>
         </div>
       </nb-card-body>
