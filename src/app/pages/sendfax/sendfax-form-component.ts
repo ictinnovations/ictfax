@@ -147,9 +147,9 @@ export class AddSendFaxComponent implements OnInit {
   getDocumentlist() {
     this.document_service.get_DocumentList().then(data => {
       this.documentArray = data;
-      // console.log(this.documentArray);
-      this.documentProgram.document_id = this.documentArray[this.documentArray.length -1].document_id;
-      console.log(this.documentProgram.document_id);
+      if (this.documentArray.length > 0){
+        this.documentProgram.document_id = this.documentArray[this.documentArray.length -1].document_id;
+      }
       /*
       let newEntry:Document = new Document;
       newEntry.document_id = 0;
@@ -188,8 +188,10 @@ export class AddSendFaxComponent implements OnInit {
   getAccountlist() {
     this.sendfax_service.get_AccountList().then(data => {
       this.accountArray = data;
-      this.sendfax.account_id = this.accountArray[this.accountArray.length -1].account_id;
-    })
+      if (this.accountArray.length > 0) {
+        this.sendfax.account_id = this.accountArray[this.accountArray.length - 1].account_id;
+      }
+    });
   }
 
   onSelectAccount(value) {
