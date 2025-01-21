@@ -10,13 +10,13 @@ import { DashboardModule } from './dashboard/dashboard.module';
 import { PagesRoutingModule } from './pages-routing.module';
 import { MiscellaneousModule } from './miscellaneous/miscellaneous.module';
 import { TransmissionModule } from './transmission/transmission.module';
-import { FaxSettingsModule } from './faxsettings/faxsettings.module';
+// import { FaxSettingsModule } from './faxsettings/faxsettings.module';
 import { IncomingCIDNumberModule } from './incoming_cid_number/incoming_cid_number.module';
 
 
 @NgModule({
   imports: [
-    IncomingCIDNumberModule,
+    // IncomingCIDNumberModule,
     PagesRoutingModule,
     ThemeModule,
     NbMenuModule,
@@ -26,7 +26,7 @@ import { IncomingCIDNumberModule } from './incoming_cid_number/incoming_cid_numb
     InFaxModule,
     ChangePasswordModule,
     IncomingCIDNumberModule,
-    FaxSettingsModule
+    // FaxSettingsModule
   ],
   declarations: [
     PagesComponent,

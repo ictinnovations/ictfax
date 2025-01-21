@@ -26,11 +26,11 @@ const routes: Routes = [{
     path: 'Changepass',
     component: ChangePasswordComponent
   },
-  {
+  // {
 
-    path: 'faxsettings',
-    component: FaxSettingsComponent,
-  },
+  //   path: 'faxsettings',
+  //   component: FaxSettingsComponent,
+  // },
   {
     path: 'cid',
     component: CIDComponent,
