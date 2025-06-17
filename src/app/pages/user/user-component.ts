@@ -37,6 +37,11 @@ export class FormsUserComponent implements OnInit {
   minimumItems: number;
   current_items: any[] = [];
 
+
+  showSearchModal = false;
+  filterValue: string = '';
+  selectedField: string = '';
+
   displayedColumns= ['user_id', 'username', 'first_name', 'last_name', 'email', 'Operations'];
 
 
@@ -44,6 +49,37 @@ export class FormsUserComponent implements OnInit {
 
   ngOnInit() {
     this.getUserlist();
+  }
+
+  openSearchModal() {
+  this.showSearchModal = true;
+  }
+
+  resetSearch() {
+    this.filterValue = '';
+    this.selectedField = '';
+    this.showSearchModal = false;
+    this.getUserlist(); 
+  }
+
+  applySearch() {
+      this.showSearchModal = false;
+
+    const queryParams: any = {};
+    if (this.selectedField && this.filterValue) {
+      queryParams[this.selectedField] = this.filterValue;
+    }
+      this.user_service.searchUsers(queryParams).then(data => {
+      this.aUser = data.sort((a, b) => b.user_id - a.user_id);
+      this.length = data.length;
+
+      this.paginate(this.pageSize);
+      this.UserDataSource = this.dataSourceBuilder.create(
+      this.current_items.map(item => ({ data: item }))
+      );
+    }).catch(error => {
+      console.error('Search error:', error);
+    });
   }
 
   getUserlist() {
@@ -56,6 +92,7 @@ export class FormsUserComponent implements OnInit {
 
     });
   }
+  
   paginate(page_Items: string | number) {
     if (typeof page_Items === 'string') {
       if (page_Items === 'next') {

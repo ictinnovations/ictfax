@@ -44,18 +44,61 @@ export class InFaxComponent implements OnInit {
   total_pages: number;
   minimumItems: number;
   current_items: any[] = [];
+  showSearchModal = false;
+  filterValue: string = '';
+  selectedField: string = '';
 
 
   displayedColumns= ['transmission_id','username', 'phone', 'status', 'Timestamp', 'Operations'];
-
-
-
   @ViewChild('filter') filter: ElementRef;
 
 
   ngOnInit() {
     this.getInFaxList();
   }
+
+  openSearchModal() {
+    this.showSearchModal = true;
+  }
+  resetSearch() {
+    this.filterValue = '';
+    this.selectedField = '';
+    this.showSearchModal = false;
+    this.getInFaxList();
+  }
+
+  onFieldChange() {
+    this.filterValue = '';
+  }
+
+  applySearch() {
+    this.showSearchModal = false;
+
+    const queryParams: any = {};
+    if (this.selectedField && this.filterValue) {
+      queryParams[this.selectedField] = this.filterValue;
+    }
+    // console.log('aaaaaaaaaaaaaa',queryParams);
+
+    this.infax_service.searchFaxes(queryParams).then(data => {
+      this.aInFax = data.sort((a, b) => b.transmission_id - a.transmission_id);
+      this.length = data.length;
+
+      data.forEach(element => {
+        if (element.contact_phone == null) {
+          element.contact_phone = 'N/A';
+        }
+      });
+
+      this.paginate(this.pageSize);
+      this.InFaxDataSource = this.dataSourceBuilder.create(
+        this.current_items.map(item => ({ data: item }))
+      );
+    }).catch(error => {
+      console.error('Search error:', error);
+    });
+  }
+
 
   getInFaxList() {
     this.infax_service.get_InFaxTransmissionList().then(data => {
@@ -70,9 +113,8 @@ export class InFaxComponent implements OnInit {
       });
      this.paginate(this.pageSize);
       this.InFaxDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
-  });    
+    });    
   }
-
 
   downloadDocument(transmission_id) {
     this.infax_service.getTransmissionResult(transmission_id).then(response =>  {

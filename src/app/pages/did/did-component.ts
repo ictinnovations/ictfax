@@ -31,6 +31,9 @@ export class FormsDIDComponent implements OnInit {
   total_pages: number;
   minimumItems: number;
   current_items: any[] = [];
+  showSearchModal = false;
+  filterValue: string = '';
+  selectedField: string = '';
 
   displayedColumns= ['phone', 'first_name', 'Operations'];
 
@@ -51,6 +54,34 @@ export class FormsDIDComponent implements OnInit {
       this.DIDDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })),);
 
     });
+  }
+
+  openSearchModal() {
+  this.showSearchModal = true;
+  }
+
+  applySearch() {
+      this.showSearchModal = false;
+
+    const queryParams: any = {};
+    if (this.selectedField && this.filterValue) {
+      queryParams[this.selectedField] = this.filterValue;
+    }
+      this.did_service.search_DID(queryParams).then(data => {
+      this.aDID = data.sort((a,b) => b.account_id - a.account_id);
+      this.length = data.length;
+      this.paginate(this.pageSize);
+      this.DIDDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })),);
+    }).catch(error => {
+      console.error('Search error:', error);
+    });
+  }
+
+  resetSearch() {
+    this.filterValue = '';
+    this.selectedField = '';
+    this.showSearchModal = false;
+    this.getDIDlist(); 
   }
 
 

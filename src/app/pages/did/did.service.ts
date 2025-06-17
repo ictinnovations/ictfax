@@ -5,6 +5,7 @@ import { DID } from './did';
 import { AppService } from '../../../app/app.service';
 
 import 'rxjs/add/operator/toPromise';
+import { promises } from 'dns';
 
 @Injectable()
 
@@ -114,6 +115,17 @@ export class DIDService {
   private handleError(error: any): Promise<any> {
     console.error('An error occurred', error); // for demo purposes only
     return Promise.reject(error.message || error);
+  }
+
+  search_DID(queryParams:any): Promise<any[]> {
+  const headers = new Headers();
+  this.app_service.createAuthorizationHeader(headers);
+  const options = new RequestOptions({ headers: headers });
+  const queryString = Object.keys(queryParams).map(key => `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`).join('&');
+  const searchUrl = `${this.app_service.apiUrlDid}?${queryString}`;
+  return this.http.get(searchUrl, options).toPromise()
+  .then(response => response.json() as DID[])
+  .catch(response => this.app_service.handleError(response));  
   }
 
 }

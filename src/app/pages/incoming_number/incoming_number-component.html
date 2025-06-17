@@ -4,6 +4,39 @@
   </nb-card-header>
 
   <nb-card-body>
+
+    <button type="button" mat-raised-button color="primary" style="font-size:15px; margin-left:10px" (click)="openSearchModal()">
+      <i class="fa fa-search"></i> {{ 'dids.search' | translate }}
+    </button>
+
+    <div *ngIf="showSearchModal"
+      style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); z-index: 999;">
+    </div>
+
+    <nb-card *ngIf="showSearchModal"
+      style="position: fixed; top: 20%; left: 50%; transform: translateX(-50%); z-index: 1000; width: 500px;">
+      <button (click)="showSearchModal = false"
+        style="position: absolute; top: 10px; right: 10px; border: none; background: transparent; font-size: 20px; cursor: pointer; outline: none;">
+        ✕
+      </button>
+      <nb-card-header style="font-size: 26px; font-weight: 800;">{{ 'dids.search_title' | translate }}
+
+      </nb-card-header>
+      <nb-card-body style="display: flex; flex-direction: column; gap: 1rem;">
+        <nb-select fullWidth placeholder="Select field" [(selected)]="selectedField" [overlayContainer]="'body'"
+          [position]="'bottom'" [scrollStrategy]="'reposition'">
+          <nb-option value="phone">{{ 'dids.did_number' | translate }}</nb-option>
+          <nb-option value="first_name">{{ 'dids.title' | translate }}</nb-option>
+
+        </nb-select>
+        <input nbInput fullWidth placeholder="{{ 'dids.search_title' | translate }}" [(ngModel)]="filterValue" />
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <button mat-raised-button color="primary" (click)="resetSearch()">Reset</button>
+          <button mat-raised-button color="primary" (click)="applySearch()">Search</button>
+        </div>
+      </nb-card-body>
+    </nb-card>
       <table [nbTreeGrid]="IncomingNumberDataSource" [nbSort]="IncomingNumberDataSource">
         <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
         <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
