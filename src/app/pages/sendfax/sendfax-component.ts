@@ -45,8 +45,10 @@ export class FormsSendFaxComponent implements OnInit {
 
   displayedColumns= ['transmission_id', 'phone', 'Timestamp', 'username','status', 'Operations'];
 
-
-
+  // Search modal properties
+  showSearchModal = false;
+  filterValue: string = '';
+  selectedField: string = '';
 
   @ViewChild('filter', {static: false}) filter: ElementRef;
 
@@ -58,6 +60,48 @@ export class FormsSendFaxComponent implements OnInit {
       this.refreshData();
     }, 8000);
 
+  }
+
+  openSearchModal() {
+    this.showSearchModal = true;
+  }
+
+  // Reset search and close modal
+  resetSearch() {
+    this.filterValue = '';
+    this.selectedField = '';
+    this.showSearchModal = false;
+    this.getFaxlist();
+  }
+
+  onFieldChange() {
+    this.filterValue = '';
+  }
+
+  applySearch() {
+    this.showSearchModal = false;
+
+    const queryParams: any = {};
+    if (this.selectedField && this.filterValue) {
+      queryParams[this.selectedField] = this.filterValue;
+    }
+    this.sendfax_service.searchFaxes(queryParams).then(data => {
+      this.aSendFax = data.sort((a, b) => b.transmission_id - a.transmission_id);
+      this.length = data.length;
+
+      data.forEach(element => {
+        if (element.contact_phone == null) {
+          element.contact_phone = 'N/A';
+        }
+      });
+
+      this.paginate(this.pageSize);
+      this.SendFaxDataSource = this.dataSourceBuilder.create(
+        this.current_items.map(item => ({ data: item }))
+      );
+    }).catch(error => {
+      console.error('Search error:', error);
+    });
   }
 
   async getFaxlist() {

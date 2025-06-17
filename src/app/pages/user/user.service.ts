@@ -137,4 +137,26 @@ export class AUserService {
     console.error('An error occurred', error); // for demo purposes only
     return Promise.reject(error.message || error);
   }
+
+  searchUser(searchText: string): Promise<User[]> {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({ headers: headers });
+    const url = `${this.app_service.apiUrlUsers}?search=${searchText}`;
+    return this.http.get(url, options).toPromise()
+      .then(response => response.json() as User[])
+      .catch(response => this.app_service.handleError(response));
+  }
+
+  searchUsers(queryParams: any): Promise<any> {
+  const headers = new Headers();
+  this.app_service.createAuthorizationHeader(headers);
+  const options = new RequestOptions({ headers: headers });
+  const queryString = Object.keys(queryParams).map(key => `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`).join('&');
+  const url = `${this.app_service.apiUrlUsers}?${queryString}`;
+  return this.http.get(url, options).toPromise()
+    .then(response => response.json())
+    .catch(response => this.app_service.handleError(response));
+  }
+
 }

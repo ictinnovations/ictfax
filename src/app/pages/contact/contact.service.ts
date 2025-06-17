@@ -66,4 +66,14 @@ export class ContactService {
     console.error('An error occurred', error); // for demo purposes only
     return Promise.reject(error.message || error);
   }
+
+  search_Contact(queryParams: any): Promise<Contact[]> {
+  const headers = new Headers();
+  this.app_service.createAuthorizationHeader(headers);
+  const options = new RequestOptions({ headers: headers });
+  const queryString = Object.keys(queryParams).map(key => `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`).join('&');
+  const searchUrl = `${this.app_service.apiUrlContacts}?${queryString}`;
+  return this.http.get(searchUrl, options).toPromise().then(response => response.json() as Contact[]).catch(response => this.app_service.handleError(response));
+  }
+
 }

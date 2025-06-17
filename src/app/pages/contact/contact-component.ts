@@ -49,6 +49,9 @@ export class FormsContactComponent implements OnInit {
   total_pages: number;
   minimumItems: number;
   current_items: any[] = [];
+  showSearchModal = false;
+  filterValue: string = '';
+  selectedField: string = '';
 
 
   displayedColumns= ['contact_id','first_name', 'last_name','email','phone','operations'];
@@ -66,7 +69,16 @@ export class FormsContactComponent implements OnInit {
     this.getAccountList()
   }
 
+openSearchModal() {
+  this.showSearchModal = true;
+  }
 
+  resetSearch() {
+    this.filterValue = '';
+    this.selectedField = '';
+    this.showSearchModal = false;
+    this.getContactlist(); 
+  }
 
  
   getContactlist() {
@@ -117,6 +129,26 @@ export class FormsContactComponent implements OnInit {
     })
     .catch(this.handleError);
     this.getContactlist();
+  }
+
+  applySearch() {
+      this.showSearchModal = false;
+
+    const queryParams: any = {};
+    if (this.selectedField && this.filterValue) {
+      queryParams[this.selectedField] = this.filterValue;
+    }
+      this.contact_service.search_Contact(queryParams).then(data => {
+      this.contactArray = data.sort((a, b) => b.contact_id - a.contact_id);
+      this.length = data.length;
+
+      this.paginate(this.pageSize);
+      this.dataSource = this.dataSourceBuilder.create(
+      this.current_items.map(item => ({ data: item }))
+      );
+    }).catch(error => {
+      console.error('Search error:', error);
+    });
   }
 
   // Modal related

@@ -51,6 +51,9 @@ export class FormsIncomingNumberComponent implements OnInit {
   total_pages: number;
   minimumItems: number;
   current_items: any[] = [];
+  showSearchModal = false;
+  filterValue: string = '';
+  selectedField: string = '';
 
 
   displayedColumns= ['phone', 'first_name', 'Operations'];
@@ -67,6 +70,35 @@ export class FormsIncomingNumberComponent implements OnInit {
     }
   }
 
+  openSearchModal() {
+  this.showSearchModal = true;
+  }
+
+  applySearch() {
+      this.showSearchModal = false;
+
+    const queryParams: any = {};
+    if (this.selectedField && this.filterValue) {
+      queryParams[this.selectedField] = this.filterValue;
+    }
+      this.did_service.search_DID(queryParams).then(data => {
+      this.aNumbers = data;
+      this.length = data.length;
+      this.paginate(this.pageSize);
+      this.IncomingNumberDataSource = this.IncomingNumberdataSourceBuilder.create(data.map(item => ({ data: item })));
+
+    }).catch(error => {
+      console.error('Search error:', error);
+    });
+  }
+
+  resetSearch() {
+    this.filterValue = '';
+    this.selectedField = '';
+    this.showSearchModal = false;
+    this.getAllList(); 
+  }
+  
   getIncomingNumberlist() {
     this.in_number_service.get_List(this.auser.user_id).then(data => {
       this.aNumbers = data;
@@ -76,7 +108,6 @@ export class FormsIncomingNumberComponent implements OnInit {
     })
     .catch(this.handleError);
   }
-
 
 
   getAllList() {

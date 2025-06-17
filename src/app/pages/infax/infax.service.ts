@@ -59,4 +59,18 @@ export class InFaxService {
     return this.http.delete(confirmedtransmissionUrl, options).toPromise().then(response => response.json())
     .catch(response => this.app_service.handleError(response));
   }
+  searchFaxes(queryParams: any): Promise<any[]> {
+      const headers = new Headers();
+      this.app_service.createAuthorizationHeader(headers);
+      const options = new RequestOptions({ headers: headers });
+      queryParams.service_flag = 2;
+      queryParams.direction = 'inbound';    
+      const queryString = Object.keys(queryParams).map(key => 
+        `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`
+      ).join('&');
+      const url = `${this.app_service.apiUrlTransmission}?${queryString}`;
+      return this.http.get(url, options).toPromise()
+        .then(response => response.json() as any[])
+        .catch(response => this.app_service.handleError(response));
+    }
 }

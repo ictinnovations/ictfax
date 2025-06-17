@@ -32,6 +32,21 @@ export class SendFaxService {
     .then(response => response.json() as SendFax[]).catch(response => this.app_service.handleError(response));
   }
 
+  searchFaxes(queryParams: any): Promise<SendFax[]> {
+    const headers = new Headers();
+    this.app_service.createAuthorizationHeader(headers);
+    const options = new RequestOptions({ headers: headers });
+    queryParams.service_flag = 2;
+    queryParams.direction = 'outbound';    
+    const queryString = Object.keys(queryParams).map(key => 
+      `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`
+    ).join('&');
+    const url = `${this.app_service.apiUrlTransmission}?${queryString}`;
+    return this.http.get(url, options).toPromise()
+      .then(response => response.json() as SendFax[])
+      .catch(response => this.app_service.handleError(response));
+  }
+
   add_SendFax(sendfax: SendFax): Promise<number> {
     const headers = new Headers();
     this.app_service.createAuthorizationHeader(headers);
