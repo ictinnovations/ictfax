@@ -49,7 +49,8 @@
     "unsupported_file": "Unsupported File",
     "submit": "Submit",
     "update": "Update",
-    "operations": "Operations"
+    "operations": "Operations",
+    "search": "Search Contact"
   },
 
   "contact_dnc": {
@@ -188,7 +189,8 @@
     "date_time": "Date and Time",
     "Email": "Email",
     "phone_shd": "Mobile number Should be only Numbers",
-    "invalid_email": "Email is invalid"
+    "invalid_email": "Email is invalid",
+    "search": "Search User"
   },
   "extension": {
     "title": "Extension",
@@ -314,6 +316,7 @@
     "upload": "Upload",
     "title": "Outbound Fax",
     "filter": "Filter Fax",
+    "search": "Search Fax",
     "new": "New Outbound Fax",
     "username": "User Name",
     "date_time": "Date and Time",
@@ -385,7 +388,9 @@
     "range_to": "Range To",
     "range_from_req": "Range From field is required.",
     "range_to_req": "Range to field is required.",
-    "did_req": "DID Number field is required."
+    "did_req": "DID Number field is required.",
+    "search_title": "Search DID",
+    "search": "Search"
   },
 
 
