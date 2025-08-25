@@ -41,17 +41,17 @@
           <nb-option *ngFor="let option of items_page" [value]="option">{{ option }}</nb-option>
         </nb-select>
         <div style="padding-top: 10px;">
-          <nb-icon   style="margin: 0 25px;"   icon="arrowhead-left-outline" 
-            (click)="startIndex > 0 ? paginate('previous') : null"   [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>  
+          <nb-icon   style="margin: 0 25px;"   icon="arrowhead-left-outline"
+            (click)="startIndex > 0 ? paginate('previous') : null"   [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>
           <span>Page {{ currentPage }} of {{ total_pages }}</span>
           <nb-icon  style="margin: 0 25px;"  icon="arrowhead-right-outline" (click)="startIndex + pageSize < aDocument?.length ? paginate('next') : null" [ngClass]="{'disabled-icon': startIndex + pageSize >= aDocument?.length}"> </nb-icon>
-          <span *ngIf="aDocument?.length > 0"> 
+          <span *ngIf="aDocument?.length > 0">
             | Showing {{ startIndex }} - {{ minimumItems }} of {{ length }} items
           </span>
         </div>
-      </div> 
-      
-      
+      </div>
+
+
   </nb-card-body>
 </nb-card>
 <ng-template #content let-modal>
@@ -104,6 +104,10 @@
 <ng-template #pdfViewer let-modal>
   <div class="modal-header">
     <h4 class="modal-title" id="modal-basic-title">{{ 'fax_viewer.title' | translate}}</h4>
+<button mat-raised-button color="primary" (click)="extractText(currentDocumentId)">
+  <nb-icon icon="text-outline" class="mr-2"></nb-icon>
+  Extract Text
+</button>
     <button type="button" class="close" aria-label="Close" (click)="closeModal()">
       <span aria-hidden="true">&times;</span>
     </button>
@@ -120,6 +124,8 @@
         </button>
         <p class="all-pages">Pages {{ page }} / {{ totalPages }}</p>
       </div>
+
+
     </ng-template>
     <pdf-viewer [src]="faxDocumentURL"
       [render-text]="true"
@@ -130,5 +136,40 @@
       style="width: 100%; height: 65vh; overflow-x: hidden!important;"
       >
     </pdf-viewer>
+  </div>
+</ng-template>
+
+
+
+<ng-template #textViewer let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Extracted Document Data</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- Loading state -->
+    <div *ngIf="isExtracting" class="text-center">
+      <nb-icon icon="loader-outline" animation="pulse"></nb-icon>
+      <p>Extracting text from PDF...</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="extractionError" class="alert alert-danger">
+      {{ extractionError }}
+    </div>
+
+    <!-- Display extracted text -->
+    <div *ngIf="!isExtracting && extractedText">
+      <h5>Raw Text</h5>
+      <pre style="white-space: pre-wrap;">{{ extractedText }}</pre>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="closeModal()">Close</button>
+    <button *ngIf="extractedText" type="button" class="btn btn-success" (click)="copyToClipboard()">
+      <nb-icon icon="copy-outline"></nb-icon> Copy Text
+    </button>
   </div>
 </ng-template>
