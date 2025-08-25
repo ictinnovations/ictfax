@@ -1,4 +1,4 @@
-import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef , TemplateRef } from '@angular/core';
 import { DocumentService } from './document.service';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
@@ -27,6 +27,8 @@ import { Document } from './document';
 })
 
 export class FormsDocumentComponent implements OnInit {
+      @ViewChild('textViewer', { static: true }) textViewer: TemplateRef<any>;
+
   constructor(
     private document_service: DocumentService,
     private dataSourceBuilder: NbTreeGridDataSourceBuilder<Document>,
@@ -39,7 +41,7 @@ export class FormsDocumentComponent implements OnInit {
   DocumentDataSource: NbTreeGridDataSource<Document>;
   length: number;
   closeResult: any;
-
+currentDocumentId: string | null = null;
   contactArray: Contact[] = [];
   dataService: CompleterData;
   trans_id:any;
@@ -58,6 +60,11 @@ export class FormsDocumentComponent implements OnInit {
   items_page = [5, 10, 25, 100];
   pageSize = 10;
   startIndex: number = 0;
+    extractedText: string = '';
+extractedData: any = null;  // optional if you want structured fields
+isExtracting: boolean = false;
+extractionError: string | null = null;
+
   currentPage: number;
   total_pages: number;
   minimumItems: number;
@@ -73,10 +80,46 @@ export class FormsDocumentComponent implements OnInit {
     this.getAccountList()
   }
 
+
+  async extractText(document_id: string) {
+  this.isExtracting = true;
+  this.extractionError = null;
+  this.extractedText = '';
+  this.extractedData = null;
+
+  // Open modal first for immediate feedback
+  this.modalRef = this.modalService.open(this.textViewer, { size: 'lg' });
+
+  try {
+    const { rawText, usedOCR } = await this.document_service.extractTextAuto(document_id);
+    this.extractedText = rawText;
+
+    // Optional: you can parse structured data here if needed
+    // this.extractedData = parseStructuredData(rawText);
+
+    console.log('Extracted Text:', rawText);
+    console.log('Used OCR?', usedOCR);
+  } catch (error) {
+    console.error('Failed to extract text:', error);
+    this.extractionError = 'Failed to extract text from this document.';
+  } finally {
+    this.isExtracting = false;
+  }
+}
+
+copyToClipboard() {
+  if (!this.extractedText) return;
+  navigator.clipboard.writeText(this.extractedText).then(() => {
+    alert('Text copied to clipboard!');
+  }).catch(err => console.error('Copy failed', err));
+}
+
+
+
   getDocumentlist() {
     this.document_service.get_DocumentList().then(data => {
       this.aDocument = data.sort((a, b) => b.document_id - a.document_id);
-      this.length = data.length;   
+      this.length = data.length;
 
       this.paginate(this.pageSize);
       this.DocumentDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
@@ -89,7 +132,7 @@ export class FormsDocumentComponent implements OnInit {
     if (typeof page_Items === 'string') {
       if (page_Items === 'next') {
         if (this.startIndex + this.pageSize < this.length) {
-          this.startIndex += this.pageSize; 
+          this.startIndex += this.pageSize;
         }
       } else if (page_Items === 'previous') {
         if (this.startIndex > 0) {
@@ -98,14 +141,14 @@ export class FormsDocumentComponent implements OnInit {
       }
     } else {
       this.pageSize = page_Items;
-      this.startIndex = 0; 
+      this.startIndex = 0;
     }
     this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
     this.total_pages = Math.ceil(this.length / this.pageSize);
-    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
-    
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);
+
     const end = Math.min(this.startIndex + this.pageSize, this.length);
-    this.current_items = this.aDocument.slice(this.startIndex, end); 
+    this.current_items = this.aDocument.slice(this.startIndex, end);
     this.DocumentDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
   }
 
@@ -158,11 +201,11 @@ export class FormsDocumentComponent implements OnInit {
   }
 
   // Show Fax PDF
-  showPDF(content, document_id) {
-    this.modalRef = this.modalService.open(content,  { size: 'md' });
-    this.viewFaxDocument(document_id);
-    // console.log('check docuemnt data', this.viewFaxDocument(document_id));
-  }
+ showPDF(content: any, document_id: string) {
+  this.currentDocumentId = document_id;   // ✅ Save ID for later use
+  this.modalRef = this.modalService.open(content, { size: 'md' });
+  this.viewFaxDocument(document_id);
+}
   // Load PDF document
   viewFaxDocument(document_id) {
     this.totalPages = 0;
