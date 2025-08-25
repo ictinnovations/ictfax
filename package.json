@@ -29,8 +29,7 @@
     "release:changelog": "npm run conventional-changelog -- -p angular -i CHANGELOG.md -s"
   },
   "dependencies": {
-    "@abacritt/angularx-social-login": "^1.1.0",
-    "@agm/core": "^1.1.0",
+    "@abacritt/angularx-social-login": "^1.2.6",
     "@angular/animations": "^16.1.8",
     "@angular/cdk": "^13.3.9",
     "@angular/common": "^13.3.6",
@@ -81,7 +80,7 @@
     "normalize.css": "6.0.0",
     "nvm": "0.0.4",
     "pace-js": "1.0.2",
-    "pdfjs-dist": "^2.6.347",
+    "pdfjs-dist": "^2.13.216",
     "raphael": "^2.3.0",
     "roboto-fontface": "0.8.0",
     "rxjs": "^6.6.7",
