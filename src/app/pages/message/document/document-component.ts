@@ -1,5 +1,6 @@
 import { Component, OnInit, ViewChild, ElementRef , TemplateRef } from '@angular/core';
 import { DocumentService } from './document.service';
+import { OcrService } from './ocr.service';
 import { MatSort, Sort } from '@angular/material/sort';
 import { MatPaginator } from '@angular/material/paginator';
 import { DocumentDatabase } from './document-database.component';
@@ -31,6 +32,8 @@ export class FormsDocumentComponent implements OnInit {
 
   constructor(
     private document_service: DocumentService,
+    private ocr_service: OcrService,
+
     private dataSourceBuilder: NbTreeGridDataSourceBuilder<Document>,
     private modalService: NgbModal,
     private contact_service: ContactService,
@@ -91,7 +94,7 @@ extractionError: string | null = null;
   this.modalRef = this.modalService.open(this.textViewer, { size: 'lg' });
 
   try {
-    const { rawText, usedOCR } = await this.document_service.extractTextAuto(document_id);
+    const { rawText, usedOCR } = await this.ocr_service.extractTextAuto(document_id);
     this.extractedText = rawText;
 
     // Optional: you can parse structured data here if needed
