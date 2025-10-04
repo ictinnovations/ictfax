@@ -151,35 +151,35 @@ export const userMenuItems: MenuItem[] = [   {
   icon: 'arrow-downward-outline',
   key : 'my_dids'
 },
-{
-  title: 'Administration',
-  icon: 'settings-2-outline',
-  key : 'administration',
-  children: [
-{
-  title: 'DID Numbers',
-  link: '/pages/did/did',
-  icon: 'smartphone-outline',
-  key : 'did_number'
-},
-{
-  title: 'Provider / Trunks',
-  link: '/pages/provider/provider',
-  icon: 'shuffle-2-outline',
-  key : 'provider'
-},
-{
-  title: 'User Management',
-  link: '/pages/user/user',
-  icon: 'person-done-outline',
-  key : 'user_management'
-},
-{
-  title: 'Extensions',
-  link: '/pages/extension/extension',
-  icon: 'hash-outline',
-  key : 'extensions'
-},
-],
-},
+//{
+//  title: 'Administration',
+//  icon: 'settings-2-outline',
+//  key : 'administration',
+//  children: [
+//{
+//  title: 'DID Numbers',
+//  link: '/pages/did/did',
+//  icon: 'smartphone-outline',
+//  key : 'did_number'
+//},
+//{
+//  title: 'Provider / Trunks',
+//  link: '/pages/provider/provider',
+//  icon: 'shuffle-2-outline',
+//  key : 'provider'
+//},
+//{
+// title: 'User Management',
+//  link: '/pages/user/user',
+//  icon: 'person-done-outline',
+//  key : 'user_management'
+//},
+//{
+//  title: 'Extensions',
+//  link: '/pages/extension/extension',
+//  icon: 'hash-outline',
+//  key : 'extensions'
+//},
+//],
+//},
 ];
