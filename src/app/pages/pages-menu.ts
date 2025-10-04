@@ -128,7 +128,7 @@ export const userMenuItems: MenuItem[] = [   {
       title: 'Contacts',
       link: '/pages/contact/contacts',
       icon: 'person-add-outline',
-      key : 'contact'
+      key : 'contacts'
     },
     
     // {
@@ -143,7 +143,7 @@ export const userMenuItems: MenuItem[] = [   {
   title: 'Fax Documents',
   link: '/pages/message/document',
   icon: 'file-text-outline',
-  key : 'fax_document'
+  key : 'fax_documents'
 },
 {
   title: 'My DIDs',
