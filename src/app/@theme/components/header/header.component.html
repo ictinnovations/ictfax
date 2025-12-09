@@ -1,0 +1,48 @@
+<div class="header-container">
+  <div class="logo-container">
+    <a (click)="toggleSidebar()" href="#" class="sidebar-toggle">
+      <nb-icon icon="menu-2-outline"></nb-icon>
+    </a>
+    <img src="{{ image_url }}"onerror="this.src='../../../../assets/images/ictfax-logo-org.png'" />
+  </div>
+</div>
+
+<div class="header-container">
+
+  <nb-select
+  [selected]="currentTheme"
+  (selectedChange)="changeTheme($event)"
+  status="primary"
+>
+  <nb-option *ngFor="let theme of themes" [value]="theme.value">{{
+    theme.name
+  }}</nb-option>
+</nb-select>
+&nbsp;&nbsp;&nbsp;
+<nb-select
+  [selected]="translate.currentLang"
+  (selectedChange)="translate.use($event)"
+  status="primary"
+>
+  <nb-option *ngFor="let lang of translate.getLangs()" [value]="lang">{{
+    lang
+  }}</nb-option>
+</nb-select>
+
+  <nb-actions size="small">
+ <nb-action>
+      <ngx-notifications></ngx-notifications>
+    </nb-action>
+
+
+    <nb-action class="user-action" *nbIsGranted="['view', 'user']">
+      <nb-user [nbContextMenu]="userMenu"
+               [onlyPicture]="userPictureOnly"
+               [name]="auser?.username"
+               [picture]="auser?.picture">
+      </nb-user>
+    </nb-action>
+
+
+  </nb-actions>
+</div>

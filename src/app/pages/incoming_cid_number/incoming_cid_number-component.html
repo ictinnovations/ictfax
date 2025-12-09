@@ -1,0 +1,51 @@
+<nb-card>
+  <nb-card-header>
+    {{ 'my_cids.cid_title' | translate}}
+  </nb-card-header>
+
+  <nb-card-body>
+    <div class="example-container mat-elevation-z8">
+      <mat-table #table [dataSource]="aNumbers" matSort>
+        <ng-container matColumnDef="phone">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'my_cids.cid_number' | translate}}:</mat-header-cell>
+          <mat-cell *matCellDef="let in_num" style="text-align:left">
+            {{in_num.phone}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="first_name">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'my_cids.title' | translate}}</mat-header-cell>
+          <mat-cell *matCellDef="let in_num" style="text-align:left">
+            {{in_num.first_name}}</mat-cell>
+        </ng-container>  
+        <ng-container matColumnDef="assigned_to">
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'cids.assigned_to' | translate }}</mat-header-cell>
+          <mat-cell *matCellDef="let cid" style="text-align:left">
+            {{cid.name}}</mat-cell>
+        </ng-container>
+        <ng-container matColumnDef="forward_to"> 
+          <mat-header-cell *matHeaderCellDef mat-sort-header>{{ 'my_cids.For___ward_to' | translate }}</mat-header-cell>
+          <mat-cell *matCellDef="let User" style="text-align:left">
+            {{User.email}}</mat-cell>
+        </ng-container>
+        <ng-container cdkColumnDef="Operations">
+          <mat-header-cell *matHeaderCellDef>{{ 'general.operations' | translate}}</mat-header-cell>
+          <mat-cell *matCellDef="let in_num">
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/incoming_cid_number/incoming_number/{{in_num.account_id}}" title="Edit"><i class="ion-edit"></i></a></mat-icon>
+            </button>
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/incoming_cid_number/incoming_number/{{in_num.account_id}}/assign" title="Assign"><i class="ion-person"></i></a></mat-icon>
+            </button>
+          </mat-cell>
+        </ng-container>
+        <mat-header-row *matHeaderRowDef="displayedColumns"></mat-header-row>
+        <mat-row *matRowDef="let row;columns:displayedColumns;"></mat-row>
+      </mat-table>
+      <mat-paginator #paginator
+        [length] = "length"
+        [pageIndex]="0"
+        [pageSize]="10"
+        [pageSizeOptions]="[5, 10, 25, 100]">
+      </mat-paginator>
+    </div>
+  </nb-card-body>
+</nb-card>

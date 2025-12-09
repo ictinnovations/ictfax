@@ -1,0 +1,106 @@
+<nb-card>
+  <nb-card-header>
+    {{ 'User.list' | translate}}
+    <input nbInput fullWidth placeholder="{{ 'user.filter' | translate }}" [nbFilterInput]="UserDataSource" id="search"
+      class="form-control cc" style="float:right">
+  </nb-card-header>
+
+  <nb-card-body>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px"
+      [routerLink]="['/pages/user/user/new']"><i class="fa fa-plus"></i> {{ 'User.add' | translate}}</button>
+
+    <button type="button" mat-raised-button color="primary" style="font-size:15px; margin-left:10px"
+      (click)="openSearchModal()">
+      <i class="fa fa-search"></i> {{ 'user.search' | translate }}
+    </button>
+
+    <div *ngIf="showSearchModal"
+      style="position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.5); z-index: 999;">
+    </div>
+
+    <nb-card *ngIf="showSearchModal"
+      style="position: fixed; top: 20%; left: 50%; transform: translateX(-50%); z-index: 1000; width: 500px;">
+      <button (click)="showSearchModal = false"
+        style="position: absolute; top: 10px; right: 10px; border: none; background: transparent; font-size: 20px; cursor: pointer; outline: none;">
+        ✕
+      </button>
+      <nb-card-header style="font-size: 26px; font-weight: 800;">{{ 'user.search' | translate }}
+
+      </nb-card-header>
+      <nb-card-body style="display: flex; flex-direction: column; gap: 1rem;">
+
+        <nb-select fullWidth placeholder="Select field" [(selected)]="selectedField" [overlayContainer]="'body'"
+          [position]="'bottom'" [scrollStrategy]="'reposition'">
+          <nb-option value="username">{{ 'user.Username' | translate }}</nb-option>
+          <nb-option value="first_name">{{ 'user.fname' | translate }}</nb-option>
+          <nb-option value="last_name">{{ 'user.lname' | translate }}</nb-option>
+          <nb-option value="email">{{ 'user.email' | translate }}</nb-option>
+        </nb-select>
+        <input nbInput fullWidth placeholder="{{ 'user.filter' | translate }}" [(ngModel)]="filterValue" />
+
+        <div style="display: flex; justify-content: flex-end; gap: 0.5rem;">
+          <button mat-raised-button color="primary" (click)="resetSearch()">Reset</button>
+          <button mat-raised-button color="primary" (click)="applySearch()">Search</button>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <br><br>
+    <table [nbTreeGrid]="UserDataSource" [nbSort]="UserDataSource">
+      <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+      <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+      <ng-container nbTreeGridColumnDef="user_id">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'general.ID' | translate}}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.user_id}}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="username">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'user.Username' | translate}}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.username}}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="first_name">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'user.fname' | translate}}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{row.data.first_name}} {{row.data.last_name}}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="last_name">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{'user.lname'| translate}}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.last_name}}
+        </td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="email">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'user.email' | translate}}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row"> {{row.data.email}}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="Operations">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let user">
+          <button mat-icon-button color="primary" style="font-size:20px">
+            <mat-icon><a routerLink="/pages/user/user/{{user.data.user_id}}" title="Edit"><nb-icon
+                  icon="edit-2-outline"></nb-icon></a></mat-icon>
+          </button>
+          <button mat-icon-button color="primary" style="font-size:20px">
+            <mat-icon style="color: red" (click)="showStaticModal(user.data.user_id)"><nb-icon icon="trash-2-outline"
+                title="Delete"></nb-icon></mat-icon>
+          </button>
+        </td>
+      </ng-container>
+    </table>
+    <div style="padding: 30px; display: flex; justify-content: flex-end;">
+      <span style="text-align: center; padding-top: 10px;">Items per page: &nbsp;&nbsp;</span>
+      <nb-select [(ngModel)]="pageSize" (ngModelChange)="paginate($event)">
+        <nb-option *ngFor="let option of items_page" [value]="option">{{ option }}</nb-option>
+      </nb-select>
+      <div style="padding-top: 10px;">
+        <nb-icon style="margin: 0 25px;" icon="arrowhead-left-outline"
+          (click)="startIndex > 0 ? paginate('previous') : null"
+          [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>
+        <span>Page {{ currentPage }} of {{ total_pages }}</span>
+        <nb-icon style="margin: 0 25px;" icon="arrowhead-right-outline"
+          (click)="startIndex + pageSize < aUser?.length ? paginate('next') : null"
+          [ngClass]="{'disabled-icon': startIndex + pageSize >= aUser?.length}"> </nb-icon>
+        <span *ngIf="aUser?.length > 0">
+          | Showing {{ startIndex }} - {{ minimumItems }} of {{ length }} items
+        </span>
+      </div>
+    </div>
+  </nb-card-body>
+</nb-card>

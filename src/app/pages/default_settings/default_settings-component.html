@@ -1,0 +1,17 @@
+<h4>Default Settings</h4>
+<br>
+<div class="col-lg-12">
+  <nb-card>
+    <nb-card-header>
+      General Settings
+    </nb-card-header>
+    <nb-card-body>
+      <label for="caller_id">Default Outgoing Caller ID</label>
+      <br>
+      <input [(ngModel)]="settings.caller_id" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="caller_id" required/>
+      <br>
+      <p class="pargrph">When a caller has no did, then above caller id will be used for outgoing calls.</p>
+    </nb-card-body>
+  </nb-card>
+  <button type="button" class="btn btn-primary" (click)="updateSettings()">Submit</button>
+</div>

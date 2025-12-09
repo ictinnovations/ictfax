@@ -1,0 +1,39 @@
+<h3>{{ 'my_cids.cid_number' | translate }}</h3>
+<div class="col-lg-12">
+  <form id="form" #f1="ngForm">
+    <nb-card>
+      <nb-card-header>
+        {{ 'my_cids.cid_info' | translate }}
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-9">
+            <div class="form-group">
+              <label for="range_from">{{ 'cids.range_from' | translate }}:</label>
+              <input [(ngModel)]="cid.range_from" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="range_from" #range_from="ngModel" required/>
+              <div [hidden]="range_from.valid || range_from.pristine" class="alert alert-danger">
+                <div [hidden]="!range_from.hasError('required')">{{ 'cids.range_from_req' | translate }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-9">
+            <div class="form-group">
+              <label for="cid_number">{{ 'cids.range_to' | translate }}:</label>
+              <input [(ngModel)]="cid.range_to" [ngModelOptions]="{standalone: true}" type="text" class="form-control" #range_to="ngModel" id="range_to" required/>
+              <div [hidden]="range_to.valid || range_to.pristine" class="alert alert-danger">
+                <div [hidden]="!range_to.hasError('required')">{{ 'cids.range_to_req' | translate }}</div>
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-9">
+            <div class="form-group">
+              <label for="title">{{ 'my_cids.title' | translate }}:</label>
+              <input [(ngModel)]="cid.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+    <button type="button" class="btn btn-success" (click)="addCID()">{{ 'buttons.submit' | translate }}</button>
+  </form>
+</div>

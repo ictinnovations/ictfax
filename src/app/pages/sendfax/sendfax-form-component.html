@@ -1,0 +1,238 @@
+<h3>{{'outbound_fax.send_fax_doc' | translate}}</h3>
+<div class="col-lg-12">
+  <form id="form1" #f1="ngForm">
+    <nb-card>
+      <nb-card-header>
+        {{'outbound_fax.title1' | translate}}
+      </nb-card-header>
+      <nb-card-body>
+        <div class="form-group">
+          <label for="title">{{'outbound_fax.title1' | translate}}:</label>
+          <input [(ngModel)]="sendfax.title" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth id="title" required/>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+        <nb-card-header>
+          {{'outbound_fax.choose' | translate}} <a href onclick="return false;" (click)="open(content)">{{'outbound_fax.upload' | translate}}</a>
+
+        </nb-card-header>
+        <nb-card-body>
+          <div>
+            <label for="document">{{'outbound_fax.document' | translate}}:</label>
+            <nb-select class="dddd" name="document" [(ngModel)]="documentProgram.document_id" (change)="onSelect($event.target.value)">
+              <nb-option *ngFor="let document of documentArray; let i = index" [value]="document.document_id">
+                {{ document.name }}
+              </nb-option>
+            </nb-select>
+          </div>
+        </nb-card-body>
+      </nb-card>
+
+      <!--
+
+      <div *ngIf="(this.documentProgram.document_id == undefined || this.file_sent == true || this.file_sending == true)">
+          <nb-card>
+              <nb-card-header>
+               Upload Document
+              </nb-card-header>
+              <nb-card-body>
+                  <div class="col-sm-6">
+                    <div class="form-group">
+                      <label for="name">Document Name:</label>
+                      <input [(ngModel)]="document.name" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth id="name" required/>
+                    </div>
+                  </div>
+
+
+                <div class="col-sm-6">
+                  <div class="form-group">
+
+                      <label for="type">Quality Type:</label>
+                      <nb-select class = "dddd" name = "quality" [(ngModel)]= "document.quality" [ngModelOptions]="{standalone: true}" [disabled]="(document_id>0)">
+                        <nb-option value = "">Please Select an Option below</nb-option>
+                        <nb-option value="standard">Standard</nb-option>
+                        <nb-option value="fine">Fine</nb-option>
+                        <nb-option value="super">Super</nb-option>
+                      </nb-select>
+
+                  </div>
+                </div>
+
+                <div class="container">
+                    <div class="navbar navbar-default">
+                    </div>
+                    <div class="row">
+                      <div class="col-md-3">
+                        <label>Select File: (pdf, png, tiff and jpeg are supported only)</label><br>
+                        <input type="file" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" ng2FileSelect [uploader]="uploader" multiple  /><br/>
+                      </div>
+                    </div>
+                  </div>
+                  <div *ngIf="unsupportedErr">
+                    <br>
+                    <label style="color:red" text-center>Unsupported file type</label>
+                  </div>
+                  <div *ngFor="let item of uploader.queue">
+                    <br>
+                    <label>{{ item?.file?.name }}</label>
+                    <i *ngIf = "(this.file_sending == false && this.file_sent == false)" class="nb-close smmmm" (click)="remove(item); item.remove()"></i>
+
+                    <i *ngIf = "(this.file_sending == true && this.file_sent == false)" class="fa fa-cog cmmmm"></i>
+                    <i *ngIf = "(this.file_sent == true && this.file_sending == false)" class="nb-checkmark gmmmm"></i>
+                  </div>
+                  <br><br>
+
+                  <div class="col-sm-6">
+                      <div class="form-group">
+                        <label for="description">Description:</label>
+                        <input [(ngModel)]="document.description" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth id="description" required/>
+                      </div>
+                    </div>
+
+
+                  <div class="col-sm-6">
+                    <button type="button" class="btn btn-success" (click)="file_upload()" [disabled] = "(this.uploader.queue.length - 1 < 0 || (file == '' || document.name == undefined || document.name == '') || this.file_sending == true || this.file_sent == true)">Upload File</button>
+                  </div>
+
+              </nb-card-body>
+            </nb-card>
+            </div>
+
+            !-->
+
+            <nb-card class="classcard">
+              <nb-card-header>{{'outbound_fax.dest' | translate}}</nb-card-header>
+              <nb-card-body>
+                <div>
+                  <label for="phone">{{'transmission.phone_num_destination_contact' | translate}}</label>
+                <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
+              </div>
+              </nb-card-body>
+            </nb-card>
+
+    <!-- <nb-card>
+      <nb-card-header>
+        {{'outbound_fax.retry' | translate}}
+      </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <div>
+              <label for="try_allowed">{{'outbound_fax.retry' | translate}}:</label>
+              <nb-select class = "dddd" name = "try_allowed" [(ngModel)]= "sendfax.try_allowed" [ngModelOptions]="{standalone: true}">
+                <nb-option value = "">{{'outbound_fax.nb-select' | translate}}</nb-option>
+                <nb-option value="1">1</nb-option>
+                <nb-option value="2">2</nb-option>
+                <nb-option value="3">3</nb-option>
+              </nb-select>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card> -->
+
+    <nb-card>
+      <nb-card-header>
+        {{'account.title' | translate}}
+      </nb-card-header>
+      <nb-card-body>
+        <div>
+          <label for="account">{{'account.choose_caller_id' | translate}}:</label>
+          <nb-select class="dddd" name="account" [(ngModel)]="sendfax.account_id" (change)="onSelectAccount($event.target.value)">
+            <nb-option *ngFor="let acc of accountArray; let i = index" [value]="acc.account_id">{{ acc.phone }}</nb-option>
+          </nb-select>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+
+
+    <div>
+      <button type="button" class="btn btn-success" (click)="sendnewFax()" [disabled] = "(documentProgram.document_id == undefined || sendfax.title == undefined || sendfax.title == '')">{{'outbound_fax.send_fax' | translate}}</button>
+    </div>
+  </form>
+</div>
+
+<nb-card>
+  <nb-card-header>Schedule Fax</nb-card-header>
+  <nb-card-body>
+
+    <label>
+      <input type="checkbox" [(ngModel)]="sendfax.scheduled" />
+      Send Later (Schedule)
+    </label>
+
+    <div *ngIf="sendfax.scheduled">
+      <label>Select Date & Time:</label>
+    <input type="datetime-local" nbInput fullWidth [(ngModel)]="scheduledString" />
+
+    </div>
+
+  </nb-card-body>
+</nb-card>
+
+
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{'outbound_fax.upload_document' | translate}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="onSave()"><span aria-hidden="true">&times;</span></button>
+  </div>
+
+  <div class="modal-body">
+        <div class="col-sm-6">
+            <div class="form-group">
+              <label for="name">{{'outbound_fax.document_name' | translate}}:</label>
+              <input [(ngModel)]="document.name" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth id="name" required/>
+            </div>
+          </div>
+
+      <div class="col-sm-6">
+          <div class="form-group">
+               <label for="type">{{'outbound_fax.quality_type' | translate}}:</label>
+              <nb-select class = "dddd" name = "quality" [(ngModel)]= "document.quality" [ngModelOptions]="{standalone: true}" [disabled]="(document_id>0)">
+                <nb-option value = "">{{'outbound_fax.nb-select' | translate}}</nb-option>
+                <nb-option value="standard">{{'outbound_fax.standard' | translate}}</nb-option>
+                <nb-option value="fine">{{'outbound_fax.fine' | translate}}</nb-option>
+                <nb-option value="super">{{'outbound_fax.super' | translate}}</nb-option>
+              </nb-select>
+          </div>
+        </div>
+
+        <div class="container">
+            <div class="navbar navbar-default"></div>
+            <div class="row">
+              <div class="col-md-3">
+
+                <label style="font-size: 10px;">{{'outbound_fax.select_file' | translate}}</label><br>
+                <input type="file" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" ng2FileSelect [uploader]="uploader" multiple  /><br/>
+              </div>
+            </div>
+          </div>
+          <div *ngIf="unsupportedErr">
+            <br>
+            <label style="color:red" text-center>{{'outbound_fax.unsupported_file' | translate}}</label>
+          </div>
+          <div *ngFor="let item of uploader.queue">
+            <br>
+            <label>{{ item?.file?.name }}</label>
+            <i *ngIf = "(this.file_sending == false && this.file_sent == false)" class="nb-close smmmm" (click)="remove(item); item.remove()"></i>
+
+            <i *ngIf = "(this.file_sending == true && this.file_sent == false)" class="fa fa-cog cmmmm"></i>
+            <i *ngIf = "(this.file_sent == true && this.file_sending == false)" class="nb-checkmark gmmmm"></i>
+          </div>
+          <br><br>
+
+          <div class="col-sm-6">
+              <div class="form-group">
+                <label for="description">{{'outbound_fax.description' | translate}}:</label>
+                <input [(ngModel)]="document.description" [ngModelOptions]="{standalone: true}" type="text" nbInput fullWidth id="description" required/>
+              </div>
+            </div>
+
+            <div class="col-sm-6">
+            <button type="button" class="btn btn-success" (click)="file_upload()" [disabled] = "(this.uploader.queue.length - 1 < 0 || (file == '' || document.name == undefined || document.name == '') || this.file_sending == true || this.file_sent == true)">{{'outbound_fax.upload_file' | translate}}</button>
+          </div>
+  </div>
+</ng-template>

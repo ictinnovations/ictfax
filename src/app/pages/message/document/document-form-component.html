@@ -1,0 +1,93 @@
+<h3>{{'document.add' | translate}}</h3>
+<div class="col-lg-12">
+  <form id="form1" #f1="ngForm">
+    <nb-card>
+      <nb-card-header>
+        {{'document.document_info' | translate}}
+      </nb-card-header>
+      <nb-card-body>
+        <div class="row">
+          <div class="col-sm-6">
+            <div class="form-group">
+              <label for="name">{{'document.document_name' | translate}}:</label>
+              <input [(ngModel)]="document.name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="name" required/>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        {{'document.supported_document' | translate}}
+      </nb-card-header>
+      <nb-card-body>
+        <div class="container">
+          <div class="navbar navbar-default">
+          </div>
+          <div class="row">
+            <div class="col-md-3">
+              <input type="file" nbInput fullWidth accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" ng2FileSelect [uploader]="uploader" multiple  /><br/>
+            </div>
+          </div>
+        </div>
+        <div *ngIf="unsupportedErr">
+          <br>
+          <label style="color:red" text-center>{{'document.unsupported_file' | translate}}</label>
+        </div>
+        <div *ngFor="let item of uploader.queue">
+          <br>
+          <label>{{ item?.file?.name }}</label>
+          <i class="nb-close smmmm" (click)="item.remove()"></i>
+          <!--
+          <button type="button" class="btn btn-primary btn-icon btn-xs smmmm" (click)="item.remove()">
+            <i class="nb-close" (click)="item.remove()"></i>
+          </button>
+          !-->
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        {{'document.fax_quality' | translate}}
+      </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <div>
+              <label for="type">{{'outbound_fax.quality_type' | translate}}:</label>
+              <nb-select class = "dddd" name = "quality" [(ngModel)]= "document.quality" [ngModelOptions]="{standalone: true}" [disabled]="(document_id>0)">
+                <nb-option value = "">{{'outbound_fax.choose' | translate}}</nb-option>
+                <nb-option value="standard">{{'outbound_fax.standard' | translate}}</nb-option>
+                <nb-option value="fine">{{'outbound_fax.fine' | translate}}</nb-option>
+                <nb-option value="super">{{'outbound_fax.super' | translate}}</nb-option>
+              </nb-select>
+            </div>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <nb-card>
+      <nb-card-header>
+        {{'document.description' | translate}}
+      </nb-card-header>
+      <nb-card-body>
+        <div class="col-sm-6">
+          <div class="form-group">
+            <label for="description">{{'document.description' | translate}}:</label>
+            <input [(ngModel)]="document.description" [ngModelOptions]="{standalone: true}" type="text" class="form-control" nbInput fullWidth id="description" required/>
+          </div>
+        </div>
+      </nb-card-body>
+    </nb-card>
+
+    <div *ngIf="(document_id>0)">
+      <button type="button" class="btn btn-primary" (click)="updateDocument()">{{'buttons.update' | translate}}</button>
+    </div>
+    <div *ngIf="(!document_id)">
+      <button type="button" class="btn btn-success" (click)="addDocument()">{{'buttons.submit' | translate}}</button>
+    </div>
+  </form>
+</div>

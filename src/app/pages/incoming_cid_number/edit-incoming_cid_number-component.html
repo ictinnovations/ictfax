@@ -1,0 +1,16 @@
+<h4>{{ 'my_dids.did_info' | translate }}</h4>
+<br>
+<div class="col-lg-12">
+  <nb-card>
+    <nb-card-body>
+      <label for="phone">{{ 'my_dids.did_number' | translate }}</label>
+      <br>
+      <input [(ngModel)]="incomingNumber.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="phone" disabled required/>
+      <br>
+      <label>{{ 'my_dids.title' | translate }}:</label>
+      <input [(ngModel)]="incomingNumber.first_name" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="first_name" required/>
+    </nb-card-body>
+  </nb-card>
+  
+  <button type="button" class="btn btn-primary" (click)="update_cid()">{{'buttons.submit' | translate}}</button>
+</div>

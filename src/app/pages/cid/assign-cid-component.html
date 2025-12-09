@@ -1,0 +1,29 @@
+<h4>{{ 'cids.assign_cid' | translate }}</h4>
+<br>
+<div class="col-lg-12">
+  <nb-card>
+    <nb-card-header>
+      {{ 'my_cids.did_info' | translate }}
+    </nb-card-header>
+    <nb-card-body>
+      <label for="phone">{{ 'my_cids.cid_number' | translate }}</label>
+      <br>
+      <input [(ngModel)]="cid.phone" [ngModelOptions]="{standalone: true}" type="text" class="form-control" placeholder="{{ 'my_cids.did_number' | translate }}" disabled id="phone" required/>
+    </nb-card-body>
+  </nb-card>
+  <nb-card>
+    <nb-card-header>
+      {{ 'user.user_info' | translate }}
+    </nb-card-header>
+    <nb-card-body>
+      <label>{{ 'cids.assign_to_user' | translate }}</label><br>
+      <select class = "form-control" name = "user" [(ngModel)]= "selectedUsr">  
+        <option *ngFor="let user of user"  
+          [ngValue] = "user" >  
+          {{user.username}} <ng-template [ngIf]="user.company">- {{user.company}}</ng-template>
+        </option>  
+      </select><br>
+    </nb-card-body>
+  </nb-card>
+  <button type="button" class="btn btn-primary" (click)="forwardDID()">{{ 'buttons.submit' | translate }}</button>
+</div>

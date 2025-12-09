@@ -1,0 +1,83 @@
+<nb-card>
+  <nb-card-header>
+    {{ 'contact_dnc.list' | translate}}
+    <input nbInput fullWidth placeholder="{{ 'contact_dnc.filter' | translate }}" [nbFilterInput]="dataSource" id="search" class="form-control cc" style="float:right"> 
+
+  </nb-card-header>
+  <nb-card-body>
+    <button type="button" mat-raised-button color="primary" style="font-size: 15px" [routerLink]="['/pages/contact_dnc/contact_dnc/new']"><i class="fa fa-plus"></i> {{ 'contact_dnc.add' | translate}}</button>&nbsp;
+    <button type="button" mat-raised-button color="primary" style="font-size: 15px" (click)="getCSV()">
+      <i class="fa fa-file" title="DNC File download"> {{ 'contact_dnc.export' | translate}}</i>
+    </button>&nbsp; &nbsp;
+    <dialog #dialog>
+      <div class="dialog-header">
+        <button type="button" class="close" aria-label="Close" (click)="dialog.close()"><span aria-hidden="true">&times;</span> </button>
+      </div>
+      <div>
+        <input type="file" accept="text/csv" ng2FileSelect [uploader]="uploader" multiple /> &nbsp;
+        <button mat-raised-button color="primary" style="font-size: 15px">
+          <i class="fa fa-upload" (click)="uploadFiles()" title="Import DNC file" (click)="dialog.close()">{{ 'contact_dnc.upload' | translate }}</i>
+        </button>
+      </div>
+      <div *ngIf="unsupportedErr"><br />
+        <label style="color: red" text-center>{{ 'contact_dnc.unsupported_file' | translate }}</label>
+      </div>
+      <div *ngFor="let item of uploader.queue"><br />
+        <label>{{ item?.file?.name }}</label> <i class="nb-close smmmm" (click)="item.remove()"></i>
+      </div>
+    </dialog>
+    <button (click)="dialog.showModal()" type="button" mat-raised-button color="primary" style="font-size: 15px">
+      <i class="fa fa-upload" title="Import DNC file"> {{'contact_dnc.import' | translate}}</i>
+    </button> <br /><br />
+    <table [nbTreeGrid]="dataSource" [nbSort]="dataSource">
+      <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+      <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+      <ng-container nbTreeGridColumnDef="contact_dnc_id">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'general.ID' | translate }} </th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.contact_dnc_id }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="first_name">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'contact_dnc.first_name' | translate }}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.first_name }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="last_name">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'contact_dnc.last_name' | translate }}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.last_name }}</td>
+      </ng-container>
+      <ng-container nbTreeGridColumnDef="phone">
+        <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'contact_dnc.phone' | translate }}</th>
+        <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.phone }}</td>
+      </ng-container>
+        <ng-container nbTreeGridColumnDef="email">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader] style="width: 300px;" >{{ 'contact_dnc.email' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.email }}</td>
+        </ng-container>
+         <ng-container nbTreeGridColumnDef="operation">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let contact_dnc">
+            {{contact_dnc.operation}}
+             <button mat-icon-button color="accent" style="font-size: 20px">
+              <mat-icon><a routerLink="/pages/contact_dnc/contact_dnc/{{contact_dnc.data.contact_dnc_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon>
+            </button>
+            <button mat-icon-button color="warn" style="font-size: 20px" (click)="deleteContactDNC(contact_dnc.data.contact_dnc_id)"(click)="showStaticModal(contact_dnc.first_name, contact_dnc.contact_dnc_id)">
+              <nb-icon icon="trash-2-outline" title="Delete"> </nb-icon>
+            </button>
+          </td>
+        </ng-container>
+      </table>
+      <div style="padding: 30px; display: flex; justify-content: flex-end;">
+        <span style="text-align: center; padding-top: 10px;">Items per page: &nbsp;&nbsp;</span>
+        <nb-select [(ngModel)]="pageSize" (ngModelChange)="paginate($event)">
+          <nb-option *ngFor="let option of items_page" [value]="option">{{ option }}</nb-option>
+        </nb-select>
+        <div style="padding-top: 10px;">
+          <nb-icon   style="margin: 0 25px;"   icon="arrowhead-left-outline"   (click)="startIndex > 0 ? paginate('previous') : null"   [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>  
+          <span>Page {{ currentPage }} of {{ total_pages }}</span>
+          <nb-icon  style="margin: 0 25px;"  icon="arrowhead-right-outline" (click)="startIndex + pageSize < contactArray?.length ? paginate('next') : null" [ngClass]="{'disabled-icon': startIndex + pageSize >= contactArray?.length}"> </nb-icon>
+          <span *ngIf="contactArray?.length > 0"> 
+            | Showing {{ startIndex }} - {{ minimumItems }} of {{ length }} items
+          </span>
+        </div>
+      </div> 
+  </nb-card-body>
+</nb-card>

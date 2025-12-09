@@ -1,0 +1,175 @@
+<nb-card>
+  <nb-card-header>
+    {{ 'document.list' | translate}}
+    <input nbInput fullWidth placeholder="{{ 'document.filter' | translate }}" [nbFilterInput]="DocumentDataSource" id="search" class="form-control cc" style="float:right"/>
+  </nb-card-header>
+
+  <nb-card-body>
+    <button type="button" mat-raised-button color="primary" style="font-size:15px" [routerLink]="['/pages/message/document/new']"><i class="fa fa-plus"></i> {{ 'document.add' | translate}}</button>
+    <br>
+    <br>
+      <table [nbTreeGrid]="DocumentDataSource" [nbSort]="DocumentDataSource">
+        <tr nbTreeGridHeaderRow *nbTreeGridHeaderRowDef="displayedColumns"></tr>
+        <tr nbTreeGridRow *nbTreeGridRowDef="let row; columns: displayedColumns"></tr>
+        <ng-container nbTreeGridColumnDef="document_id">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef [nbSortHeader]>{{ 'general.ID' | translate }}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.document_id }}</td>
+        </ng-container>
+        <ng-container nbTreeGridColumnDef="name">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'document.document_name' | translate}}</th>
+            <td nbTreeGridCell *nbTreeGridCellDef="let row">{{ row.data.name }}</td>
+        </ng-container>
+        <ng-container nbTreeGridColumnDef="Operations">
+          <th nbTreeGridHeaderCell *nbTreeGridHeaderCellDef>{{ 'general.operations' | translate }}</th>
+          <td nbTreeGridCell *nbTreeGridCellDef="let document">
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon><a routerLink="/pages/message/document/{{document.data.document_id}}" title="Edit"><nb-icon icon="edit-2-outline"></nb-icon></a></mat-icon></button>
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon (click)="showPDF(pdfViewer, document.data.document_id)" ><nb-icon icon="eye-outline" title="View Document"></nb-icon></mat-icon></button>
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon (click)="downloadDocument(document.data.document_id)"><nb-icon icon="download-outline" title="Download"></nb-icon></mat-icon></button>
+            <button mat-icon-button color="primary" style="font-size:20px">
+              <mat-icon style="color:red" (click)="showStaticModal(document.data.name, document.data.document_id)"><nb-icon icon="trash-2-outline" title="Delete"></nb-icon></mat-icon></button>
+            <button mat-icon-button color="primary" style= "font-size:20px">
+              <mat-icon (click)="open(content, document.data.document_id)" ><nb-icon icon="paper-plane-outline" title="Send Fax"></nb-icon></mat-icon>
+            </button>
+          </td></ng-container>
+      </table>
+      <div style="padding: 30px; display: flex; justify-content: flex-end;">
+        <span style="text-align: center; padding-top: 10px;">Items per page: &nbsp;&nbsp;</span>
+        <nb-select [(ngModel)]="pageSize" (ngModelChange)="paginate($event)">
+          <nb-option *ngFor="let option of items_page" [value]="option">{{ option }}</nb-option>
+        </nb-select>
+        <div style="padding-top: 10px;">
+          <nb-icon   style="margin: 0 25px;"   icon="arrowhead-left-outline"
+            (click)="startIndex > 0 ? paginate('previous') : null"   [ngClass]="{'disabled-icon': startIndex === 0}"></nb-icon>
+          <span>Page {{ currentPage }} of {{ total_pages }}</span>
+          <nb-icon  style="margin: 0 25px;"  icon="arrowhead-right-outline" (click)="startIndex + pageSize < aDocument?.length ? paginate('next') : null" [ngClass]="{'disabled-icon': startIndex + pageSize >= aDocument?.length}"> </nb-icon>
+          <span *ngIf="aDocument?.length > 0">
+            | Showing {{ startIndex }} - {{ minimumItems }} of {{ length }} items
+          </span>
+        </div>
+      </div>
+
+
+  </nb-card-body>
+</nb-card>
+<ng-template #content let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ 'transmission.fax.title' | translate}}</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="col-sm-12">
+      <div class="form-group">
+        <label for="title">{{ 'transmission.title' | translate}}:</label>
+        <input  [(ngModel)]="sendfax.title" [ngModelOptions]="{standalone: true}" type="text" class="form-control" id="title" required/>
+      </div>
+    </div>
+    <div class="col-sm-12">
+      <div class="form-group">
+        <label for="phone">{{ 'transmission.phone_num_destination_contact' | translate}}:</label>
+        <ng2-completer [inputClass]="'form-control form-control-inline'" [(ngModel)]="sendfax.phone" name="phone" [datasource]="dataService" (selected)="onSelected($event)" [minSearchLength]="0"></ng2-completer>
+      </div>
+    </div>
+    <div class="col-sm-12">
+      <div class="form-grpup">
+        <label for="account">{{'account.choose_caller_id' | translate}}:</label>
+        <select class="form-control"  name="account" (change)="onSelectedAccount($event.target.value)">
+       <option *ngFor="let acc of accountArray; let i = index" [value]=" acc.account_id" [selected]="i === accountArray.length-1">{{acc.phone}}</option>
+        </select>
+      </div>
+    </div>
+    <!-- <div class="col-sm-6">
+      <div class="form-group">
+
+          <label for="retry">{{ 'transmission.retry' | translate}}:</label>
+          <select class = "form-control" [(ngModel)]= "sendfax.try_allowed" [ngModelOptions]="{standalone: true}" name = "try_allowed" >
+            <option value = "">Please Select an Option below</option>
+            <option value="1">1</option>
+            <option value="2">2</option>
+            <option value="3">3</option>
+          </select>
+
+      </div>
+    </div> -->
+    <br>
+    <div class="col-sm-6">
+      <button type="button" class="btn btn-success" (click)="addSendDocument()" [disabled] = "(this.sendfax.phone === undefined || this.sendfax.phone === '')">{{ 'transmission.fax.title' | translate}}!</button>
+    </div>
+  </div>
+</ng-template>
+<ng-template #pdfViewer let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title" id="modal-basic-title">{{ 'fax_viewer.title' | translate}}</h4>
+<button mat-raised-button color="primary" (click)="extractText(currentDocumentId)">
+  <nb-icon icon="text-outline" class="mr-2"></nb-icon>
+  Extract Text
+</button>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <div class="pdf-loading">Loading, please wait ...</div>
+    <ng-template [ngIf]="totalPages > 1">
+      <div class="pagination">
+        <button class="prv-page" (click)="previousPage()" [disabled]="page === 1">
+          < Previous
+        </button>
+        <button class="nxt-page" (click)="nextPage()" [disabled]="totalPages === 1 || page === totalPages">
+          Next >
+        </button>
+        <p class="all-pages">Pages {{ page }} / {{ totalPages }}</p>
+      </div>
+
+
+    </ng-template>
+    <pdf-viewer [src]="faxDocumentURL"
+      [render-text]="true"
+      [original-size]="false"
+      [show-all]="false"
+      [page]="page"
+      (after-load-complete)="afterLoadComplete($event)"
+      style="width: 100%; height: 65vh; overflow-x: hidden!important;"
+      >
+    </pdf-viewer>
+  </div>
+</ng-template>
+
+
+
+<ng-template #textViewer let-modal>
+  <div class="modal-header">
+    <h4 class="modal-title">Extracted Document Data</h4>
+    <button type="button" class="close" aria-label="Close" (click)="closeModal()">
+      <span aria-hidden="true">&times;</span>
+    </button>
+  </div>
+  <div class="modal-body">
+    <!-- Loading state -->
+    <div *ngIf="isExtracting" class="text-center">
+      <nb-icon icon="loader-outline" animation="pulse"></nb-icon>
+      <p>Extracting text from PDF...</p>
+    </div>
+
+    <!-- Error state -->
+    <div *ngIf="extractionError" class="alert alert-danger">
+      {{ extractionError }}
+    </div>
+
+    <!-- Display extracted text -->
+    <div *ngIf="!isExtracting && extractedText">
+      <h5>Raw Text</h5>
+      <pre style="white-space: pre-wrap;">{{ extractedText }}</pre>
+    </div>
+  </div>
+  <div class="modal-footer">
+    <button type="button" class="btn btn-primary" (click)="closeModal()">Close</button>
+    <button *ngIf="extractedText" type="button" class="btn btn-success" (click)="copyToClipboard()">
+      <nb-icon icon="copy-outline"></nb-icon> Copy Text
+    </button>
+  </div>
+</ng-template>
