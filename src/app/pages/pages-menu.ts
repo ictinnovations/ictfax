@@ -8,7 +8,7 @@ export const MENU_ITEMS: MenuItem[] = [
     home: true,
     key: 'dashboard'
   },
-  
+
   // {
   //   title: 'Fax Campaigns',
   //   link: '/pages/campaigns/campaigns',
@@ -22,35 +22,39 @@ export const MENU_ITEMS: MenuItem[] = [
     link: '/pages/sendfax/sendfax',
     key : 'send_fax'
   },
+
+
+
+
   {
     title: 'Receive Fax',
     icon: 'arrow-downward-outline',
     link: '/pages/infax',
     key : 'receive_fax'
   },
-  
+
       {
         title: 'Contacts',
         link: '/pages/contact/contacts',
         icon: 'person-add-outline',
         key : 'contacts'
       },
-      
+
       // {
       //   title: 'Groups',
       //   link: '/pages/contact/group',
       //   icon: 'people-outline',
       //   key : 'group'
       // },
-      
+
       {
         title: 'Contact DNC',
         link: '/pages/contact_dnc/contact_dnc',
         icon :'person-add-outline',
          key:'contact_dnc'
        },
-      
-   
+
+
   {
     title: 'Fax Documents',
     link: '/pages/message/document',
@@ -130,15 +134,15 @@ export const userMenuItems: MenuItem[] = [   {
       icon: 'person-add-outline',
       key : 'contact'
     },
-    
+
     // {
     //   title: 'Groups',
     //   link: '/pages/contact/group',
     //   icon: 'people-outline',
     //   key : 'group'
     // },
-    
-  
+
+
 {
   title: 'Fax Documents',
   link: '/pages/message/document',

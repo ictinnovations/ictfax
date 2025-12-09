@@ -2,7 +2,7 @@ import { NgModule } from '@angular/core';
 
 import { ThemeModule } from '../../@theme/theme.module';
 import { SendFaxRoutingModule, routedComponents } from './sendfax-routing.module';
-import { FormsSendFaxComponent } from '../../pages/sendfax/sendfax-component';
+import { FormsSendFaxComponent } from './sendfax-component';
 import { SendFaxService } from './sendfax.service';
 import { MatSortModule } from '@angular/material/sort';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -18,6 +18,7 @@ import { FormsModule, ReactiveFormsModule } from '@angular/forms';
 import { TranslateModule } from '@ngx-translate/core';
 import { MatIconModule } from '@angular/material/icon';
 import { NbIconModule,NbTableModule } from '@nebular/theme';
+import { NbRadioModule } from '@nebular/theme';
 
 
 @NgModule({
@@ -43,6 +44,7 @@ import { NbIconModule,NbTableModule } from '@nebular/theme';
     NbInputModule,
     NbTreeGridModule,
     NbSelectModule,
+    NbRadioModule,
     NbOptionModule
   ],
   declarations: [

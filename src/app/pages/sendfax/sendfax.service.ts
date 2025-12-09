@@ -3,7 +3,7 @@ import {Headers} from '@angular/http';
 import {Http, Response, HttpModule, RequestOptions} from '@angular/http';
 import {SendFax, DocumentProgram} from './sendfax';
 import {AppService} from '../../../app/app.service';
-
+import { NotificationService } from './notification.service';
 
 import 'rxjs/add/operator/toPromise';
 import { Observable } from 'rxjs/Observable';
@@ -13,6 +13,7 @@ import { Observable } from 'rxjs/Observable';
 export class SendFaxService {
   get_ConatctList() {
     throw new Error('Method not implemented.');
+
   }
 
   aSendFax: SendFax[] = [];
@@ -21,7 +22,7 @@ export class SendFaxService {
   documentProgram: DocumentProgram = new DocumentProgram;
   form: any;
 
-  constructor(private http: Http, private app_service: AppService) {}
+  constructor(private http: Http,  private notificationService: NotificationService , private app_service: AppService) {}
 
   get_OutFaxTransmissionList(): Promise<SendFax[]> {
     const headers = new Headers();
@@ -37,8 +38,8 @@ export class SendFaxService {
     this.app_service.createAuthorizationHeader(headers);
     const options = new RequestOptions({ headers: headers });
     queryParams.service_flag = 2;
-    queryParams.direction = 'outbound';    
-    const queryString = Object.keys(queryParams).map(key => 
+    queryParams.direction = 'outbound';
+    const queryString = Object.keys(queryParams).map(key =>
       `${encodeURIComponent(key)}=${encodeURIComponent(queryParams[key])}`
     ).join('&');
     const url = `${this.app_service.apiUrlTransmission}?${queryString}`;
@@ -47,15 +48,35 @@ export class SendFaxService {
       .catch(response => this.app_service.handleError(response));
   }
 
-  add_SendFax(sendfax: SendFax): Promise<number> {
-    const headers = new Headers();
-    this.app_service.createAuthorizationHeader(headers);
-    const options = new RequestOptions({headers: headers});
-    const body = JSON.stringify(sendfax);
-    const addTransmissionUrl = `${this.app_service.apiUrlTransmission}`;
-    return this.http.post(addTransmissionUrl, body, options).toPromise().then(response => response.json() as Number)
-    .catch(response => this.app_service.handleError(response));
-  }
+
+add_SendFax(sendfax: SendFax): Promise<number> {
+  const headers = new Headers();
+  this.app_service.createAuthorizationHeader(headers);
+  const options = new RequestOptions({headers: headers});
+  const body = JSON.stringify(sendfax);
+  const addTransmissionUrl = `${this.app_service.apiUrlTransmission}`;
+
+  return this.http.post(addTransmissionUrl, body, options).toPromise()
+    .then(response => {
+      const transmissionId = response.json() as number;
+
+      this.notificationService.addNotification({
+        type: 'success',
+        message: `Fax transmission ${transmissionId} created successfully`,
+        transmissionId
+      });
+
+      return transmissionId;
+    })
+    .catch(error => {
+      this.notificationService.addNotification({
+        type: 'error',
+        message: `Failed to create fax transmission: ${error.message || 'Unknown error'}`
+      });
+      return this.app_service.handleError(error);
+    });
+}
+
 
   get_AccountList(): Promise<any[]> {
     const headers = new Headers();
@@ -93,8 +114,5 @@ export class SendFaxService {
     .catch(response => this.app_service.handleError(response));
   }
 
-  private handleError(error: any): Promise<any> {
-    console.error('An error occurred', error); // for demo purposes only
-    return Promise.reject(error.message || error);
-  }
+
 }

@@ -147,11 +147,32 @@
       </nb-card-body>
     </nb-card>
 
+
+
     <div>
       <button type="button" class="btn btn-success" (click)="sendnewFax()" [disabled] = "(documentProgram.document_id == undefined || sendfax.title == undefined || sendfax.title == '')">{{'outbound_fax.send_fax' | translate}}</button>
     </div>
   </form>
 </div>
+
+<nb-card>
+  <nb-card-header>Schedule Fax</nb-card-header>
+  <nb-card-body>
+
+    <label>
+      <input type="checkbox" [(ngModel)]="sendfax.scheduled" />
+      Send Later (Schedule)
+    </label>
+
+    <div *ngIf="sendfax.scheduled">
+      <label>Select Date & Time:</label>
+    <input type="datetime-local" nbInput fullWidth [(ngModel)]="scheduledString" />
+
+    </div>
+
+  </nb-card-body>
+</nb-card>
+
 
 <ng-template #content let-modal>
   <div class="modal-header">
@@ -183,6 +204,7 @@
             <div class="navbar navbar-default"></div>
             <div class="row">
               <div class="col-md-3">
+
                 <label style="font-size: 10px;">{{'outbound_fax.select_file' | translate}}</label><br>
                 <input type="file" accept=".pdf,.tif,.tiff,.png,.jpg,.jpeg" ng2FileSelect [uploader]="uploader" multiple  /><br/>
               </div>

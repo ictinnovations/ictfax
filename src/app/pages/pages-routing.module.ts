@@ -21,8 +21,8 @@ const routes: Routes = [{
     path: 'infax',
     component: InFaxComponent
   },
- 
-  {  
+
+  {
     path: 'Changepass',
     component: ChangePasswordComponent
   },
@@ -44,7 +44,7 @@ const routes: Routes = [{
     loadChildren: () => import('./contact/contact.module')
     .then(m => m.ContactModule),
   },
-  
+
   {
     path: 'campaigns',
     loadChildren: () => import('./campaigns/campaign.module')
@@ -77,11 +77,16 @@ const routes: Routes = [{
     path: 'contact_dnc',
     loadChildren: () => import('./contact_dnc/contact_dnc.module')
       .then(m => m.ContactDNCModule),
-  }, {
+  },
+
+  {
     path: 'sendfax',
     loadChildren: () => import('./sendfax/sendfax.module')
       .then(m => m.SendFaxModule),
-  }, {
+  },
+
+
+  {
     path: 'did',
     loadChildren: () => import('./did/did.module')
       .then(m => m.DIDModule),

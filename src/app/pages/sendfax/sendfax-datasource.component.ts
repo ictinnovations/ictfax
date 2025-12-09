@@ -24,7 +24,7 @@ export class SendFaxDataSource extends DataSource<SendFax> {
 
   constructor(private sendfaxDatabase: SendFaxDatabase, private _sort: MatSort, private _paginator: MatPaginator) {
     super();
-    
+
     // this._filterChange.subscribe(() => this._paginator.pageIndex = this._paginator.pageIndex);
   }
 
@@ -35,7 +35,7 @@ export class SendFaxDataSource extends DataSource<SendFax> {
       this._filterChange,
       this._paginator.page,
     ];
-    
+
     return Observable.merge(...displayDataChanges).map(() => {
       // Filter data
       this.filteredData = this.sendfaxDatabase.data.slice().filter((item: SendFax) => {

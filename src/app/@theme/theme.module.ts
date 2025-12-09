@@ -11,6 +11,8 @@ import {
   NbButtonModule,
   NbSelectModule,
   NbIconModule,
+    NbCardModule,        // Add this
+  NbBadgeModule,
   NbThemeModule,
 } from '@nebular/theme';
 import { NbEvaIconsModule } from '@nebular/eva-icons';
@@ -21,6 +23,7 @@ import {
   HeaderComponent,
   SearchInputComponent,
   TinyMCEComponent,
+  NotificationsComponent,
 } from './components';
 import {
   CapitalizePipe,
@@ -39,6 +42,7 @@ import { COSMIC_THEME } from './styles/theme.cosmic';
 import { CORPORATE_THEME } from './styles/theme.corporate';
 import { DARK_THEME } from './styles/theme.dark';
 import { TranslateModule } from '@ngx-translate/core';
+// import { } from './notifications/notification.component';
 
 const NB_MODULES = [
   NbLayoutModule,
@@ -51,7 +55,10 @@ const NB_MODULES = [
   NbSecurityModule,
   NbButtonModule,
   NbSelectModule,
+   NbCardModule,        // Add this
+  NbBadgeModule,
   NbIconModule,
+
   NbEvaIconsModule,
   TranslateModule
 ];
@@ -61,6 +68,7 @@ const COMPONENTS = [
   SearchInputComponent,
   TinyMCEComponent,
   OneColumnLayoutComponent,
+   NotificationsComponent,
   ThreeColumnsLayoutComponent,
   TwoColumnsLayoutComponent,
 ];

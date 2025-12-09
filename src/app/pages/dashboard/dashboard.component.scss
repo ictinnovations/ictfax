@@ -25,7 +25,7 @@ th {
   font-size: 12px;
 }
 
-/* Add to your dashboard.component.scss */
+
 .failure-item,
 .destination-item {
   margin-bottom: 15px;
@@ -38,7 +38,7 @@ th {
 }
 
 .destination-item {
-  border-left-color: #3366ff; // 🔥 instead of #36f shorthand
+  border-left-color: #3366ff;
 }
 
 .disabled-icon {

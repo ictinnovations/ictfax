@@ -138,7 +138,7 @@ export class FormsSendFaxComponent implements OnInit {
     if (typeof page_Items === 'string') {
       if (page_Items === 'next') {
         if (this.startIndex + this.pageSize < this.length) {
-          this.startIndex += this.pageSize; 
+          this.startIndex += this.pageSize;
         }
       } else if (page_Items === 'previous') {
         if (this.startIndex > 0) {
@@ -147,17 +147,17 @@ export class FormsSendFaxComponent implements OnInit {
       }
     } else {
       this.pageSize = page_Items;
-      this.startIndex = 0; 
+      this.startIndex = 0;
     }
     this.currentPage = Math.floor(this.startIndex / this.pageSize) + 1;
     this.total_pages = Math.ceil(this.length / this.pageSize);
-    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);    
-    
+    this.minimumItems = Math.min(this.startIndex + this.pageSize, this.length);
+
     const end = Math.min(this.startIndex + this.pageSize, this.length);
-    this.current_items = this.aSendFax.slice(this.startIndex, end); 
+    this.current_items = this.aSendFax.slice(this.startIndex, end);
     this.SendFaxDataSource = this.dataSourceBuilder.create(this.current_items.map(item => ({ data: item })));
   }
-  
+
   downloadDocument(document_id){
     this.documnet_service.get_Documentdownload(document_id);
   }

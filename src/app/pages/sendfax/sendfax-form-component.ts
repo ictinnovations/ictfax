@@ -37,6 +37,7 @@ export class AddSendFaxComponent implements OnInit {
   document: Document = new Document;
   accountArray: CID[] = [];
   selectedDocument: any;
+
   trans_id: number;
   dataService: CompleterData;
   protected searchStr: string;
@@ -58,6 +59,7 @@ export class AddSendFaxComponent implements OnInit {
 
   private modalRef: NgbModalRef;
 
+scheduledString: string = "";
 
   ngOnInit(): void {
 
@@ -66,6 +68,9 @@ export class AddSendFaxComponent implements OnInit {
     this.getContactlist();
 
     this.selectedDocument = 0;
+    this.sendfax.scheduled = false;
+    // this.sendfax.scheduled_time = "";
+
 
     this.document.quality = 'standard';
 
@@ -74,12 +79,12 @@ export class AddSendFaxComponent implements OnInit {
       item.url = this.URL;
       item.withCredentials = false;
     };
-    
+
     this.uploader.onAfterAddingFile = (response: any) => {
       // console.log(response);
       this.file = response;
       if (response.file.type == 'application/pdf' || response.file.type == 'image/png' || response.file.type == 'image/jpg' || response.file.type == 'image/jpeg' || response.file.type == 'image/tiff' || response.file.type == 'image/tif') {
-        
+
       }
       else {
         this.unsupportedErr = true;
@@ -120,9 +125,9 @@ export class AddSendFaxComponent implements OnInit {
   }
 
   addSendDocument(): void {
-    if (this.sendfax.contact_id != undefined) { 
-        this.sendfax.phone = undefined; 
-    } 
+    if (this.sendfax.contact_id != undefined) {
+        this.sendfax.phone = undefined;
+    }
     this.sendfax_service.add_senddocument(this.documentProgram).then(response => {
       const program_id = response;
       this.sendfax.program_id = program_id;
@@ -131,13 +136,73 @@ export class AddSendFaxComponent implements OnInit {
     });
   }
 
-  AddTransmission(): void {
-    this.sendfax_service.add_SendFax(this.sendfax).then(response => {
-      const transmission_id = response;
-      this.trans_id = transmission_id;
-      this.AddSend(this.trans_id);
-    });
+  // AddTransmission(): void {
+  //   this.sendfax_service.add_SendFax(this.sendfax).then(response => {
+  //     const transmission_id = response;
+  //     this.trans_id = transmission_id;
+  //     this.AddSend(this.trans_id);
+  //   });
+  // }
+AddTransmission(): void {
+  if (this.sendfax.scheduled && this.scheduledString) {
+
+    // Convert selected local time → JS Date Object
+    const localDate = new Date(this.scheduledString);
+
+    // Subtract 5 hours manually
+    localDate.setHours(localDate.getHours() - 0);
+
+    // Convert back to Y-m-d H:i:s format
+    const iso = localDate.toISOString().slice(0, 19).replace("T", " ");
+
+    // Send corrected time to backend
+    this.sendfax.scheduled_time = iso;
   }
+  else {
+    this.sendfax.scheduled_time = null;
+  }
+
+  this.sendfax_service.add_SendFax(this.sendfax).then(transmission_id => {
+    this.trans_id = transmission_id;
+
+    if (!this.sendfax.scheduled) {
+      this.AddSend(this.trans_id);
+    }
+  });
+}
+
+
+
+// AddTransmission(): void {
+//   console.log("📤 DATA SENDING:", this.sendfax);
+
+//   this.sendfax_service.add_SendFax(this.sendfax).then((transmission_id: number) => {
+//     this.trans_id = transmission_id;
+
+//     console.log("✅ Transmission created: ", transmission_id);
+
+//     if (this.sendfax.scheduled && this.sendfax.scheduled_time) {
+//       // scheduled_time کو format کریں ICTFax کے expected format میں
+//       const run_at = this.sendfax.scheduled_time.replace("T", " ") + ":00";
+
+//       const scheduleBody = { run_at };
+
+//       this.sendfax_service.schedule_Transmission(transmission_id, scheduleBody)
+//         .then(scheduleResponse => {
+//           console.log("✅ Schedule created:", scheduleResponse);
+//         })
+//         .catch(err => console.error("❌ Schedule error:", err));
+
+//     } else {
+//       this.sendfax_service.send_transmission(transmission_id)
+//         .then(sendResponse => {
+//           console.log("📨 Sent Immediately:", sendResponse);
+//         })
+//         .catch(err => console.error("❌ Send error:", err));
+//     }
+//   });
+// }
+
 
   AddSend(trans_id): void {
     this.sendfax_service.send_transmission(this.trans_id).then(response => {
@@ -241,7 +306,7 @@ export class AddSendFaxComponent implements OnInit {
       this.documentProgram.document_id = response;
       this.URL = `${this.app_service.apiUrlDocument}/${document_id}/media`;
       this.upload();
-    })  
+    })
   }
 
   // Removing related
@@ -249,7 +314,7 @@ export class AddSendFaxComponent implements OnInit {
   remove(item) {
     console.log(this.uploader.queue.length - 1);
   }
- 
+
   private handleError(error: any): Promise<any> {
     console.error('An error occurred', error);
     return Promise.reject(error.message || error);

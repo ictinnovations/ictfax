@@ -1,0 +1,45 @@
+<div class="notifications-container">
+  <button nbButton ghost (click)="toggleNotifications()">
+    <nb-icon icon="bell-outline"></nb-icon>
+    <nb-badge *ngIf="unreadCount > 0" [text]="unreadCount.toString()" status="danger"></nb-badge>
+  </button>
+
+  <div *ngIf="isOpen" class="notifications-dropdown">
+    <nb-card>
+      <nb-card-header>
+        <div class="header-actions">
+          <span>Notifications</span>
+
+          <!-- Filters -->
+          <nb-select size="small" [(selected)]="filter" (selectedChange)="applyFilter($event)">
+            <nb-option value="all">All</nb-option>
+            <nb-option value="unread">Unread</nb-option>
+            <nb-option value="read">Read</nb-option>
+          </nb-select>
+
+          <!-- Actions -->
+          <button nbButton size="tiny" (click)="markFilteredAsRead()" *ngIf="hasUnreadFiltered()">
+            Mark filtered read
+          </button>
+          <button nbButton size="tiny" (click)="clearAll()" *ngIf="hasAnyNotifications()">
+            Clear all
+          </button>
+        </div>
+      </nb-card-header>
+
+      <nb-card-body>
+        <div *ngIf="filteredNotifications.length === 0" class="empty">
+          No notifications
+        </div>
+
+        <div *ngFor="let notification of filteredNotifications" class="notification-item" [class.unread]="!notification.read">
+          <div class="message">{{ notification.message }}</div>
+          <small>{{ notification.timestamp | date:'short' }}</small>
+          <button *ngIf="!notification.read" nbButton size="tiny" (click)="markAsRead(notification.id)">
+            Mark read
+          </button>
+        </div>
+      </nb-card-body>
+    </nb-card>
+  </div>
+</div>
