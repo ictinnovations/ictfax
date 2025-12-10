@@ -1,0 +1,8 @@
+{
+  "env": {
+    "name": "dev"
+  },
+  "apiServer": {
+    "url": "http://172.17.0.3/api"
+  }
+}

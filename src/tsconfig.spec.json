@@ -1,0 +1,21 @@
+{
+  "extends": "../tsconfig.json",
+  "compilerOptions": {
+      "lib": ["esnext", "dom", "dom.iterable"],
+    "skipLibCheck": true,
+    "outDir": "../out-tsc/spec",
+    "baseUrl": "./",
+    "types": [
+      "jasmine",
+      "node"
+    ]
+  },
+  "files": [
+    "test.ts",
+    "polyfills.ts"
+  ],
+  "include": [
+    "**/*.spec.ts",
+    "**/*.d.ts"
+  ]
+}
