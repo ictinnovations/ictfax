@@ -1,8 +1,8 @@
 # Running ICTFax in Docker
 
-This image is the ICTCore base plus the ICTFax dashboard. You get Apache, PHP,
-FreeSWITCH, MariaDB and the Angular front end in one container, so there is no
-separate install step for the GUI.
+One container with everything ICTFax needs: Apache, PHP, FreeSWITCH, MariaDB,
+the ICTCore REST API and the Angular dashboard. Nothing else to install and no
+side services to wire up.
 
 ## Quick start
 
@@ -26,10 +26,10 @@ transfer nothing, which is the single most common first-run complaint.
 ## How the two halves fit together
 
 The dashboard is a static Angular build served from `/usr/ictfax`, and it calls
-the REST API at `/api` on the same origin. The base image already aliases
-`/api` to the ICTCore entry point, so both have to be served by the same
-Apache. That's why this is one container rather than a GUI container talking to
-an API container across a network.
+the REST API at `/api` on the same origin. ICTCore's own Apache config aliases
+`/api` to its entry point, so one Apache serves both. That's why this is a
+single container rather than a GUI container talking to an API container across
+a network.
 
 Angular handles its own routing, so Apache falls back to `index.html` for any
 path that isn't a real file. Without that, reloading the page on a deep link
@@ -65,13 +65,26 @@ volume it disappears with the container.
 docker build -f docker/Dockerfile -t ictfax:dev .
 ```
 
-Two stages: Node 16 builds the Angular app, then the result is copied onto the
-ICTCore image. Node 16 rather than something current because this is Angular
+Two stages. Node 16 builds the Angular app, then a Rocky Linux 8 stage
+assembles Apache, PHP 7.4, MariaDB, FreeSWITCH and ICTCore and drops the built
+dashboard on top. Node 16 rather than something current because this is Angular
 13, and the OpenSSL 3 that ships with Node 18 breaks the hashing the older
 webpack relies on.
 
-To build against a specific base image:
+ICTCore is cloned from its own repository at build time. To pin a branch or tag:
 
 ```bash
-docker build -f docker/Dockerfile --build-arg ICTCORE_TAG=1.0.0 -t ictfax:dev .
+docker build -f docker/Dockerfile --build-arg ICTCORE_REF=ictcore -t ictfax:dev .
 ```
+
+## Where FreeSWITCH comes from
+
+SignalWire moved their EL8 RPMs behind a paid token, so the packages here come
+from two Fedora Copr repositories, `beaveryoga/FreeSWITCH-1.10.12` for
+FreeSWITCH itself and `beaveryoga/broadvoice` for the libraries EL8 has no
+package for (sofia-sip, spandsp3, libks2, signalwire-client-c2). Copr is HTTPS
+and GPG signed, which the free third-party mirrors are not.
+
+`mod_spandsp` does the T.38 negotiation and the fax state machine. In these
+builds it lives inside the main `freeswitch` package, not a separate module
+RPM, and CI fails the build if it isn't loaded.

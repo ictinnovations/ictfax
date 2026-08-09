@@ -60,6 +60,22 @@ jobs:
       - name: Check an Angular deep link falls back to index.html
         run: curl -fsS http://127.0.0.1:8080/pages/fax/inbox | grep -qi '<ngx-app'
 
+      # mod_spandsp is what actually does T.38, so an image without it is a fax
+      # server that cannot fax. Worth failing the build over.
+      - name: Check FreeSWITCH is up with mod_spandsp loaded
+        run: |
+          for i in $(seq 1 30); do
+            if docker exec ictfax-ci fs_cli -p ci-smoke-test -x 'show modules' 2>/dev/null | grep -q mod_spandsp; then
+              echo "mod_spandsp loaded after ${i}0s"; exit 0
+            fi
+            sleep 10
+          done
+          docker exec ictfax-ci fs_cli -p ci-smoke-test -x 'show modules' || true
+          echo "mod_spandsp never loaded"; exit 1
+
+      - name: Check the schema loaded
+        run: docker exec ictfax-ci mysql -N -B -e "SELECT COUNT(*) FROM ictfax.account"
+
       - name: Container logs
         if: always()
         run: docker logs ictfax-ci
