@@ -41,7 +41,11 @@ LABEL org.opencontainers.image.title="ictfax" \
 #
 # beaveryoga/broadvoice carries the libraries FreeSWITCH links against that EL8
 # has no package for: sofia-sip, spandsp3, libks2 and signalwire-client-c2.
+#
+# PowerTools ships disabled on Rocky 8 and it is the only place libtiff-tools
+# lives. The fax pipeline shells out to tiff2pdf and tiffcp, so it is required.
 RUN dnf -y install dnf-utils epel-release wget curl unzip which procps-ng git \
+ && dnf -y config-manager --set-enabled powertools \
  && dnf -y install https://rpms.remirepo.net/enterprise/remi-release-8.rpm \
  && curl -fsSL -o /etc/yum.repos.d/copr-freeswitch.repo \
       https://copr.fedorainfracloud.org/coprs/beaveryoga/FreeSWITCH-1.10.12/repo/epel-8/beaveryoga-FreeSWITCH-1.10.12-epel-8.repo \
