@@ -101,12 +101,19 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # the dompdf requirement in its composer.json, so install refuses to run. Drift is
 # bounded because composer.json caps twig at 1.x and swiftmailer at 5.x, which are
 # the two that decide PHP 7.4 compatibility.
+#
+# policy.advisories.block=false because composer 2.9 refuses to resolve any package
+# carrying a published advisory, and every version this codebase pins is old enough
+# to have one. Turning the block off keeps the build honest about what it installs
+# instead of silently upgrading past the PHP 7.4 ceiling. Modernising twig,
+# swiftmailer, dompdf and php-jwt is the real fix and it belongs upstream.
 WORKDIR /usr/ictcore
 RUN git clone --depth 1 --branch "${ICTCORE_REF}" https://github.com/ictinnovations/ictcore.git /tmp/ictcore \
  && cp -a /tmp/ictcore/bin /tmp/ictcore/core /tmp/ictcore/data /tmp/ictcore/db \
           /tmp/ictcore/etc /tmp/ictcore/docs /tmp/ictcore/wwwroot \
           /tmp/ictcore/composer.json /tmp/ictcore/composer.lock /usr/ictcore/ \
  && rm -rf /tmp/ictcore \
+ && composer config --no-plugins policy.advisories.block false \
  && composer update --no-dev --no-interaction --no-progress --prefer-dist --ignore-platform-reqs \
  && composer clear-cache
 
