@@ -1,0 +1,10 @@
+.git
+.github
+.devel
+.vscode
+.travis.yml
+node_modules
+dist
+dist.zip
+doc
+e2e

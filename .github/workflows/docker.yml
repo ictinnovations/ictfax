@@ -1,0 +1,112 @@
+name: Docker
+
+on:
+  push:
+    branches: [ictfax-13]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+env:
+  IMAGE: ghcr.io/${{ github.repository }}
+  DOCKERHUB_IMAGE: docker.io/ictinnovations/ictfax
+
+jobs:
+  image:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: docker/setup-buildx-action@v3
+
+      - uses: docker/build-push-action@v6
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          load: true
+          tags: ictfax:ci
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Boot the container
+        run: |
+          docker run -d --name ictfax-ci \
+            -e ICTCORE_HOST=127.0.0.1 \
+            -e FS_ESL_PASSWORD=ci-smoke-test \
+            -p 8080:80 \
+            ictfax:ci
+
+      - name: Wait for the dashboard
+        run: |
+          for i in $(seq 1 60); do
+            if curl -fsS http://127.0.0.1:8080/ | grep -qi '<ngx-app'; then
+              echo "dashboard served after ${i}0s"; exit 0
+            fi
+            sleep 10
+          done
+          echo "dashboard never appeared"; exit 1
+
+      # An unrouted GET /api/ answers 404 by design. A 500 means PHP fatalled.
+      - name: Check the API is still reachable behind the GUI
+        run: |
+          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/)
+          echo "api returned $code"
+          [ "$code" -ge 200 ] && [ "$code" -lt 500 ]
+
+      - name: Check an Angular deep link falls back to index.html
+        run: curl -fsS http://127.0.0.1:8080/pages/fax/inbox | grep -qi '<ngx-app'
+
+      - name: Container logs
+        if: always()
+        run: docker logs ictfax-ci
+
+      - name: Tear down
+        if: always()
+        run: docker rm -f ictfax-ci
+
+      - name: Log in to GHCR
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Log in to Docker Hub
+        if: github.event_name != 'pull_request'
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - id: meta
+        if: github.event_name != 'pull_request'
+        uses: docker/metadata-action@v5
+        with:
+          images: |
+            ${{ env.IMAGE }}
+            ${{ env.DOCKERHUB_IMAGE }}
+          tags: |
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+            type=raw,value=latest,enable={{is_default_branch}}
+          labels: |
+            org.opencontainers.image.title=ictfax
+            org.opencontainers.image.description=Open source fax server. T.38 and G.711, fax to email, email to fax, web dashboard and REST API.
+            org.opencontainers.image.vendor=ICT Innovations
+            org.opencontainers.image.url=https://ictfax.org
+
+      - uses: docker/build-push-action@v6
+        if: github.event_name != 'pull_request'
+        with:
+          context: .
+          file: docker/Dockerfile
+          platforms: linux/amd64
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          cache-from: type=gha

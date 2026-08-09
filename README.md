@@ -32,6 +32,28 @@ By Using ICTFax a user can manage:
 
 For more information please visit [ICTFAX Website][official]
 
+Quick start with Docker
+=======================
+
+The fastest way to see ICTFax running. The image bundles Apache, PHP,
+FreeSWITCH, MariaDB and this dashboard, so there is nothing else to install.
+
+```
+docker run -d --name ictfax \
+  -p 8080:80 \
+  -p 5060:5060/tcp -p 5060:5060/udp \
+  -p 16384-16484:16384-16484/udp \
+  ictinnovations/ictfax:latest
+```
+
+Give it about two minutes on first boot while the database is created and the
+schema loads, then open `http://localhost:8080/` and sign in with the demo
+credentials below. Publish the RTP range as shown or your fax calls will
+connect and transfer nothing.
+
+For an external database, volumes and build instructions see
+[docker/README.md](docker/README.md).
+
 Documentation
 =============
 
