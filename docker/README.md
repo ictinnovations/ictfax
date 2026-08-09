@@ -37,18 +37,16 @@ would return 404.
 
 ## Configuration
 
-Every environment variable from the base image works here. The ones you'll
-actually touch:
-
 | Variable | Default | What it does |
 |---|---|---|
 | `DB_HOST` | `127.0.0.1` | Point it at a real server and the bundled MariaDB never starts |
-| `DB_PASS` | generated | Required when `DB_HOST` is external |
+| `DB_PORT` | `3306` | |
+| `DB_NAME` | `ictfax` | |
+| `DB_USER` | `ictfaxuser` | |
+| `DB_PASS` | generated | Required once `DB_HOST` is external |
+| `DB_ROOT_PASS` | generated | Only used by the bundled MariaDB |
 | `ICTCORE_HOST` | `localhost` | The hostname the API advertises |
 | `FS_ESL_PASSWORD` | `ClueCon` | FreeSWITCH event socket password. Change it |
-
-The full list is in the [ICTCore docker
-notes](https://github.com/ictinnovations/ictcore/blob/ictcore/docker/README.md).
 
 ## Volumes
 

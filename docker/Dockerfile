@@ -123,12 +123,14 @@ RUN git clone --depth 1 --branch "${ICTCORE_REF}" https://github.com/ictinnovati
 # rewriting those directives as PHP_ADMIN_VALUE in a pool file first.
 RUN groupadd -f ictcore && id -u ictcore >/dev/null 2>&1 || useradd -g ictcore -M -s /sbin/nologin ictcore
 
+# /var/spool/mail/ictcore is only chowned, never mkdir'd: useradd already made it,
+# and it is a file, so mkdir -p fails on it rather than treating it as present.
 RUN cp etc/http/ictcore.conf /etc/httpd/conf.d/ictcore.conf \
  && cp etc/php/ictcore.ini  /etc/php.d/99-ictcore.ini \
  && sed -i 's/^User .*/User ictcore/;s/^Group .*/Group ictcore/' /etc/httpd/conf/httpd.conf \
  && sed -i 's|#LoadModule mpm_prefork_module|LoadModule mpm_prefork_module|' /etc/httpd/conf.modules.d/00-mpm.conf \
  && sed -i 's|^LoadModule mpm_event_module|#LoadModule mpm_event_module|' /etc/httpd/conf.modules.d/00-mpm.conf \
- && mkdir -p /var/spool/mail/ictcore cache log \
+ && mkdir -p cache log \
  && chown -R ictcore:ictcore /usr/ictcore /var/spool/mail/ictcore
 
 # ICTCore expects its FreeSWITCH fragments to appear inside the FreeSWITCH
