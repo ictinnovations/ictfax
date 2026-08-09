@@ -1,7 +1,3 @@
-# Declared up here because an ARG used in a FROM line has to live outside any
-# build stage.
-ARG ICTCORE_REF=ictcore
-
 # ── stage 1: the Angular front end ───────────────────────────
 # Node 16 because this is Angular 13. Node 18 and later ship OpenSSL 3, whose
 # removal of md4 breaks the webpack hashing this CLI version relies on.
@@ -21,7 +17,11 @@ RUN npm run build:prod
 # ── stage 2: ICTCore, FreeSWITCH and the dashboard ───────────
 FROM rockylinux:8
 
-ARG ICTCORE_REF
+# Pinned to a commit rather than a branch name so the image is reproducible and
+# so the build cache invalidates when ICTCore moves. A branch ref caches on the
+# clone command string, which never changes, and silently keeps serving an old
+# checkout. Override with --build-arg to build against a different revision.
+ARG ICTCORE_REF=2f7423cc957218cfe856938932d704346af62a09
 # PHP 7.4 matches the versions pinned in ICTCore's composer.lock (twig 1.35,
 # swiftmailer 5.4). Both are pre-PHP-8 and will fatal on 8.x.
 ARG PHP_STREAM=remi-7.4
@@ -108,7 +108,13 @@ RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local
 # instead of silently upgrading past the PHP 7.4 ceiling. Modernising twig,
 # swiftmailer, dompdf and php-jwt is the real fix and it belongs upstream.
 WORKDIR /usr/ictcore
-RUN git clone --depth 1 --branch "${ICTCORE_REF}" https://github.com/ictinnovations/ictcore.git /tmp/ictcore \
+# fetch rather than clone --branch, because --branch only takes a branch or tag
+# name and ICTCORE_REF is a commit.
+RUN mkdir -p /tmp/ictcore && cd /tmp/ictcore && git init -q . \
+ && git remote add origin https://github.com/ictinnovations/ictcore.git \
+ && git fetch -q --depth 1 origin "${ICTCORE_REF}" \
+ && git checkout -q FETCH_HEAD \
+ && cd /usr/ictcore \
  && cp -a /tmp/ictcore/bin /tmp/ictcore/core /tmp/ictcore/data /tmp/ictcore/db \
           /tmp/ictcore/etc /tmp/ictcore/docs /tmp/ictcore/wwwroot \
           /tmp/ictcore/composer.json /tmp/ictcore/composer.lock /usr/ictcore/ \
