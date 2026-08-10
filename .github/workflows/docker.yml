@@ -61,12 +61,17 @@ jobs:
           docker exec ictfax-ci supervisorctl status || true
           echo "dashboard never appeared"; exit 1
 
-      # An unrouted GET /api/ answers 404 by design. A 500 means PHP fatalled.
+      # An unrouted GET /api/ answers 404 by design. A 500 means PHP fatalled,
+      # and by far the most common reason is the database, so probe it too.
       - name: Check the API is still reachable behind the GUI
         run: |
-          code=$(curl -s -o /dev/null -w '%{http_code}' http://127.0.0.1:8080/api/)
+          code=$(curl -s -o /tmp/api.out -w '%{http_code}' http://127.0.0.1:8080/api/)
           echo "api returned $code"
-          [ "$code" -ge 200 ] && [ "$code" -lt 500 ]
+          if [ "$code" -ge 200 ] && [ "$code" -lt 500 ]; then exit 0; fi
+          echo "--- response body ---"; head -c 2000 /tmp/api.out; echo
+          echo "--- mariadb over tcp ---"
+          docker exec ictfax-ci mysqladmin -h 127.0.0.1 -P 3306 -u root ping || true
+          exit 1
 
       - name: Check an Angular deep link falls back to index.html
         run: curl -fsS http://127.0.0.1:8080/pages/fax/inbox | grep -qi '<ngx-app'
