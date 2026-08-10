@@ -114,6 +114,20 @@ ini_set "$CONF" freeswitch password "$FS_PASSWORD"
 chown ictcore:ictcore "$CONF"
 chmod 640 "$CONF"
 
+# ── TLS ──────────────────────────────────────────────────────
+# mod_ssl ships a config pointing at /etc/pki/tls/certs/localhost.crt but Rocky
+# 8 never generates it, and httpd refuses to start on a missing certificate, so
+# port 80 dies along with 443. Generated here rather than at build time: a
+# private key baked into a public image is the same key for everybody.
+if [[ ! -s /etc/pki/tls/certs/localhost.crt ]]; then
+  log "generating a self signed certificate for $WEB_HOST, replace it for production"
+  openssl req -x509 -nodes -newkey rsa:2048 -days 3650 \
+    -subj "/CN=$WEB_HOST" \
+    -keyout /etc/pki/tls/private/localhost.key \
+    -out    /etc/pki/tls/certs/localhost.crt 2>/dev/null
+  chmod 600 /etc/pki/tls/private/localhost.key
+fi
+
 # ── JWT / node keypair ───────────────────────────────────────
 mkdir -p "$ICTCORE_DIR/etc/ssh"
 if [[ ! -f "$ICTCORE_DIR/etc/ssh/ib_node" ]]; then

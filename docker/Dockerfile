@@ -129,10 +129,23 @@ RUN mkdir -p /tmp/ictcore && cd /tmp/ictcore && git init -q . \
 # rewriting those directives as PHP_ADMIN_VALUE in a pool file first.
 RUN groupadd -f ictcore && id -u ictcore >/dev/null 2>&1 || useradd -g ictcore -M -s /sbin/nologin ictcore
 
+# The Copr FreeSWITCH RPMs do not create the account they are configured to run
+# as, so freeswitch -u freeswitch -g freeswitch aborts with "Unknown group".
+RUN groupadd -f freeswitch \
+ && (id -u freeswitch >/dev/null 2>&1 || useradd -g freeswitch -M -s /sbin/nologin freeswitch) \
+ && mkdir -p /var/lib/freeswitch /var/log/freeswitch /var/run/freeswitch /var/cache/freeswitch \
+ && chown -R freeswitch:freeswitch /var/lib/freeswitch /var/log/freeswitch \
+      /var/run/freeswitch /var/cache/freeswitch /etc/freeswitch
+
 # /var/spool/mail/ictcore is only chowned, never mkdir'd: useradd already made it,
 # and it is a file, so mkdir -p fails on it rather than treating it as present.
+#
+# core/lib/Conf/File.php hard codes /etc/ictcore.conf, but the file the
+# entrypoint templates lives in the source tree. Symlink rather than copy so a
+# mounted /usr/ictcore still wins.
 RUN cp etc/http/ictcore.conf /etc/httpd/conf.d/ictcore.conf \
  && cp etc/php/ictcore.ini  /etc/php.d/99-ictcore.ini \
+ && ln -sf /usr/ictcore/etc/ictcore.conf /etc/ictcore.conf \
  && sed -i 's/^User .*/User ictcore/;s/^Group .*/Group ictcore/' /etc/httpd/conf/httpd.conf \
  && sed -i 's|#LoadModule mpm_prefork_module|LoadModule mpm_prefork_module|' /etc/httpd/conf.modules.d/00-mpm.conf \
  && sed -i 's|^LoadModule mpm_event_module|#LoadModule mpm_event_module|' /etc/httpd/conf.modules.d/00-mpm.conf \
