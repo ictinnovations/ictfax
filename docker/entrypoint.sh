@@ -80,16 +80,21 @@ fi
 
 if ! mysql_run -N -B -e "SELECT 1 FROM \`$DB_NAME\`.account LIMIT 1" >/dev/null 2>&1; then
   log "loading schema into $DB_NAME"
-  for f in database.sql voice.sql fax.sql sms.sql email.sql ictfax.sql tenant.sql \
+  # db/ictfax.sql is deliberately absent. It redefines the usr_insert and
+  # usr_update triggers that database.sql already created, so sourcing both
+  # aborts the load. ICTCore's own install instructions do not source it either.
+  for f in database.sql voice.sql fax.sql sms.sql email.sql tenant.sql \
            fax_activity.sql forgot_password.sql block_contacts.sql; do
     [[ -f "$ICTCORE_DIR/db/$f" ]] || continue
     log "  $f"
     mysql_run "$DB_NAME" < "$ICTCORE_DIR/db/$f"
   done
-  for f in "$ICTCORE_DIR"/db/data/*.sql; do
-    [[ -f "$f" ]] || continue
-    log "  data/$(basename "$f")"
-    mysql_run "$DB_NAME" < "$f"
+  # Explicit order, not a glob. demo_users.sql looks up the role ids that
+  # role_user.sql and role_admin.sql insert, and alphabetically it sorts first.
+  for f in role_user.sql role_admin.sql demo_users.sql; do
+    [[ -f "$ICTCORE_DIR/db/data/$f" ]] || continue
+    log "  data/$f"
+    mysql_run "$DB_NAME" < "$ICTCORE_DIR/db/data/$f"
   done
   log "schema loaded"
 else
