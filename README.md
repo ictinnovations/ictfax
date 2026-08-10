@@ -1,5 +1,10 @@
 Introduction
 ============
+
+[![Documentation Status](https://app.readthedocs.org/projects/ictfax/badge/?version=latest)](https://ictfax.readthedocs.io/en/latest/)
+
+**Documentation: [ictfax.readthedocs.io](https://ictfax.readthedocs.io/en/latest/)**
+
 ICTFAX is an open source multi-user [Fax server software] solution. ICTFAX features both inbound as well as outbound faxing solutions using T.38 protocol as well as G.711 passt hrough. ICTFAX is developed over reknown open source __Freeswitch__, __[ICTCore]__ communications frameowrk and Php based Angular framework. It support both inbound and outbound faxing. 
 
 ICTFAX can be used in following faxing scenarios

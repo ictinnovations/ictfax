@@ -1,0 +1,80 @@
+site_name: ICTFax
+site_description: >-
+  ICTFax is open source fax server software for T.38 and G.711 faxing, with
+  email to fax, fax to email, DIDs, extensions and a REST API.
+site_url: https://ictfax.readthedocs.io/
+repo_url: https://github.com/ictinnovations/ictfax
+repo_name: ictinnovations/ictfax
+edit_uri: edit/ictfax-13/doc/
+copyright: Copyright &copy; ICT Innovations. Released under the GPLv3.
+
+docs_dir: doc
+
+theme:
+  name: material
+  language: en
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.top
+    - navigation.indexes
+    - content.action.edit
+    - content.code.copy
+    - search.suggest
+    - search.highlight
+    - toc.follow
+  palette:
+    - media: "(prefers-color-scheme: light)"
+      scheme: default
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+    - media: "(prefers-color-scheme: dark)"
+      scheme: slate
+      primary: teal
+      accent: teal
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to light mode
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - def_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.details
+  - pymdownx.superfences
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets:
+      base_path:
+        - .
+
+plugins:
+  - search
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/ictinnovations
+      name: ICT Innovations on GitHub
+
+nav:
+  - Home: index.md
+  - Install:
+      - Installation guide: installation.md
+      - Build from source: build-guide.md
+  - Using ICTFax:
+      - User guide: user-guide.md
+      - Admin guide: admin-guide.md
+  - REST API:
+      - Overview: api.md
+      - Full API reference: ApiGuide.md
+      - Tutorials: ApiTutorial.md
+  - Roadmap: TODO.md
