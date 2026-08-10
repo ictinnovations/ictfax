@@ -174,7 +174,8 @@ RUN chown -R ictcore:ictcore /usr/ictfax
 COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/mariadb.ini      /etc/supervisord.d/mariadb.ini
 COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh
+COPY docker/wait-for-db.sh   /usr/local/bin/wait-for-db.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/wait-for-db.sh
 
 VOLUME ["/var/lib/mysql", "/usr/ictcore/data", "/usr/ictcore/log"]
 

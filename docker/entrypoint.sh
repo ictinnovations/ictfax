@@ -72,10 +72,20 @@ mysql_run() {
 
 # ── schema ───────────────────────────────────────────────────
 if is_local_db; then
+  # MariaDB's bootstrap leaves anonymous accounts behind. An empty username
+  # matches any username, and a literal host beats a wildcard one, so every
+  # connection from inside the container was being checked against the
+  # anonymous row and refused no matter what password it sent.
+  mysql_run -e "DROP USER IF EXISTS ''@'localhost'; DROP USER IF EXISTS ''@'$(hostname)';"
   mysql_run -e "CREATE DATABASE IF NOT EXISTS \`$DB_NAME\` DEFAULT CHARACTER SET utf8;"
-  mysql_run -e "CREATE USER IF NOT EXISTS '$DB_USER'@'%' IDENTIFIED BY '$DB_PASS';"
-  mysql_run -e "ALTER USER '$DB_USER'@'%' IDENTIFIED BY '$DB_PASS';"
-  mysql_run -e "GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_USER'@'%'; FLUSH PRIVILEGES;"
+  # Granted on both hosts. PHP connects to 127.0.0.1, MariaDB resolves that back
+  # to localhost, and localhost is not reliably covered by the % wildcard.
+  for h in '%' 'localhost'; do
+    mysql_run -e "CREATE USER IF NOT EXISTS '$DB_USER'@'$h' IDENTIFIED BY '$DB_PASS';"
+    mysql_run -e "ALTER USER '$DB_USER'@'$h' IDENTIFIED BY '$DB_PASS';"
+    mysql_run -e "GRANT ALL PRIVILEGES ON \`$DB_NAME\`.* TO '$DB_USER'@'$h';"
+  done
+  mysql_run -e "FLUSH PRIVILEGES;"
 fi
 
 if ! mysql_run -N -B -e "SELECT 1 FROM \`$DB_NAME\`.account LIMIT 1" >/dev/null 2>&1; then
