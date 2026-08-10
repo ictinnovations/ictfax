@@ -40,14 +40,25 @@ jobs:
             -p 8080:80 \
             ictfax:ci
 
+      # Poll on a short interval and bail as soon as the container dies. httpd
+      # refuses to start on any config error, so on failure print the config
+      # test and the process table. Between them they name the cause, which a
+      # bare timeout does not.
       - name: Wait for the dashboard
         run: |
-          for i in $(seq 1 60); do
+          for i in $(seq 1 48); do
             if curl -fsS http://127.0.0.1:8080/ | grep -qi '<ngx-app'; then
-              echo "dashboard served after ${i}0s"; exit 0
+              echo "dashboard served after $((i * 5))s"; exit 0
             fi
-            sleep 10
+            if [ -z "$(docker ps -q -f name=ictfax-ci -f status=running)" ]; then
+              echo "container is no longer running"; break
+            fi
+            sleep 5
           done
+          echo "--- httpd -t ---"
+          docker exec ictfax-ci httpd -t || true
+          echo "--- supervisorctl status ---"
+          docker exec ictfax-ci supervisorctl status || true
           echo "dashboard never appeared"; exit 1
 
       # An unrouted GET /api/ answers 404 by design. A 500 means PHP fatalled.
