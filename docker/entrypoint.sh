@@ -152,6 +152,10 @@ fi
 if [[ -f /etc/freeswitch/autoload_configs/event_socket.conf.xml ]]; then
   sed -i "s|name=\"password\" value=\"[^\"]*\"|name=\"password\" value=\"$FS_PASSWORD\"|" \
     /etc/freeswitch/autoload_configs/event_socket.conf.xml
+  # The stock config listens on ::, and a host without IPv6 kills the listener
+  # thread the moment it starts, so nothing can reach the event socket at all.
+  sed -i "s|name=\"listen-ip\" value=\"[^\"]*\"|name=\"listen-ip\" value=\"${FS_ESL_LISTEN_IP:-127.0.0.1}\"|" \
+    /etc/freeswitch/autoload_configs/event_socket.conf.xml
 fi
 
 if is_local_db; then
