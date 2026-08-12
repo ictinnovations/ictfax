@@ -37,6 +37,25 @@ By Using ICTFax a user can manage:
 
 For more information please visit [ICTFAX Website][official]
 
+Screenshots
+===========
+
+The dashboard, with live counters for inbound and outbound fax, DIDs, users and
+tenants:
+
+![ICTFax dashboard](https://raw.githubusercontent.com/ictinnovations/ictfax/ictfax-13/doc/screenshots/dashboard.png)
+
+Outbound fax, showing per-job status and a retry action on anything that failed:
+
+![ICTFax outbound fax list](https://raw.githubusercontent.com/ictinnovations/ictfax/ictfax-13/doc/screenshots/outbound-fax.png)
+
+Inbound fax, where each received document can be viewed, downloaded or marked
+as read:
+
+![ICTFax inbound fax list](https://raw.githubusercontent.com/ictinnovations/ictfax/ictfax-13/doc/screenshots/inbound-fax.png)
+
+You can click through the same interface yourself on the [demo site][demo].
+
 Quick start with Docker
 =======================
 
@@ -93,7 +112,7 @@ ICTFax developed over [ictcore] , a open source freeswitch based framework for d
 [emailtofax]: https://ictfax.org/fax-services-email-to-fax-software-fax-to-email-server "Email to fax, Fax to Email"
 [webtofax]: https://ictfax.org/online-fax-services-web-to-fax-software "Online Fax, Web to fax"
 [forum]: https://forum.ictfax.org/ "ICTFAX Discussion Forum"
-[demo]: https://demo.ictfax.org/ "ICTFAX Demo"
+[demo]: https://demo.ictfax.com/ "ICTFAX Demo"
 [developer]: https://www.ictinnovations.com/ "ICT Innovations's official website"
 [ICTCore]: https://www.ictcore.org/ "ICTCore Communications framework"
 [ictcore]: https://github.com/ictinnovations/ictcore/  "communications framework for web developers"
