@@ -22,9 +22,9 @@ FROM rockylinux:8
 # clone command string, which never changes, and silently keeps serving an old
 # checkout. Override with --build-arg to build against a different revision.
 ARG ICTCORE_REF=cb987b5e465f1bc9e1c832722eb8115cff385e16
-# PHP 7.4 matches the versions pinned in ICTCore's composer.lock (twig 1.35,
-# swiftmailer 5.4). Both are pre-PHP-8 and will fatal on 8.x.
-ARG PHP_STREAM=remi-7.4
+# Remi rather than the AppStream php module, because Rocky 8 tops out at 8.0 and
+# ICTCore needs 8.1 or newer once the patch below is applied.
+ARG PHP_STREAM=remi-8.3
 
 LABEL org.opencontainers.image.title="ictfax" \
       org.opencontainers.image.description="Open source fax server. T.38 and G.711, fax to email, email to fax, web dashboard and REST API." \
@@ -65,6 +65,21 @@ RUN dnf -y install dnf-utils epel-release wget curl unzip which procps-ng git \
 # The freeswitch-application and freeswitch-codec entries below are the modules
 # the vanilla config loads. Leave one out and FreeSWITCH still starts, it just
 # logs a load failure for it on every boot.
+#
+# The document, mail and TTS packages mirror the Requires of ictcore.spec's fax,
+# sendmail and freeswitch subpackages, which is what ictfax.spec pulls in. Each
+# one backs a binary core/Message/Document.php or the email gateway shells out
+# to: pdfinfo and pdftotext from poppler-utils, libreoffice for the office to
+# pdf leg, enscript for text, sendmail for email to fax. LibreOffice and its
+# Java dependencies are most of the image size, and the doc/docx/xls/ppt to fax
+# path does not work without them.
+#
+# Deliberately not carried over from the spec: cronie, because supervisord runs
+# bin/cron.php on a loop instead of crond reading /etc/cron.d/ictcore.cron;
+# php-pecl-event, php-xmlrpc and php-pear, because nothing in the tree
+# references them; certbot, because TLS terminates outside the container; and
+# freeswitch-sounds-en-us-callie, which the Copr does not build and which only
+# carries IVR voice prompts a fax server never plays.
 RUN dnf -y install --setopt=install_weak_deps=False \
       httpd mod_ssl \
       php php-cli php-json php-gd php-mysqlnd php-imap php-xml php-mbstring php-process \
@@ -80,9 +95,12 @@ RUN dnf -y install --setopt=install_weak_deps=False \
       freeswitch-codec-opus freeswitch-codec-passthru-g729 \
       freeswitch-codec-passthru-g723_1 freeswitch-codec-passthru-amr \
       freeswitch-format-native-file freeswitch-format-local-stream \
-      freeswitch-format-tone-stream freeswitch-lua \
+      freeswitch-format-tone-stream freeswitch-lua freeswitch-asrtts-flite \
       sox libtiff-tools ghostscript ImageMagick \
-      supervisor openssl \
+      poppler-utils enscript \
+      libreoffice-core libreoffice-writer libreoffice-calc \
+      sendmail sendmail-cf m4 make \
+      sudo dos2unix supervisor openssl \
  && dnf clean all && rm -rf /var/cache/dnf
 
 # RHEL-family packaging hides the daemon in /usr/libexec and the name has moved
@@ -98,29 +116,35 @@ ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
 # composer update rather than install: ICTCore's committed composer.lock predates
-# the dompdf requirement in its composer.json, so install refuses to run. Drift is
-# bounded because composer.json caps twig at 1.x and swiftmailer at 5.x, which are
-# the two that decide PHP 7.4 compatibility.
+# the dompdf requirement in its composer.json, so install refuses to run.
 #
-# policy.advisories.block=false because composer 2.9 refuses to resolve any package
-# carrying a published advisory, and every version this codebase pins is old enough
-# to have one. Turning the block off keeps the build honest about what it installs
-# instead of silently upgrading past the PHP 7.4 ceiling. Modernising twig,
-# swiftmailer, dompdf and php-jwt is the real fix and it belongs upstream.
+# ictcore-php83.patch carries the PHP 8.3 migration (twig 3, symfony/mailer,
+# php-jwt 7, dompdf 3, and a CoreThread that forks with pcntl instead of the
+# abandoned aza/thread). It is ictinnovations/ictcore#23, held here rather than
+# pinned to the branch commit because a squash merge would orphan that sha and
+# break the shallow fetch below. Once the PR lands, delete this file and the
+# git apply line and move ICTCORE_REF to the merge commit instead.
+#
+# The github url rewrite is for composer: the RestServer entry in ICTCore's
+# repositories block resolves to git@github.com, which has no key in a build
+# container and fails with "Host key verification failed".
 WORKDIR /usr/ictcore
+COPY docker/ictcore-php83.patch /tmp/ictcore-php83.patch
 # fetch rather than clone --branch, because --branch only takes a branch or tag
 # name and ICTCORE_REF is a commit.
 RUN mkdir -p /tmp/ictcore && cd /tmp/ictcore && git init -q . \
  && git remote add origin https://github.com/ictinnovations/ictcore.git \
  && git fetch -q --depth 1 origin "${ICTCORE_REF}" \
  && git checkout -q FETCH_HEAD \
+ && git apply /tmp/ictcore-php83.patch \
  && cd /usr/ictcore \
  && cp -a /tmp/ictcore/bin /tmp/ictcore/core /tmp/ictcore/data /tmp/ictcore/db \
           /tmp/ictcore/etc /tmp/ictcore/docs /tmp/ictcore/wwwroot \
           /tmp/ictcore/composer.json /tmp/ictcore/composer.lock /usr/ictcore/ \
- && rm -rf /tmp/ictcore \
- && composer config --no-plugins policy.advisories.block false \
- && composer update --no-dev --no-interaction --no-progress --prefer-dist --ignore-platform-reqs \
+ && rm -rf /tmp/ictcore /tmp/ictcore-php83.patch \
+ && git config --global url."https://github.com/".insteadOf "git@github.com:" \
+ && composer update --no-dev --no-interaction --no-progress --prefer-dist \
+ && composer audit --no-dev --no-interaction \
  && composer clear-cache
 
 # ── wiring ───────────────────────────────────────────────────
@@ -156,6 +180,26 @@ RUN cp etc/http/ictcore.conf /etc/httpd/conf.d/ictcore.conf \
  && mkdir -p cache log \
  && chown -R ictcore:ictcore /usr/ictcore /var/spool/mail/ictcore
 
+# %pre sendmail in the spec puts both the core user and the web user in the mail
+# group so the email to fax poller can read the spool it is handed. httpd runs
+# as ictcore here rather than apache, so ictcore covers both roles.
+#
+# The rest is %post sendmail. Stock RHEL binds the MTA to loopback, so without
+# the DAEMON_OPTIONS change nothing outside the container can submit a fax by
+# email. sendmail.cf is regenerated from the .mc here rather than at boot
+# because none of it depends on runtime data; the entrypoint only fills in the
+# maps that need the container's address.
+#
+# 1777 on the spool is php-imap's doing, not sendmail's: c-client refuses to
+# treat a mailbox as safe unless its directory is world writable and sticky,
+# and bin/sendmail/gateway.php opens /var/spool/mail/ictcore through imap_open.
+RUN usermod --append --groups mail ictcore \
+ && sed -i 's/Port=smtp,Addr=127.0.0.1, Name=MTA/Port=smtp,Addr=0.0.0.0, Name=MTA/g' /etc/mail/sendmail.mc \
+ && printf 'ictcore\napache\n' >> /etc/mail/trusted-users \
+ && make -C /etc/mail >/dev/null \
+ && grep -q 'DaemonPortOptions=Port=smtp,Addr=0.0.0.0' /etc/mail/sendmail.cf \
+ && chmod 1777 /var/spool/mail
+
 # ICTCore expects its FreeSWITCH fragments to appear inside the FreeSWITCH
 # config tree; the upstream installer symlinks rather than copies so that an
 # ICTCore upgrade takes effect without touching FreeSWITCH.
@@ -163,6 +207,39 @@ RUN for d in dialplan directory sip_profiles; do \
       mkdir -p /etc/freeswitch/$d; \
       ln -sf /usr/ictcore/etc/freeswitch/$d/ictcore.xml /etc/freeswitch/$d/ictcore.xml; \
     done
+
+# ICTCore ships ictcore.xml with a developer's LAN address hardcoded into all
+# four IP params and the correct block commented out just above them. sofia
+# cannot bind an address the host does not own, so the profile fails with
+# "Error Creating SIP UA for profile: ictcore", retries three times and is
+# dropped. mod_sofia itself loads fine, which is why the symptom reads as a
+# missing profile rather than a missing module. The entrypoint can still
+# override ext-sip-ip at runtime for deployments behind NAT.
+RUN sed -i \
+      -e 's|<param name="rtp-ip" value="10\.20\.20\.122"/>|<param name="rtp-ip" value="$${local_ip_v4}"/>|' \
+      -e 's|<param name="sip-ip" value="10\.20\.20\.122"/>|<param name="sip-ip" value="$${local_ip_v4}"/>|' \
+      -e 's|<param name="ext-rtp-ip" value="10\.20\.20\.122"/>|<param name="ext-rtp-ip" value="auto-nat"/>|' \
+      -e 's|<param name="ext-sip-ip" value="10\.20\.20\.122"/>|<param name="ext-sip-ip" value="auto-nat"/>|' \
+      /usr/ictcore/etc/freeswitch/sip_profiles/ictcore.xml \
+ && ! grep -q '10\.20\.20\.122' /usr/ictcore/etc/freeswitch/sip_profiles/ictcore.xml
+
+# ictcore.xml and vanilla's internal.xml both bind 5060, so whichever sofia
+# starts first wins and the other dies with the same SIP UA error. ICTFax runs
+# its calls through the ictcore profile and the ictcore dialplan context, so the
+# vanilla internal profiles are the ones that go. sofia.conf.xml globs *.xml, so
+# renaming is enough to drop them from the include.
+RUN cd /etc/freeswitch/sip_profiles \
+ && mv -f internal.xml      internal.xml.noload \
+ && mv -f internal-ipv6.xml internal-ipv6.xml.noload
+
+# ICTCore's dialplan calls out over HTTP, and the spec's %post freeswitch
+# uncomments both of these. The vanilla config ships them commented out.
+RUN sed -i \
+      -e 's|<!-- <load module="mod_curl"/> -->|<load module="mod_curl"/>|g' \
+      -e 's|<!-- <load module="mod_flite"/> -->|<load module="mod_flite"/>|g' \
+      /etc/freeswitch/autoload_configs/modules.conf.xml \
+ && grep -qE '^\s*<load module="mod_curl"/>'  /etc/freeswitch/autoload_configs/modules.conf.xml \
+ && grep -qE '^\s*<load module="mod_flite"/>' /etc/freeswitch/autoload_configs/modules.conf.xml
 
 # ── the dashboard ────────────────────────────────────────────
 # The GUI calls API_URL '/api', which ictcore.conf aliases to the REST entry
@@ -175,7 +252,9 @@ COPY docker/supervisord.conf /etc/supervisord.conf
 COPY docker/mariadb.ini      /etc/supervisord.d/mariadb.ini
 COPY docker/entrypoint.sh    /usr/local/bin/entrypoint.sh
 COPY docker/wait-for-db.sh   /usr/local/bin/wait-for-db.sh
-RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/wait-for-db.sh
+COPY docker/sendmail-fg.sh   /usr/local/bin/sendmail-fg.sh
+RUN chmod +x /usr/local/bin/entrypoint.sh /usr/local/bin/wait-for-db.sh \
+             /usr/local/bin/sendmail-fg.sh
 
 VOLUME ["/var/lib/mysql", "/usr/ictcore/data", "/usr/ictcore/log"]
 
@@ -186,7 +265,7 @@ VOLUME ["/var/lib/mysql", "/usr/ictcore/data", "/usr/ictcore/log"]
 # The event socket binds to loopback unless you set FS_ESL_LISTEN_IP=0.0.0.0.
 # It is a full control channel for the switch, so reaching it from outside the
 # container is opt-in and you want a real FS_ESL_PASSWORD before you do that.
-EXPOSE 80/tcp 443/tcp 5060/tcp 5060/udp 8021/tcp 16384-16484/udp
+EXPOSE 80/tcp 443/tcp 25/tcp 5060/tcp 5060/udp 8021/tcp 16384-16484/udp
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=120s --retries=3 \
   CMD curl -fsS http://127.0.0.1/index.html >/dev/null

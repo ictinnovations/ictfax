@@ -1,0 +1,530 @@
+diff --git a/composer.json b/composer.json
+index 1daa3ef..b7eee83 100644
+--- a/composer.json
++++ b/composer.json
+@@ -14,26 +14,15 @@
+     {
+       "type": "vcs",
+       "url": "https://github.com/ictinnovations/RestServer"
+-    },
+-    {
+-      "type": "vcs",
+-      "url": "https://github.com/ictinnovations/ProcessManager"
+-    },
+-    {
+-      "type": "vcs",
+-      "url": "https://github.com/ictinnovations/office-converter"
+     }
+   ],
+   "require": {
+-    "swiftmailer/swiftmailer": "^5.4.8",
+-    "nategood/httpful": "^0.2.20",
+-    "aza/thread": "^1.1",
+-    "twig/twig": "^1.35",
++    "php": ">=8.1",
++    "symfony/mailer": "^6.4",
++    "twig/twig": "^3.0",
+     "jacwright/restserver": "dev-master",
+-    "firebase/php-jwt": "^5.0",
+-    "firehed/processmanager": "dev-master",
+-    "ncjoes/office-converter": "dev-master",
+-    "dompdf/dompdf": "^0.8.3"
++    "firebase/php-jwt": "^7.0",
++    "dompdf/dompdf": "^3.0"
+   },
+   "autoload": {
+     "psr-4": {
+diff --git a/core/Api/ForgotpasswordApi.php b/core/Api/ForgotpasswordApi.php
+index 7bc97db..e9b4993 100644
+--- a/core/Api/ForgotpasswordApi.php
++++ b/core/Api/ForgotpasswordApi.php
+@@ -20,11 +20,6 @@ use ICT\Core\CoreException;
+ use Firebase\JWT\ExpiredException;
+ use ICT\Core\Provider\Smtp;
+ use ICT\Core\Request;
+-use Swift_Attachment;
+-use Swift_Mailer;
+-use Swift_Message;
+-use Swift_SendmailTransport;
+-use Swift_SmtpTransport;
+ 
+ #[\AllowDynamicProperties]
+ class ForgotpasswordApi extends Api
+diff --git a/core/Forgot_password.php b/core/Forgot_password.php
+index 4aeca44..aa4082a 100644
+--- a/core/Forgot_password.php
++++ b/core/Forgot_password.php
+@@ -17,10 +17,13 @@ use Firebase\JWT\JWT;
+ use ICT\Core\Corelog;
+ use ICT\Core\CoreException;
+ use Firebase\JWT\ExpiredException;
+-use Swift_Mailer;
+-use Swift_Message;
+-use Swift_SendmailTransport;
+-use Swift_SmtpTransport;
++use Firebase\JWT\Key;
++use Firebase\JWT\SignatureInvalidException;
++use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
++use Symfony\Component\Mailer\Mailer;
++use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
++use Symfony\Component\Mime\Address;
++use Symfony\Component\Mime\Email;
+ use ICT\Core\Conf;
+ use ICT\Core\Gateway\Sendmail;
+ 
+@@ -71,24 +74,27 @@ class Forgot_password
+         $body = str_replace(['[link]'], $link, $templateBody);
+         $body = str_replace('[first_name]', $aValue['first_name'], $body);
+         $route = Sendmail::default_route();
+-        $transport = (new Swift_SmtpTransport($route->host, $route->port))
++        $transport = (new EsmtpTransport($route->host, (int) $route->port))
+           ->setUsername($route->username)
+           ->setPassword($route->password);
+         // Create the Mailer using created Transport
+-        $mailer = new Swift_Mailer($transport);
++        $mailer = new Mailer($transport);
+         // Create a message
+-        $message = (new Swift_Message('Forgot Password Request'))
+-          ->setFrom(['kashif@ictinnovations.com' => 'ICT Fax'])
+-          ->setTo($email)
+-          ->setBody($body, 'text/html');
+-        // return $message;
+-        $result = $mailer->send($message);
+-        if ($result) {
+-          return true;
+-          Corelog::log('email ' . print_r($result, true), Corelog::INFO);
+-        } else {
++        $message = (new Email())
++          ->subject('Forgot Password Request')
++          ->from(new Address('kashif@ictinnovations.com', 'ICT Fax'))
++          ->to($email)
++          ->html($body);
++        // Symfony's send() returns void and signals failure by throwing, unlike
++        // Swift which returned a recipient count. Testing the return value here
++        // would report every successful send as a failure.
++        try {
++          $mailer->send($message);
++        } catch (TransportExceptionInterface $send_error) {
++          Corelog::log('email send failed: ' . $send_error->getMessage(), Corelog::ERROR);
+           throw new CoreException(500, 'Error while sending mail');
+         }
++        return true;
+       } else {
+         throw new CoreException(401, 'The provided email is not registered in our system. Please enter a valid email address.');
+       }
+@@ -153,7 +159,7 @@ class Forgot_password
+       $key_file = Conf::get('security:public_key', '/usr/ictcore/etc/ssh/ib_node.pub');
+       $hash_type = Conf::get('security:hash_type', 'RS256');
+       $public_key = file_get_contents($key_file);
+-      return JWT::decode($token, $public_key, array($hash_type));   
++      return JWT::decode($token, new Key($public_key, $hash_type));
+     } catch (ExpiredException $e) {
+       // Handle token expiration
+       return false;
+diff --git a/core/Gateway/Sendmail.php b/core/Gateway/Sendmail.php
+index e538432..24217a4 100644
+--- a/core/Gateway/Sendmail.php
++++ b/core/Gateway/Sendmail.php
+@@ -18,16 +18,12 @@ use ICT\Core\Provider;
+ use ICT\Core\Provider\Smtp;
+ use ICT\Core\Provider\Emailcmd;
+ use ICT\Core\Request;
+-use Swift_Attachment;
+-use Swift_Mailer;
+-use Swift_Message;
+-use Swift_SendmailTransport;
+-use Swift_SmtpTransport;
++use Symfony\Component\Mailer\Mailer;
++use Symfony\Component\Mailer\Transport\SendmailTransport;
++use Symfony\Component\Mailer\Transport\Smtp\EsmtpTransport;
++use Symfony\Component\Mime\Email;
+ use ICT\Core\Account\EAddress;
+ 
+-global $path_root;
+-require_once $path_root . '/vendor/swiftmailer/swiftmailer/lib/swift_required.php';
+-
+ class Sendmail extends Gateway
+ {
+ 
+@@ -78,10 +74,15 @@ class Sendmail extends Gateway
+     switch ($this->oProvider->type) {
+       case 'smtp':
+         try {
+-          $this->conn = Swift_SmtpTransport::newInstance($this->oProvider->host, $this->oProvider->port);
+-          if (!empty($this->oProvider->encryption)) {
+-            $this->conn->setEncryption($this->oProvider->encryption);
++          // Swift took the encryption name as a string after construction.
++          // Symfony decides it up front: true means implicit TLS on connect
++          // (smtps, usually 465), null means plain connect then STARTTLS if the
++          // server advertises it, which is what 'tls' meant to Swift.
++          $tls = null;
++          if (strtolower((string) $this->oProvider->encryption) === 'ssl') {
++            $tls = true;
+           }
++          $this->conn = new EsmtpTransport($this->oProvider->host, (int) $this->oProvider->port, $tls);
+           $this->conn->setUsername($this->oProvider->username);
+           $this->conn->setPassword($this->oProvider->password);
+         } catch (Exception $conn_error) {
+@@ -91,7 +92,7 @@ class Sendmail extends Gateway
+       case 'sendmail':
+       default:
+         try {
+-          $this->conn = Swift_SendmailTransport::newInstance($this->oProvider->cli);
++          $this->conn = new SendmailTransport($this->oProvider->cli);
+         } catch (Exception $conn_error) {
+           throw new CoreException("500", "sendmail connection error", $conn_error);
+         }
+@@ -103,7 +104,12 @@ class Sendmail extends Gateway
+   protected function dissconnect()
+   {
+     Corelog::log("Sendmail disconnect requested", Corelog::CRUD);
+-    return $this->conn->stop();
++    // Only the SMTP transport holds a socket open. SendmailTransport pipes to a
++    // process per message and has no stop().
++    if ($this->conn && method_exists($this->conn, 'stop')) {
++      return $this->conn->stop();
++    }
++    return TRUE;
+   }
+ 
+   public function get()
+@@ -122,27 +128,25 @@ class Sendmail extends Gateway
+     // Convert json into data array
+     $data = json_decode($command, TRUE);
+ 
+-    $mailMsg = Swift_Message::newInstance();
++    $mailMsg = new Email();
+ 
+     // TODO, make it functional $headers = $mailMsg->getHeaders();
+     // $headers->addIdHeader('spool_id', $data['spool_id']);
+ 
+     try {
+-      $mailMsg->setTo($this->validate_email($data['to']));
+-      $mailMsg->setFrom($this->validate_email($data['from']));
+-      $mailMsg->setSubject($data['subject']);
+-      $mailMsg->setBody($data['body'], 'text/html');
++      $mailMsg->to($this->validate_email($data['to']));
++      $mailMsg->from($this->validate_email($data['from']));
++      $mailMsg->subject($data['subject']);
++      $mailMsg->html($data['body']);
+       if (!empty($data['body_alt'])) {
+-        $mailMsg->addPart($data['body_alt'], 'text/plain');
++        $mailMsg->text($data['body_alt']);
+       }
+       // Optionally add attachments
+       if (!empty($data['attachment'])) {
+         $aAttachment = \ICT\Core\path_string_to_array($data['attachment']);
+         foreach($aAttachment as $attachment) {
+           if (is_file($attachment)) {
+-            $oAttachment = Swift_Attachment::fromPath($attachment);
+-            // $oAttachment->setFilename($data['file_title']);
+-            $mailMsg->attach($oAttachment);
++            $mailMsg->attachFromPath($attachment);
+           }
+         }
+       }
+@@ -155,7 +159,7 @@ class Sendmail extends Gateway
+     $this->connect();
+     if ($this->conn) {
+       try {
+-        $oMailer = Swift_Mailer::newInstance($this->conn);
++        $oMailer = new Mailer($this->conn);
+         $oMailer->send($mailMsg);
+       } catch (Exception $send_error) {
+         throw new CoreException("500", "error while sending email", $send_error);
+diff --git a/core/Message/Document.php b/core/Message/Document.php
+index 5b2c8c4..06b9055 100644
+--- a/core/Message/Document.php
++++ b/core/Message/Document.php
+@@ -15,7 +15,6 @@ use ICT\Core\DB;
+ use ICT\Core\Message;
+ use ICT\Core\Session;
+ use ICT\Core\User;
+-use NcJoes\OfficeConverter\OfficeConverter;
+ 
+ class Document extends Message
+ {
+diff --git a/core/Transmission.php b/core/Transmission.php
+index d941ec2..e2933d0 100644
+--- a/core/Transmission.php
++++ b/core/Transmission.php
+@@ -25,7 +25,6 @@ class Transmission
+   const STATUS_FAILED = 'failed';
+   const FAILED_STATUS = 'failed(dnc)';
+   const STATUS_INVALID = 'invalid';
+-  const FAILED_STATUS = 'failed(dnc)';
+   const INTERNAL = 'internal'; // currently not in use
+   const INBOUND = 'inbound';
+   const OUTBOUND = 'outbound';
+diff --git a/core/lib/CoreThread.php b/core/lib/CoreThread.php
+index cf5950a..202033c 100644
+--- a/core/lib/CoreThread.php
++++ b/core/lib/CoreThread.php
+@@ -9,10 +9,98 @@ namespace ICT\Core;
+  * Mail : nasir@ictinnovations.com                                 *
+  * *************************************************************** */
+ 
+-use Aza\Components\Thread\Thread;
+-
+-class CoreThread extends Thread
++/**
++ * Background worker for cron driven task processing.
++ *
++ * This used to extend Aza\Components\Thread\Thread. aza/thread has no PHP 8
++ * release and is unmaintained, so the small part of its surface ICTCore relied
++ * on (wait, run, getParam, plus the onFork and onShutdown hooks) is implemented
++ * here directly on pcntl.
++ *
++ * Where pcntl is unavailable, notably under mod_php, work runs inline in the
++ * calling process. That matches how ICTCore already behaved: the note in
++ * Gateway/Sendmail::send records that multithreading does not work under apache,
++ * which is why transmissions are scheduled rather than forked there.
++ */
++abstract class CoreThread
+ {
++
++  /** @var array $params arguments passed to the most recent run() */
++  private $params = array();
++
++  /**
++   * The unit of work. Implemented by each subclass, called once per run().
++   */
++  abstract protected function process();
++
++  /**
++   * Kept so existing callers can stay in the wait()->run() form.
++   */
++  public function wait()
++  {
++    return $this;
++  }
++
++  /**
++   * Runs process() in a forked child when possible, otherwise inline.
++   *
++   * The child is deliberately not waited on: callers loop over pending tasks and
++   * would otherwise serialise them. Children are reaped by ignoring SIGCHLD, so
++   * they do not accumulate as zombies for the lifetime of the cron process.
++   */
++  public function run(...$params)
++  {
++    $this->params = $params;
++
++    if (!self::can_fork()) {
++      $this->run_inline();
++      return $this;
++    }
++
++    pcntl_signal(SIGCHLD, SIG_IGN);
++    $pid = pcntl_fork();
++
++    if ($pid === -1) {
++      Corelog::log('fork failed, running ' . static::class . ' inline', Corelog::WARNING);
++      $this->run_inline();
++    } else if ($pid === 0) {
++      // Child. Must never return to the caller's control flow, and must not run
++      // the parent's shutdown handlers, hence exit() rather than return.
++      $code = 0;
++      try {
++        $this->onFork();
++        $this->process();
++        $this->onShutdown();
++      } catch (\Throwable $e) {
++        Corelog::log('thread ' . static::class . ' failed: ' . $e->getMessage(), Corelog::ERROR);
++        $code = 1;
++      }
++      exit($code);
++    }
++
++    return $this;
++  }
++
++  public function getParam($index, $default = null)
++  {
++    return array_key_exists($index, $this->params) ? $this->params[$index] : $default;
++  }
++
++  private function run_inline()
++  {
++    // No fork, so no new database connection and no pid change: calling
++    // onFork() here would reconnect the caller's own handle out from under it.
++    $this->process();
++    $this->onShutdown();
++  }
++
++  private static function can_fork()
++  {
++    return function_exists('pcntl_fork')
++        && function_exists('pcntl_signal')
++        && PHP_SAPI === 'cli';
++  }
++
+   protected function onFork()
+   {
+     DB::$link = DB::connect(TRUE);
+@@ -25,4 +113,4 @@ class CoreThread extends Thread
+     // nothing to do
+   }
+ 
+-}
+\ No newline at end of file
++}
+diff --git a/core/lib/Token.php b/core/lib/Token.php
+index ee32f39..d7b9b97 100644
+--- a/core/lib/Token.php
++++ b/core/lib/Token.php
+@@ -9,8 +9,9 @@ namespace ICT\Core;
+  * Mail : nasir@ictinnovations.com                                 *
+  * **************************************************************** */
+ 
+-use Twig_Environment;
+-use Twig_Loader_Filesystem;
++use Twig\Environment;
++use Twig\Extension\EscaperExtension;
++use Twig\Loader\FilesystemLoader;
+ 
+ class Token
+ {
+@@ -114,13 +115,18 @@ class Token
+     $this->default_value = $default_value;
+ 
+     /* ---------------------------------------------- PREPARE TEMPLATE ENGINE */
+-    $loader = new Twig_Loader_Filesystem($template_dir); // template home dir
+-    $twig = new Twig_Environment($loader, array(
++    $loader = new FilesystemLoader($template_dir); // template home dir
++    $twig = new Environment($loader, array(
+         'autoescape' => false,
+             // uncomment following line to enable cache
+             // 'cache' => $path_cache,
+     ));
+-    $twig->getExtension('Twig_Extension_Core')->setEscaper('json', function($twigEnv, $string, $charset) {
++    // No template in this tree asks for the json strategy, but ICTCore is a
++    // library and the products built on it ship their own templates, so the
++    // strategy is kept rather than dropped. Twig 3 moved setEscaper off the core
++    // extension onto EscaperExtension; it still passes the environment as the
++    // first argument, so the callable keeps its original three parameters.
++    $twig->getExtension(EscaperExtension::class)->setEscaper('json', function($twigEnv, $string, $charset) {
+         return addcslashes(str_replace("\r", '', $string), "\"\n\r");
+     });
+ 
+diff --git a/tests/client.php b/tests/client.php
+index caa3fbf..d4be038 100644
+--- a/tests/client.php
++++ b/tests/client.php
+@@ -1,8 +1,9 @@
+ <?php
+ 
+-require(__DIR__ . '/../vendor/nategood/httpful/bootstrap.php');
++// Uses ext-curl directly. This used to pull in nategood/httpful, which has no
++// PHP 8 release and was only ever needed by these two example scripts.
+ 
+-// STEP 1: configure API function to connect and authenticate with ICTBroadcast server
++// STEP 1: configure API function to connect and authenticate with ICTCore server
+ function ictcore_api($method, $arguments = array(), $files = array()) {
+   $api_url  = 'http://core.voip.vision';
+   $username = 'admin';
+@@ -10,31 +11,44 @@ function ictcore_api($method, $arguments = array(), $files = array()) {
+   $service_url = "$api_url/$method";
+   echo $service_url."\n";
+ 
+-  $request = \Httpful\Request::post($service_url); // Build a PUT request...
+-  $request->expectsJson();                             // and also receiving in json
+-  $request->sendsJson();
+-  $request->authenticateWith($username, $password);    // authenticate with basic auth...
++  $headers = array('Accept: application/json');
+ 
+-  // json is not supported with file upload
+   if (empty($files)) {
+-    $request->body(json_encode($arguments), Httpful\Mime::JSON);
++    $payload   = json_encode($arguments);
++    $headers[] = 'Content-Type: application/json';
+   } else {
+-    $request->sendsType(Httpful\Mime::UPLOAD);
+-    $request->alwaysSerializePayload();
+-    $request->body($arguments); // no JSON
+-    $request->attach($files);
++    // json is not supported with file upload, so send multipart instead and let
++    // curl set the Content-Type with its own boundary.
++    $payload = $arguments;
++    foreach ($files as $field => $path) {
++      $payload[$field] = new CURLFile($path);
++    }
+   }
+ 
+-  $response = $request->send();            // attach a body/payload...
+-
++  $ch = curl_init($service_url);
++  curl_setopt_array($ch, array(
++    CURLOPT_RETURNTRANSFER => true,
++    CURLOPT_POST           => true,
++    CURLOPT_POSTFIELDS     => $payload,
++    CURLOPT_HTTPHEADER     => $headers,
++    CURLOPT_HTTPAUTH       => CURLAUTH_BASIC,
++    CURLOPT_USERPWD        => "$username:$password"
++  ));
++  $body  = curl_exec($ch);
++  $error = curl_error($ch);
++  curl_close($ch);
++
++  if ($body === false) {
++    fwrite(STDERR, "request failed: $error\n");
++    exit(1);
++  }
+ 
+-  return $response->body;
++  return json_decode($body);
+ }
+ 
+ $arguments = array(
+   'name'        => 'myTiff',
+-  'description' => 'nothing special',
+-  'file_name'   => '@/home/data/Desktop/ict-innovations/all_test-data/fax.pdf'
++  'description' => 'nothing special'
+ );
+ 
+ $files = array(
+diff --git a/tests/get.php b/tests/get.php
+index bee82d9..ed4771c 100644
+--- a/tests/get.php
++++ b/tests/get.php
+@@ -1,8 +1,9 @@
+ <?php
+ 
+-require(__DIR__ . '/../vendor/nategood/httpful/bootstrap.php');
++// Uses ext-curl directly. This used to pull in nategood/httpful, which has no
++// PHP 8 release and was only ever needed by these two example scripts.
+ 
+-// STEP 1: configure API function to connect and authenticate with ICTBroadcast server
++// STEP 1: configure API function to connect and authenticate with ICTCore server
+ function ictcore_api($method) {
+   $api_url  = 'http://core.voip.vision';
+   $username = 'admin';
+@@ -10,12 +11,23 @@ function ictcore_api($method) {
+   $service_url = "$api_url/$method";
+   echo $service_url."\n";
+ 
+-  $response = \Httpful\Request::get($service_url) // Build a PUT request...
+-      ->expectsJson()                             // we are receiving in json
+-      ->authenticateWith($username, $password)    // authenticate with basic auth...
+-      ->send(); 
++  $ch = curl_init($service_url);
++  curl_setopt_array($ch, array(
++    CURLOPT_RETURNTRANSFER => true,
++    CURLOPT_HTTPHEADER     => array('Accept: application/json'),
++    CURLOPT_HTTPAUTH       => CURLAUTH_BASIC,
++    CURLOPT_USERPWD        => "$username:$password"
++  ));
++  $body  = curl_exec($ch);
++  $error = curl_error($ch);
++  curl_close($ch);
+ 
+-  return $response->body;
++  if ($body === false) {
++    fwrite(STDERR, "request failed: $error\n");
++    exit(1);
++  }
++
++  return json_decode($body);
+ }
+ 
+ $request = end($argv);

@@ -121,8 +121,33 @@ ini_set "$CONF" db       pass "$DB_PASS"
 ini_set "$CONF" website  host "$WEB_HOST"
 ini_set "$CONF" website  url  "http://$WEB_HOST/api"
 ini_set "$CONF" freeswitch password "$FS_PASSWORD"
+ini_set "$CONF" sendmail   domain   "$WEB_HOST"
 chown ictcore:ictcore "$CONF"
 chmod 640 "$CONF"
+
+# ── email to fax ─────────────────────────────────────────────
+# The rest of %post sendmail. These three maps key on the address the container
+# happens to get, which is only known now, and changes on every docker run, so
+# they cannot be baked into the image. Written idempotently because a restarted
+# container replays this against files that already have last boot's entries.
+#
+# virtusertable is what actually makes email to fax work: it routes anything
+# addressed to the container's address to the ictcore mailbox, which
+# bin/sendmail/gateway.php polls.
+#
+# The spec's %post writes "$ip localhost" into /etc/hosts. That line is not
+# copied here: docker gives the container an unqualified name, and aliasing its
+# own address to localhost leaves sendmail unable to qualify itself, so it sits
+# in its retry loop and never binds 25. A qualified name is what it wants.
+FQDN="$(hostname).localdomain"
+for ip in $(hostname -I); do
+  grep -qx "$ip $FQDN $(hostname)" /etc/hosts             || echo "$ip $FQDN $(hostname)" >> /etc/hosts
+  grep -qx "$ip"              /etc/mail/local-host-names || echo "$ip"           >> /etc/mail/local-host-names
+  grep -q  "^@$ip[[:space:]]" /etc/mail/virtusertable    || printf '@%s\tictcore\n' "$ip" >> /etc/mail/virtusertable
+done
+makemap hash /etc/mail/virtusertable < /etc/mail/virtusertable
+newaliases >/dev/null 2>&1 || true
+log "mail routing for $(hostname -I | tr -s ' ')"
 
 # ── TLS ──────────────────────────────────────────────────────
 # mod_ssl ships a config pointing at /etc/pki/tls/certs/localhost.crt but Rocky
@@ -156,6 +181,19 @@ if [[ -f /etc/freeswitch/autoload_configs/event_socket.conf.xml ]]; then
   # thread the moment it starts, so nothing can reach the event socket at all.
   sed -i "s|name=\"listen-ip\" value=\"[^\"]*\"|name=\"listen-ip\" value=\"${FS_ESL_LISTEN_IP:-127.0.0.1}\"|" \
     /etc/freeswitch/autoload_configs/event_socket.conf.xml
+fi
+
+# The ictcore profile advertises itself with auto-nat, which asks a public STUN
+# server what the outside world sees. That is right for a host with a routable
+# address and wrong wherever STUN is blocked or the NAT is symmetric, and a fax
+# that signals the wrong media address negotiates fine and then carries no
+# pages. SIP_EXT_IP pins it when you already know the answer.
+if [[ -n "${SIP_EXT_IP:-}" ]]; then
+  log "pinning SIP/RTP advertised address to $SIP_EXT_IP"
+  sed -i \
+    -e "s|<param name=\"ext-rtp-ip\" value=\"[^\"]*\"/>|<param name=\"ext-rtp-ip\" value=\"$SIP_EXT_IP\"/>|" \
+    -e "s|<param name=\"ext-sip-ip\" value=\"[^\"]*\"/>|<param name=\"ext-sip-ip\" value=\"$SIP_EXT_IP\"/>|" \
+    "$ICTCORE_DIR/etc/freeswitch/sip_profiles/ictcore.xml"
 fi
 
 if is_local_db; then
