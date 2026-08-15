@@ -22,8 +22,10 @@ FROM rockylinux:8
 # clone command string, which never changes, and silently keeps serving an old
 # checkout. Override with --build-arg to build against a different revision.
 ARG ICTCORE_REF=d8274205deff1e5875368350bba67ff44fb439af
-# Remi rather than the AppStream php module, because Rocky 8 tops out at 8.0 and
-# ICTCore needs 8.1 or newer once the patch below is applied.
+# Remi rather than the AppStream php module. AppStream would satisfy the version
+# floor on its own, since Rocky 8 carries a php:8.2 stream, but it has never
+# packaged php-imap or php-pecl-imagick at any stream, and the email and
+# thumbnail paths need both.
 ARG PHP_STREAM=remi-8.3
 
 LABEL org.opencontainers.image.title="ictfax" \
