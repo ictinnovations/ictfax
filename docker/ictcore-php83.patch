@@ -528,3 +528,24 @@ index bee82d9..ed4771c 100644
  }
  
  $request = end($argv);
+diff --git a/core/User.php b/core/User.php
+index 22ab67f..490b950 100644
+--- a/core/User.php
++++ b/core/User.php
+@@ -11,6 +11,7 @@ namespace ICT\Core;
+ 
+ use Exception;
+ use Firebase\JWT\JWT;
++use Firebase\JWT\Key;
+ use ICT\Core\User\Permission;
+ use ICT\Core\User\Role;
+ 
+@@ -470,7 +471,7 @@ class User
+           $key_file = Conf::get('security:public_key', '/usr/ictcore/etc/ssh/ib_node.pub');
+           $hash_type = Conf::get('security:hash_type', 'RS256');
+           $public_key = file_get_contents($key_file);
+-          $token = JWT::decode($access_key, $public_key, array($hash_type));
++          $token = JWT::decode($access_key, new Key($public_key, $hash_type));
+           if ($token) {
+             // TODO check api-version
+             if (!empty($token->user_id)) {
