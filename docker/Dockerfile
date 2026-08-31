@@ -21,7 +21,7 @@ FROM rockylinux:8
 # so the build cache invalidates when ICTCore moves. A branch ref caches on the
 # clone command string, which never changes, and silently keeps serving an old
 # checkout. Override with --build-arg to build against a different revision.
-ARG ICTCORE_REF=cb987b5e465f1bc9e1c832722eb8115cff385e16
+ARG ICTCORE_REF=d8274205deff1e5875368350bba67ff44fb439af
 # Remi rather than the AppStream php module, because Rocky 8 tops out at 8.0 and
 # ICTCore needs 8.1 or newer once the patch below is applied.
 ARG PHP_STREAM=remi-8.3
