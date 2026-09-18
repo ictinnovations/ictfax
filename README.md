@@ -7,6 +7,17 @@ Introduction
 
 ICTFAX is an open source multi-user [Fax server software] solution. ICTFAX features both inbound as well as outbound faxing solutions using T.38 protocol as well as G.711 passt hrough. ICTFAX is developed over reknown open source __Freeswitch__, __[ICTCore]__ communications frameowrk and Php based Angular framework. It support both inbound and outbound faxing. 
 
+> **Want a full PBX as well?** ICTFax is the fax server on its own. If you also need
+> extensions, IVR, call queues and trunk management in the same interface, use
+> [ICTPBX Community Edition](https://github.com/ictinnovations/ictpbx-community-edition),
+> which adds FusionPBX on top of the same ICTCore foundation. Installing both is not
+> necessary, and not supported on one host.
+
+**Installing?** The maintained guide is
+[ictfax.org/ictfax-installation-guide](https://www.ictfax.org/ictfax-installation-guide/),
+with a tab per distribution. The `INSTALL.md` in this repo and the matching Read the Docs
+page describe CentOS 7 and are kept only for older systems.
+
 ICTFAX can be used in following faxing scenarios
 
 * [Email to fax][emailtofax] / [web to fax][webtofax] / [fax to email][emailtofax]
