@@ -1,3 +1,25 @@
+> **This page is out of date. Do not follow it for a new install.**
+>
+> It describes CentOS 7, PHP 5.3.3 and FreeSWITCH 1.6. CentOS 7 reached end of life in
+> June 2024, so these steps will not give you a working server on anything current.
+>
+> **The maintained guide is at
+> [ictfax.org/ictfax-installation-guide](https://www.ictfax.org/ictfax-installation-guide/).**
+> It covers ICTFax 6.0 on RHEL 8 and 9, Rocky Linux 8 and 9, CentOS 8 and 9, Amazon
+> Linux 2 and Docker, with MariaDB 10.11 and PHP 8.3. Pick the tab for your distribution.
+>
+> If you only want to see ICTFax running, the Docker image is one command:
+>
+> ```
+> docker run -d --name ictfax \
+>   -p 8080:80 \
+>   -p 5060:5060/tcp -p 5060:5060/udp \
+>   -p 16384-16484:16384-16484/udp \
+>   ictinnovations/ictfax:latest
+> ```
+>
+> The rest of this page is kept for anyone still maintaining a CentOS 7 box.
+
 ### ICTFAX - INSTALLATION GUIDE (CENTOS / FEDORA)
 
 For older version view [Installation Guide for ICTFax 3.7][installation_guide_old]
