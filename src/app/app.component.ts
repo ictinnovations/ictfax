@@ -19,7 +19,7 @@ import { TranslateService } from '@ngx-translate/core';
 export class AppComponent implements OnInit {
 
   constructor(private analytics: AnalyticsService, private seoService: SeoService, public translate :TranslateService) {
-    translate.addLangs(['english', 'japanese', 'italian']);
+    translate.addLangs(['english', 'japanese', 'italian', 'french']);
     translate.setDefaultLang('english');
 
     const browserLang = translate.getBrowserLang();
