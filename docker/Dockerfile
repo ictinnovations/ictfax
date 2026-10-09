@@ -198,10 +198,31 @@ RUN usermod --append --groups mail ictcore \
 # ICTCore expects its FreeSWITCH fragments to appear inside the FreeSWITCH
 # config tree; the upstream installer symlinks rather than copies so that an
 # ICTCore upgrade takes effect without touching FreeSWITCH.
-RUN for d in dialplan directory sip_profiles; do \
+#
+# The directory (extension accounts) is different: it has to sit INSIDE the
+# default domain, under directory/default/. Linked at directory/ level the users
+# land outside any domain, FreeSWITCH never finds them, and every extension
+# (ATA, fax machine, softphone) gets 403 Forbidden on REGISTER.
+#
+# The vanilla demo users go too. 1000-1019 all have the published password 1234
+# and would otherwise register on the ictcore profile on 5060.
+#
+# RTP is pinned to the range this image publishes (EXPOSE below). FreeSWITCH's
+# default is 16384-32768, so once calls drift past 16484 the media is dropped at
+# the Docker boundary and faxes fail after connecting.
+RUN for d in dialplan sip_profiles; do \
       mkdir -p /etc/freeswitch/$d; \
       ln -sf /usr/ictcore/etc/freeswitch/$d/ictcore.xml /etc/freeswitch/$d/ictcore.xml; \
-    done
+    done \
+ && mkdir -p /etc/freeswitch/directory/default \
+ && ln -sf /usr/ictcore/etc/freeswitch/directory/ictcore.xml /etc/freeswitch/directory/default/ictcore.xml \
+ && rm -f /etc/freeswitch/directory/default/1[0-9][0-9][0-9].xml /etc/freeswitch/directory/default/brian.xml \
+          /etc/freeswitch/directory/default/example.com.xml /etc/freeswitch/directory/default/skinny-example.xml \
+ && sed -i -e 's|<!-- <param name="rtp-start-port" value="16384"/> -->|<param name="rtp-start-port" value="16384"/>|' \
+           -e 's|<!-- <param name="rtp-end-port" value="32768"/> -->|<param name="rtp-end-port" value="16484"/>|' \
+           /etc/freeswitch/autoload_configs/switch.conf.xml \
+ && grep -q 'rtp-end-port" value="16484"' /etc/freeswitch/autoload_configs/switch.conf.xml \
+ && ! ls /etc/freeswitch/directory/default/1000.xml 2>/dev/null
 
 # ictcore.xml takes its addresses from local_ip_v4 and auto-nat (ictcore d5adfd2
 # removed a hardcoded LAN address). The entrypoint can still override
