@@ -121,6 +121,8 @@ ini_set "$CONF" db       pass "$DB_PASS"
 ini_set "$CONF" website  host "$WEB_HOST"
 ini_set "$CONF" website  url  "http://$WEB_HOST/api"
 ini_set "$CONF" freeswitch password "$FS_PASSWORD"
+# devices (ATAs, fax machines, softphones) are told to register here via /accounts/{id}/provisioning
+ini_set "$CONF" provisioning host "$WEB_HOST"
 ini_set "$CONF" sendmail   domain   "$WEB_HOST"
 chown ictcore:ictcore "$CONF"
 chmod 640 "$CONF"

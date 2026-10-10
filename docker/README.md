@@ -23,6 +23,11 @@ is reachable from anywhere but your laptop.
 Publish the RTP range. Skip it and your fax calls will negotiate and then
 transfer nothing, which is the single most common first-run complaint.
 
+On a real server, add `-e ICTCORE_HOST=fax.example.com -e SIP_EXT_IP=<public IP>`, and
+`-p 25:25` if you want email to fax (point an MX record for that domain at the
+server). Extensions for ATAs and fax machines register on 5060 with their username
+and password.
+
 ## How the two halves fit together
 
 The dashboard is a static Angular build served from `/usr/ictfax`, and it calls
@@ -45,7 +50,8 @@ would return 404.
 | `DB_USER` | `ictfaxuser` | |
 | `DB_PASS` | generated | Required once `DB_HOST` is external |
 | `DB_ROOT_PASS` | generated | Only used by the bundled MariaDB |
-| `ICTCORE_HOST` | `localhost` | The hostname the API advertises |
+| `ICTCORE_HOST` | `localhost` | Your server's public hostname or IP. Used as the API host, the email-to-fax domain (`<number>@ICTCORE_HOST`) and the address devices register to |
+| `SIP_EXT_IP` | unset | Public IP to advertise in SIP and RTP. Set it on a cloud or NATed host, or calls connect with no audio |
 | `FS_ESL_PASSWORD` | `ClueCon` | FreeSWITCH event socket password. Change it |
 
 ## Volumes
@@ -64,7 +70,7 @@ docker build -f docker/Dockerfile -t ictfax:dev .
 ```
 
 Two stages. Node 16 builds the Angular app, then a Rocky Linux 8 stage
-assembles Apache, PHP 7.4, MariaDB, FreeSWITCH and ICTCore and drops the built
+assembles Apache, PHP 8.3, MariaDB, FreeSWITCH and ICTCore and drops the built
 dashboard on top. Node 16 rather than something current because this is Angular
 13, and the OpenSSL 3 that ships with Node 18 breaks the hashing the older
 webpack relies on.

@@ -21,9 +21,11 @@ FROM rockylinux:8
 # so the build cache invalidates when ICTCore moves. A branch ref caches on the
 # clone command string, which never changes, and silently keeps serving an old
 # checkout. Override with --build-arg to build against a different revision.
-ARG ICTCORE_REF=d8274205deff1e5875368350bba67ff44fb439af
-# Remi rather than the AppStream php module, because Rocky 8 tops out at 8.0 and
-# ICTCore needs 8.1 or newer once the patch below is applied.
+ARG ICTCORE_REF=73a03c7c983546c134612e3697a99366dce755fa
+# Remi rather than the AppStream php module. AppStream would satisfy the version
+# floor on its own, since Rocky 8 carries a php:8.2 stream, but it has never
+# packaged php-imap or php-pecl-imagick at any stream, and the email and
+# thumbnail paths need both.
 ARG PHP_STREAM=remi-8.3
 
 LABEL org.opencontainers.image.title="ictfax" \
@@ -115,35 +117,28 @@ RUN MYSQLD=$(ls /usr/libexec/mariadbd /usr/libexec/mysqld /usr/sbin/mariadbd /us
 ENV COMPOSER_ALLOW_SUPERUSER=1
 RUN curl -sS https://getcomposer.org/installer | php -- --install-dir=/usr/local/bin --filename=composer
 
-# composer update rather than install: ICTCore's committed composer.lock predates
-# the dompdf requirement in its composer.json, so install refuses to run.
-#
-# ictcore-php83.patch carries the PHP 8.3 migration (twig 3, symfony/mailer,
+# ICTCore runs on PHP 8.1+ since ictinnovations/ictcore#23 (twig 3, symfony/mailer,
 # php-jwt 7, dompdf 3, and a CoreThread that forks with pcntl instead of the
-# abandoned aza/thread). It is ictinnovations/ictcore#23, held here rather than
-# pinned to the branch commit because a squash merge would orphan that sha and
-# break the shallow fetch below. Once the PR lands, delete this file and the
-# git apply line and move ICTCORE_REF to the merge commit instead.
+# abandoned aza/thread), so the image builds straight from ICTCORE_REF with no
+# patch. composer install takes the versions from #23's composer.lock as is.
 #
 # The github url rewrite is for composer: the RestServer entry in ICTCore's
 # repositories block resolves to git@github.com, which has no key in a build
 # container and fails with "Host key verification failed".
 WORKDIR /usr/ictcore
-COPY docker/ictcore-php83.patch /tmp/ictcore-php83.patch
 # fetch rather than clone --branch, because --branch only takes a branch or tag
 # name and ICTCORE_REF is a commit.
 RUN mkdir -p /tmp/ictcore && cd /tmp/ictcore && git init -q . \
  && git remote add origin https://github.com/ictinnovations/ictcore.git \
  && git fetch -q --depth 1 origin "${ICTCORE_REF}" \
  && git checkout -q FETCH_HEAD \
- && git apply /tmp/ictcore-php83.patch \
  && cd /usr/ictcore \
  && cp -a /tmp/ictcore/bin /tmp/ictcore/core /tmp/ictcore/data /tmp/ictcore/db \
           /tmp/ictcore/etc /tmp/ictcore/docs /tmp/ictcore/wwwroot \
           /tmp/ictcore/composer.json /tmp/ictcore/composer.lock /usr/ictcore/ \
- && rm -rf /tmp/ictcore /tmp/ictcore-php83.patch \
+ && rm -rf /tmp/ictcore \
  && git config --global url."https://github.com/".insteadOf "git@github.com:" \
- && composer update --no-dev --no-interaction --no-progress --prefer-dist \
+ && composer install --no-dev --no-interaction --no-progress --prefer-dist \
  && composer audit --no-dev --no-interaction \
  && composer clear-cache
 
@@ -203,25 +198,35 @@ RUN usermod --append --groups mail ictcore \
 # ICTCore expects its FreeSWITCH fragments to appear inside the FreeSWITCH
 # config tree; the upstream installer symlinks rather than copies so that an
 # ICTCore upgrade takes effect without touching FreeSWITCH.
-RUN for d in dialplan directory sip_profiles; do \
+#
+# The directory (extension accounts) is different: it has to sit INSIDE the
+# default domain, under directory/default/. Linked at directory/ level the users
+# land outside any domain, FreeSWITCH never finds them, and every extension
+# (ATA, fax machine, softphone) gets 403 Forbidden on REGISTER.
+#
+# The vanilla demo users go too. 1000-1019 all have the published password 1234
+# and would otherwise register on the ictcore profile on 5060.
+#
+# RTP is pinned to the range this image publishes (EXPOSE below). FreeSWITCH's
+# default is 16384-32768, so once calls drift past 16484 the media is dropped at
+# the Docker boundary and faxes fail after connecting.
+RUN for d in dialplan sip_profiles; do \
       mkdir -p /etc/freeswitch/$d; \
       ln -sf /usr/ictcore/etc/freeswitch/$d/ictcore.xml /etc/freeswitch/$d/ictcore.xml; \
-    done
+    done \
+ && mkdir -p /etc/freeswitch/directory/default \
+ && ln -sf /usr/ictcore/etc/freeswitch/directory/ictcore.xml /etc/freeswitch/directory/default/ictcore.xml \
+ && rm -f /etc/freeswitch/directory/default/1[0-9][0-9][0-9].xml /etc/freeswitch/directory/default/brian.xml \
+          /etc/freeswitch/directory/default/example.com.xml /etc/freeswitch/directory/default/skinny-example.xml \
+ && sed -i -e 's|<!-- <param name="rtp-start-port" value="16384"/> -->|<param name="rtp-start-port" value="16384"/>|' \
+           -e 's|<!-- <param name="rtp-end-port" value="32768"/> -->|<param name="rtp-end-port" value="16484"/>|' \
+           /etc/freeswitch/autoload_configs/switch.conf.xml \
+ && grep -q 'rtp-end-port" value="16484"' /etc/freeswitch/autoload_configs/switch.conf.xml \
+ && ! ls /etc/freeswitch/directory/default/1000.xml 2>/dev/null
 
-# ICTCore ships ictcore.xml with a developer's LAN address hardcoded into all
-# four IP params and the correct block commented out just above them. sofia
-# cannot bind an address the host does not own, so the profile fails with
-# "Error Creating SIP UA for profile: ictcore", retries three times and is
-# dropped. mod_sofia itself loads fine, which is why the symptom reads as a
-# missing profile rather than a missing module. The entrypoint can still
-# override ext-sip-ip at runtime for deployments behind NAT.
-RUN sed -i \
-      -e 's|<param name="rtp-ip" value="10\.20\.20\.122"/>|<param name="rtp-ip" value="$${local_ip_v4}"/>|' \
-      -e 's|<param name="sip-ip" value="10\.20\.20\.122"/>|<param name="sip-ip" value="$${local_ip_v4}"/>|' \
-      -e 's|<param name="ext-rtp-ip" value="10\.20\.20\.122"/>|<param name="ext-rtp-ip" value="auto-nat"/>|' \
-      -e 's|<param name="ext-sip-ip" value="10\.20\.20\.122"/>|<param name="ext-sip-ip" value="auto-nat"/>|' \
-      /usr/ictcore/etc/freeswitch/sip_profiles/ictcore.xml \
- && ! grep -q '10\.20\.20\.122' /usr/ictcore/etc/freeswitch/sip_profiles/ictcore.xml
+# ictcore.xml takes its addresses from local_ip_v4 and auto-nat (ictcore d5adfd2
+# removed a hardcoded LAN address). The entrypoint can still override
+# ext-sip-ip at runtime for deployments behind NAT.
 
 # ictcore.xml and vanilla's internal.xml both bind 5060, so whichever sofia
 # starts first wins and the other dies with the same SIP UA error. ICTFax runs
