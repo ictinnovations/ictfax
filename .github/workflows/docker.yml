@@ -5,6 +5,15 @@ on:
     branches: [ictfax-13]
   pull_request:
   workflow_dispatch:
+    inputs:
+      no_cache:
+        description: Rebuild without the layer cache, so the image picks up current OS and PHP security updates
+        type: boolean
+        default: false
+  # Weekly cache-free rebuild. With the layer cache on, a rebuild keeps whatever PHP and OS
+  # packages were cached, which is how PHP 8.3.35 outlived the PHP2Shell fix (CVE-2026-109618/9).
+  schedule:
+    - cron: '17 3 * * 1'
 
 env:
   IMAGE: ghcr.io/${{ github.repository }}
@@ -30,6 +39,7 @@ jobs:
           tags: ictfax:ci
           cache-from: type=gha
           cache-to: type=gha,mode=max
+          no-cache: ${{ github.event_name == 'schedule' || inputs.no_cache == true }}
 
       - name: Boot the container
         run: |
@@ -139,3 +149,4 @@ jobs:
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
           cache-from: type=gha
+          no-cache: ${{ github.event_name == 'schedule' || inputs.no_cache == true }}
