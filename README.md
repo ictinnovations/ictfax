@@ -18,6 +18,28 @@ ICTFAX is an open source multi-user [Fax server software] solution. ICTFAX featu
 with a tab per distribution. The `INSTALL.md` in this repo and the matching Read the Docs
 page describe CentOS 7 and are kept only for older systems.
 
+Quick start with Docker
+=======================
+
+The fastest way to see ICTFax running. The image bundles Apache, PHP,
+FreeSWITCH, MariaDB and this dashboard, so there is nothing else to install.
+
+```
+docker run -d --name ictfax \
+  -p 8080:80 \
+  -p 5060:5060/tcp -p 5060:5060/udp \
+  -p 16384-16484:16384-16484/udp \
+  ictinnovations/ictfax:latest
+```
+
+Give it about two minutes on first boot while the database is created and the
+schema loads, then open `http://localhost:8080/` and sign in with the demo
+credentials below. Publish the RTP range as shown or your fax calls will
+connect and transfer nothing.
+
+For an external database, volumes and build instructions see
+[docker/README.md](docker/README.md).
+
 ICTFAX can be used in following faxing scenarios
 
 * [Email to fax][emailtofax] / [web to fax][webtofax] / [fax to email][emailtofax]
@@ -66,28 +88,6 @@ as read:
 ![ICTFax inbound fax list](https://raw.githubusercontent.com/ictinnovations/ictfax/ictfax-13/doc/screenshots/inbound-fax.png)
 
 You can click through the same interface yourself on the [demo site][demo].
-
-Quick start with Docker
-=======================
-
-The fastest way to see ICTFax running. The image bundles Apache, PHP,
-FreeSWITCH, MariaDB and this dashboard, so there is nothing else to install.
-
-```
-docker run -d --name ictfax \
-  -p 8080:80 \
-  -p 5060:5060/tcp -p 5060:5060/udp \
-  -p 16384-16484:16384-16484/udp \
-  ictinnovations/ictfax:latest
-```
-
-Give it about two minutes on first boot while the database is created and the
-schema loads, then open `http://localhost:8080/` and sign in with the demo
-credentials below. Publish the RTP range as shown or your fax calls will
-connect and transfer nothing.
-
-For an external database, volumes and build instructions see
-[docker/README.md](docker/README.md).
 
 Documentation
 =============
