@@ -21,7 +21,7 @@ FROM rockylinux:8
 # so the build cache invalidates when ICTCore moves. A branch ref caches on the
 # clone command string, which never changes, and silently keeps serving an old
 # checkout. Override with --build-arg to build against a different revision.
-ARG ICTCORE_REF=ae9ffcf00bcd923f1ade67fd3ee18b92ff779cd5
+ARG ICTCORE_REF=3a2890cdbb8324b7e6256ce14ce5d0c851cd6a08
 # Remi rather than the AppStream php module. AppStream would satisfy the version
 # floor on its own, since Rocky 8 carries a php:8.2 stream, but it has never
 # packaged php-imap or php-pecl-imagick at any stream, and the email and
@@ -236,6 +236,20 @@ RUN for d in dialplan sip_profiles; do \
 RUN cd /etc/freeswitch/sip_profiles \
  && mv -f internal.xml      internal.xml.noload \
  && mv -f internal-ipv6.xml internal-ipv6.xml.noload
+
+# CVE-2026-116779 (GHSA-mg63-h38w-8p9p): an inbound SIP MESSAGE can select the
+# "api" chat proto and run FreeSWITCH API commands. The fix is in 1.11.3 and the
+# Copr only builds 1.10.12, so chat is switched off on every profile that loads,
+# and the vanilla "default" directory user, which has no password, goes. The
+# build fails if any loaded profile is left with chat on.
+RUN for f in /etc/freeswitch/sip_profiles/*.xml; do \
+      grep -q 'name="enable-chat"' "$f" \
+        || sed -i --follow-symlinks '0,/<settings>/s||<settings>\n    <param name="enable-chat" value="false"/>|' "$f"; \
+    done \
+ && rm -f /etc/freeswitch/directory/default/default.xml \
+ && for f in /etc/freeswitch/sip_profiles/*.xml; do \
+      grep -q 'name="enable-chat" value="false"' "$f" || { echo "chat still on in $f"; exit 1; }; \
+    done
 
 # ICTCore's dialplan calls out over HTTP, and the spec's %post freeswitch
 # uncomments both of these. The vanilla config ships them commented out.
